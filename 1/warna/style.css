@@ -1,0 +1,24 @@
+#blank {
+	display:none;
+}
+#underscorenone {
+	text-decoration: none;
+}
+.font {
+	font-weight: bold;
+}
+.cursor {
+	cursor:wait;
+}
+.space {
+	line-height: 36px;
+}
+r {
+	color: red;
+}
+b {
+	color: blue;
+}
+y {
+	color: yellow;
+}
