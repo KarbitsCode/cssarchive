@@ -3,15 +3,52 @@
 <html>
 <head>
 <title>Arsip CSS</title>
-<meta name=GENERATOR content="MSHTML 11.00.9600.20671">
+<meta name="description" content="Arsip CSS">
+<meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" type="text/css" href="main.css">
-<script type="text/javascript" src="main.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style type="text/css">
+#bottoml {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+#bottomr {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+blank {
+  display: none;
+}
+body {
+  left: 10;
+}
+</style>
+<script type="text/javascript">
+function AutoRefresh(t) {
+    let redirect_url = "../web.html";
+    let delay = 1;
+    let input_time = document.getElementById("url_time");
+    let time = input_time.value = delay;
+    
+    function redirect_page() {
+        if (time !== 1) {
+            time -= 1;
+            input_time.value = time;
+            setTimeout(redirect_page, 1000);
+        } else {
+            window.location.href = redirect_url;
+        };
+    };
+    setTimeout(redirect_page, t);
+};
+</script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
 <link rel="canonical" href="main.html">
 <script async src="https://cdn.ampproject.org/v0.js"></script>
 </head>
-<body bgcolor="#FFFFFF" onload="JavaScript:AutoRefresh(120000);" id="url_time">
+<body bgcolor="#FFFFFF" onload="JavaScript:AutoRefresh(300000);" id="url_time" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
@@ -30,11 +67,16 @@
 </div><div>
 <a href="py.html">Pyscript</a>
 </div><div>
-<a href=".">Jelajahi Server</a>
-</div>
+<a href="." style="position:fixed;right:0;">.</a>
+</div><div id="bottomr"><small>
+<script type="text/javascript">
+var dateObj = new Date(document.lastModified);
+document.write("Latest updated in " + dateObj.toLocaleString());
+</script>
+</small></div>
 </main>
 <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style" id="bottom">
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style" id="bottoml">
 <a class="a2a_dd" href="https://www.addtoany.com/share"></a>
 <a class="a2a_button_copy_link"></a>
 </div>
@@ -51,16 +93,16 @@
 window.cookieconsent.initialise({
   "palette": {
     "popup": {
-      "background": "#000"
+      "background": "#000",
+      "text": "#0f0"
     },
     "button": {
       "background": "transparent",
-      "text": "#f1d600",
-      "border": "#f1d600"
+      "text": "#0f0",
+      "border": "#0f0"
     }
   },
-  "position": "top",
-  "static": true,
+  "position": "bottom-left",
   "content": {
     "message": "This website uses cookies to ensure you get the best experience.",
     "dismiss": "OK",
