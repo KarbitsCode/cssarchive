@@ -5,43 +5,42 @@
 <title>Arsip CSS</title>
 <meta name="description" content="Arsip CSS">
 <meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <style type="text/css">
 #bottomleft {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
 }
 #bottomright {
-    position: fixed;
-    bottom: 0;
-    right: 0;
+  position: fixed;
+  bottom: 0;
+  right: 0;
 }
 blank {
-    display: none;
+  display: none;
 }
 body {
-    left: 10;
+  left: 10;
 }
 </style>
 <script type="text/javascript">
 function AutoRefresh(t) {
-    let redirect_url = "../web.html";
-    let delay = 1;
-    let input_time = document.getElementById("url_time");
-    let time = input_time.value = delay;
-    
-    function redirect_page() {
-        if (time !== 1) {
-            time -= 1;
-            input_time.value = time;
-            setTimeout(redirect_page, 1000);
-        } else {
-            window.location.href = redirect_url;
-        };
+  let redirect_url = "../web.html";
+  let delay = 1;
+  let input_time = document.getElementById("url_time");
+  let time = input_time.value = delay; 
+  function redirect_page() {
+    if (time !== 1) {
+      time -= 1;
+      input_time.value = time;
+      setTimeout(redirect_page, 1000);
+    } else {
+      window.location.href = redirect_url;
     };
-    setTimeout(redirect_page, t);
+  };
+  setTimeout(redirect_page, t);
 };
 </script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
@@ -84,8 +83,8 @@ document.write("Latest updated in " + dateObj.toLocaleString());
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>
 <script>
 (function(u) {
-    var s = document.createElement('script'); s.async = true; s.src = u;
-    var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(s, b);
+  var s = document.createElement('script'); s.async = true; s.src = u;
+  var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(s, b);
 })('//updatemybrowser.org/umb.js');
 </script>
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
