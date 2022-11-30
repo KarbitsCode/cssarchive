@@ -1,18 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-    <meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
     <title>Web</title>
-    <style>
-        blank {
-            display: none;
-        }
-    </style>
-    <meta http-equiv="refresh" content="5;url=1/main.html">
+    <meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+    <meta http-equiv="refresh" content="10;url=.">
 </head>
-<body>
+<body bgcolor="#FFFFFF">
     <div>Loading...</div>
-    <blank><input type="text" size="3" id="url_time"></blank>
     <script>
         (function() {
             class RuffleMimeType {
@@ -101,25 +95,22 @@
             let parent = _____WB$wombat$assign$function_____("parent");
             let frames = _____WB$wombat$assign$function_____("frames");
             let opener = _____WB$wombat$assign$function_____("opener");
+        }
     </script>
     <script>
-        (function() {
-            let redirect_url = "1/main.html";
-            let delay = 1;
-            let input_time = document.getElementById("url_time");
-            let time = input_time.value = delay;
-
-            function redirect_page() {
-                if (time !== 1) {
-                    time -= 1;
-                    input_time.value = time;
-                    setTimeout(redirect_page, 1000);
-                } else {
-                    window.location.href = redirect_url;
-                }
-            }
-            setTimeout(redirect_page, 1000);
-        })();
+        const urlParams = new URLSearchParams(window.location.search)
+        const goQuery = urlParams.get("go")
+        if (urlParams.has("go")) {
+            if (!(goQuery == "")) {
+                console.log("Redirecting to " + goQuery + "...");
+                setTimeout(function() {
+                    window.location.replace(goQuery);
+                }, 250);
+            };
+        } else {
+            document.body.innerHTML = "";
+            document.write(goQuery);
+        };
     </script>
 </body>
 </html>

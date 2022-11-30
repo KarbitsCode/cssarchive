@@ -27,7 +27,7 @@ body {
 </style>
 <script type="text/javascript">
 function AutoRefresh(t) {
-  let redirect_url = "..";
+  let redirect_url = "../redir.html?go=.";
   let delay = 1;
   let input_time = document.getElementById("url_time");
   let time = input_time.value = delay; 
@@ -52,27 +52,29 @@ function AutoRefresh(t) {
 <h3>Navigasi</h3>
 <p></p>
 <div>
-<a href="folio.html">Portofolio</a>
+<a href="../redir.html?go=1/folio.html">Portofolio</a>
 </div><div>
-<a href="css.html">Contoh CSS</a>
+<a href="../redir.html?go=1/css.html">Contoh CSS</a>
 </div><div>
-<a href="warna.html">Warna</a>
+<a href="../redir.html?go=1/warna.html">Warna</a>
 </div><div>
-<a href="gmbr.html">Gambar Bergerak</a>
+<a href="../redir.html?go=1/gmbr.html">Gambar Bergerak</a>
 </div><div>
-<a href="psd.html">Photoshop Web</a>
+<a href="../redir.html?go=1/psd.html">Photoshop Web</a>
 </div><div>
-<a href="ascii-art.html">ASCII Art</a>
+<a href="../redir.html?go=1/ascii-art.html">ASCII Art</a>
 </div><div>
-<a href="py.html">Pyscript</a>
+<a href="../redir.html?go=1/py.html">PyScript</a>
 </div><div>
 <a href="." style="position:fixed;right:0;">.</a>
-</div><div id="bottomright"><small>
+</div><div id="bottomright">
+<small><code>
 <script type="text/javascript">
 var dateObj = new Date(document.lastModified);
 document.write("Latest updated in " + dateObj.toLocaleString());
 </script>
-</small></div>
+</code></small>
+</div>
 </main>
 <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
 <div class="a2a_kit a2a_kit_size_32 a2a_default_style" id="bottomleft">
@@ -85,7 +87,7 @@ document.write("Latest updated in " + dateObj.toLocaleString());
 (function(u) {
   var s = document.createElement('script'); s.async = true; s.src = u;
   var b = document.getElementsByTagName('script')[0]; b.parentNode.insertBefore(s, b);
-})('//updatemybrowser.org/umb.js');
+})('https://updatemybrowser.org/umb.js');
 </script>
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
 <script>
@@ -125,7 +127,8 @@ const options = {
   autoMatchOsTheme: true
 };
 function addDarkmodeWidget() {
-  new Darkmode(options).showWidget();
+  const darkmode = new Darkmode(options);
+  darkmode.showWidget();
 };
 window.addEventListener('load', addDarkmodeWidget);
 </script>
