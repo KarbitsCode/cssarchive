@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0017)http://localhost/ -->
+<html amp lang="en">
+<head>
+<title>Arsip CSS</title>
+<meta name="description" content="Arsip CSS">
+<meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+#bottomleft {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+#bottomright {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+blank {
+  display: none;
+}
+body {
+  left: 10;
+}
+</style>
+<script type="text/javascript">
+function AutoRefresh(t) {
+  let redirect_url = "../redir.html?go=1%2Fmain-min.html";
+  let delay = 1;
+  let input_time = document.getElementById("url_time");
+  let time = input_time.value = delay; 
+  function redirect_page() {
+    if (time !== 1) {
+      time -= 1;
+      input_time.value = time;
+      setTimeout(redirect_page, 1000);
+    } else {
+      window.location.href = redirect_url;
+    };
+  };
+  setTimeout(redirect_page, t);
+};
+</script>
+</head>
+<body bgcolor="#FFFFFF" onload="JavaScript:AutoRefresh(300000);" id="url_time" oncontextmenu="return true">
+<main id="main">
+<h3>Navigasi</h3>
+<p></p>
+<div>
+<a href="../redir.html?go=1/folio.html">Portofolio</a>
+</div><div>
+<a href="../redir.html?go=1/css.html">Contoh CSS</a>
+</div><div>
+<a href="../redir.html?go=1/warna.html">Warna</a>
+</div><div>
+<a href="../redir.html?go=1/gmbr.html">Gambar Bergerak</a>
+</div><div>
+<a href="../redir.html?go=1/psd.html">Photoshop Web</a>
+</div><div>
+<a href="../redir.html?go=1/ascii-art.html">ASCII Art</a>
+</div><div>
+<a href="../redir.html?go=1/py.html">PyScript</a>
+</div><div>
+<a href="." style="position:fixed;right:0;">.</a>
+</div><div id="bottomright">
+<small><code>
+<a href="main.html" style="color: blue;">Normal version</a>
+<script type="text/javascript">
+var dateObj = new Date(document.lastModified);
+document.write("Last updated in " + dateObj.toLocaleString());
+</script>
+</code></small>
+</div>
+</main>
+</body>
+</html>

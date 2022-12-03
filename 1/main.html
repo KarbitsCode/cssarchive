@@ -69,9 +69,10 @@ function AutoRefresh(t) {
 <a href="." style="position:fixed;right:0;">.</a>
 </div><div id="bottomright">
 <small><code>
+<a href="main-min.html" style="color: white;">Minimal version</a>
 <script type="text/javascript">
 var dateObj = new Date(document.lastModified);
-document.write("Latest updated in " + dateObj.toLocaleString());
+document.write("Last updated in " + dateObj.toLocaleString());
 </script>
 </code></small>
 </div>
@@ -122,9 +123,9 @@ const options = {
   backgroundColor: '#fff',
   buttonColorDark: '#100f2c',
   buttonColorLight: '#fff',
-  saveInCookies: true,
+  saveInCookies: false,
   label: '🌓',
-  autoMatchOsTheme: true
+  autoMatchOsTheme: false
 };
 function addDarkmodeWidget() {
   const darkmode = new Darkmode(options);
