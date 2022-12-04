@@ -57,11 +57,12 @@
                 namedItem(a) {
                     return this.__named_plugins[a]
                 }
+                refresh() {}
                 get length() {
                     return this.__plugins.length
                 }
             }
-            const FLASH_PLUGIN = new RufflePlugin("Shockwave Flash", "Shockwave Flash 32.0 r0", "ruffle.js", [new RuffleMimeType("application/futuresplash", "Shockwave Flash", "spl"), new RuffleMimeType("application/x-shockwave-flash", "Shockwave Flash", "swf"), new RuffleMimeType("application/x-shockwave-flash2-preview", "Shockwave Flash", "swf"), new RuffleMimeType("application/vnd.adobe.flash-movie", "Shockwave Flash", "swf")]);
+            const FLASH_PLUGIN = new RufflePlugin("Shockwave Flash", "Shockwave Flash 32.0 r0", "ruffle.js", [new RuffleMimeType("application/futuresplash", "Shockwave Flash", "spl"), new RuffleMimeType("application/x-shockwave-flash", "Shockwave Flash", "swf"), new RuffleMimeType("application/x-shockwave-flash2-preview", "Shockwave Flash", "swf"), new RuffleMimeType("application/vnd.adobe.flash.movie", "Shockwave Flash", "swf")]);
 
             function install_plugin(a) {
                 navigator.plugins.install || Object.defineProperty(navigator, "plugins", {
@@ -76,7 +77,6 @@
             install_plugin(FLASH_PLUGIN);
         })();
     </script>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <script>
         var _____WB$wombat$assign$function_____ = function(name) {
             return (self._wb_wombat && self._wb_wombat.local_init && self._wb_wombat.local_init(name)) || self[name];
