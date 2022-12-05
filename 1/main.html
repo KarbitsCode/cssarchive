@@ -26,7 +26,7 @@ body {
 }
 </style>
 <script type="text/javascript">
-function AutoRefresh(t) {
+function autoRefresh(t) {
   let redirect_url = "../redir.html?go=.";
   let delay = 1;
   let input_time = document.getElementById("url_time");
@@ -42,12 +42,16 @@ function AutoRefresh(t) {
   };
   setTimeout(redirect_page, t);
 };
+setTimeout(function() {
+  window.location.replace("#nav");
+}, 2500);
 </script>
+<script type="text/javascript" src="update.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
 <link rel="canonical" href="main.html">
 <script async src="https://cdn.ampproject.org/v0.js"></script>
 </head>
-<body bgcolor="#FFFFFF" onload="JavaScript:AutoRefresh(300000);" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);" id="url_time" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
@@ -71,8 +75,11 @@ function AutoRefresh(t) {
 <small><code>
 <a href="main-min.html" style="color: white;">Minimal version</a>
 <script type="text/javascript">
+document.write("Last updated in " + updateData);
+/*
 var dateObj = new Date(document.lastModified);
 document.write("Last updated in " + dateObj.toLocaleString());
+*/
 </script>
 </code></small>
 </div>
