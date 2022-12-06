@@ -43,7 +43,7 @@ function autoRefresh(t) {
   setTimeout(redirect_page, t);
 };
 setTimeout(function() {
-  window.location.replace("#nav");
+  window.location.replace("#navigasi");
 }, 2500);
 </script>
 <script type="text/javascript" src="update.js"></script>
@@ -72,11 +72,9 @@ setTimeout(function() {
 <small><code>
 <a href="main.html" style="color: blue;">Normal version</a>
 <script type="text/javascript">
-document.write("Last updated in " + updateData);
-/*
-var dateObj = new Date(document.lastModified);
-document.write("Last updated in " + dateObj.toLocaleString());
-*/
+(function() {
+  document.write("Last updated in " + updateData);
+}).call(this);
 </script>
 </code></small>
 </div>
