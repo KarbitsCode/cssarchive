@@ -42,14 +42,23 @@ function autoRefresh(t) {
   };
   setTimeout(redirect_page, t);
 };
+function adBlocker() {
+  console.log("AdBlocker Detected");
+  setTimeout(function() {
+    window.location.replace("#adblock");
+    alert("AdBlocker Detected");
+	window.location.replace("#navigasi");
+  }, 5000);
+};
 setTimeout(function() {
   window.location.replace("#navigasi");
-}, 2500);
+}, 3000);
 </script>
 <script type="text/javascript" src="update.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
 <link rel="canonical" href="main.html">
 <script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker();"></script>
 </head>
 <body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);" id="url_time" oncontextmenu="return true">
 <main id="main">
@@ -70,13 +79,13 @@ setTimeout(function() {
 </div><div>
 <a href="../redir.html?go=1/py.html">PyScript</a>
 </div><div>
-<a href="." style="position:fixed;right:0;">.</a>
+<a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
 </div><div id="bottomright">
 <small><code>
-<a href="main-min.html" style="color: white;">Minimal version</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='../redir.html?go=1%2Fmain-min.html'">Minimal version</a>
 <script type="text/javascript">
 (function() {
-  document.write("Last updated in " + updateData);
+  document.write("Last updated on " + updateData);
 }).call(this);
 </script>
 </code></small>
