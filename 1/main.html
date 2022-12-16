@@ -7,22 +7,13 @@
 <meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <style type="text/css">
-#bottomleft {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-}
-#bottomright {
-  position: fixed;
-  bottom: 0;
-  right: 0;
+body {
+  left: 10;
 }
 blank {
   display: none;
-}
-body {
-  left: 10;
 }
 </style>
 <script type="text/javascript">
@@ -42,47 +33,45 @@ function autoRefresh(t) {
   };
   setTimeout(redirect_page, t);
 };
-function adBlocker() {
-  console.log("AdBlocker Detected");
-  setTimeout(function() {
-    window.location.replace("#adblock");
-    alert("AdBlocker Detected");
-	window.location.replace("#navigasi");
-  }, 5000);
+function gotoPage(l) {
+  window.location.replace("../redir.html?go=" + l);
 };
-setTimeout(function() {
-  window.location.replace("#navigasi");
-}, 3000);
+function pageInit() {
+  history.pushState("", document.title, window.location.pathname + window.location.search);
+  setTimeout(function() {
+    window.location.replace("#navigasi");
+  }, 3000);
+};
 </script>
-<script type="text/javascript" src="update.js"></script>
+<script src="update.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
 <link rel="canonical" href="main.html">
 <script async src="https://cdn.ampproject.org/v0.js"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker();"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="console.log('AdBlocker Detected');"></script>
 </head>
-<body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);pageInit();" id="url_time" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
 <div>
-<a href="../redir.html?go=1/folio.html">Portofolio</a>
+<a href="folio.html" onclick="gotoPage(this.href);return false">Portofolio</a>
 </div><div>
-<a href="../redir.html?go=1/css.html">Contoh CSS</a>
+<a href="css.html" onclick="gotoPage(this.href);return false">Contoh CSS</a>
 </div><div>
-<a href="../redir.html?go=1/warna.html">Warna</a>
+<a href="warna.html" onclick="gotoPage(this.href);return false">Warna</a>
 </div><div>
-<a href="../redir.html?go=1/gmbr.html">Gambar Bergerak</a>
+<a href="gmbr.html" onclick="gotoPage(this.href);return false">Gambar Bergerak</a>
 </div><div>
-<a href="../redir.html?go=1/psd.html">Photoshop Web</a>
+<a href="psd.html" onclick="gotoPage(this.href);return false">Photoshop Web</a>
 </div><div>
-<a href="../redir.html?go=1/ascii-art.html">ASCII Art</a>
+<a href="ascii-art.html" onclick="gotoPage(this.href);return false">ASCII Art</a>
 </div><div>
-<a href="../redir.html?go=1/py.html">PyScript</a>
+<a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
-</div><div id="bottomright">
+</div><div style="position: fixed;bottom: 0;right: 0;">
 <small><code>
-<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='../redir.html?go=1%2Fmain-min.html'">Minimal version</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html'">Minified version</a>
 <script type="text/javascript">
 (function() {
   document.write("Last updated on " + updateData);
@@ -92,7 +81,7 @@ setTimeout(function() {
 </div>
 </main>
 <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style" id="bottomleft">
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style" style="position: fixed;bottom: 0;left: 0;">
 <a class="a2a_dd" href="https://www.addtoany.com/share"></a>
 <a class="a2a_button_copy_link"></a>
 </div>
