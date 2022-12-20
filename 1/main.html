@@ -17,6 +17,10 @@ blank {
 }
 </style>
 <script type="text/javascript">
+if (window.document.documentMode) {
+  console.log("IE Detected");
+  window.location.replace("main-min.html?on=ie");
+};
 function autoRefresh(t) {
   let redirect_url = "../redir.html?go=.";
   let delay = 1;
@@ -34,11 +38,24 @@ function autoRefresh(t) {
   setTimeout(redirect_page, t);
 };
 function gotoPage(l) {
-  window.location.replace("../redir.html?go=" + l);
+  if (window.document.documentMode) {
+    window.location.replace(l);
+  } else {
+    window.location.replace("../redir.html?go=" + l);
+  };
 };
-function pageInit() {
-  history.pushState("", document.title, window.location.pathname + window.location.search);
+function adBlocker() {
+  console.log("AdBlocker Detected");
   setTimeout(function() {
+    window.location.replace("#adblock");
+    alert("AdBlocker Detected");
+	window.location.replace("main-min.html?on=adblock");
+  }, 5000);
+};
+window.onload = function() {
+  autoRefresh(300000);
+  setTimeout(function() {
+    history.pushState("", document.title, window.location.pathname + "");
     window.location.replace("#navigasi");
   }, 3000);
 };
@@ -47,9 +64,9 @@ function pageInit() {
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
 <link rel="canonical" href="main.html">
 <script async src="https://cdn.ampproject.org/v0.js"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="console.log('AdBlocker Detected');"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker();"></script>
 </head>
-<body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);pageInit();" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" id="url_time" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
@@ -64,14 +81,14 @@ function pageInit() {
 </div><div>
 <a href="psd.html" onclick="gotoPage(this.href);return false">Photoshop Web</a>
 </div><div>
-<a href="ascii-art.html" onclick="gotoPage(this.href);return false">ASCII Art</a>
+<a href="ascii.html" onclick="gotoPage(this.href);return false">ASCII Art</a>
 </div><div>
 <a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
 </div><div style="position: fixed;bottom: 0;right: 0;">
 <small><code>
-<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html'">Minified version</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html?on=click'">Minified version</a>
 <script type="text/javascript">
 (function() {
   document.write("Last updated on " + updateData);

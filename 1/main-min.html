@@ -34,18 +34,23 @@ function autoRefresh(t) {
   setTimeout(redirect_page, t);
 };
 function gotoPage(l) {
-  window.location.replace("../redir.html?go=" + l);
+  if (window.document.documentMode) {
+    window.location.replace(l);
+  } else {
+    window.location.replace("../redir.html?go=" + l);
+  };
 };
-function pageInit() {
-  history.pushState("", document.title, window.location.pathname + window.location.search);
+window.onload = function() {
+  autoRefresh(300000);
   setTimeout(function() {
+    history.pushState("", document.title, window.location.pathname + "");
     window.location.replace("#navigasi");
   }, 3000);
 };
 </script>
 <script src="update.js"></script>
 </head>
-<body bgcolor="#FFFFFF" onload="JavaScript:autoRefresh(300000);pageInit();" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" id="url_time" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
@@ -60,7 +65,7 @@ function pageInit() {
 </div><div>
 <a href="psd.html" onclick="gotoPage(this.href);return false">Photoshop Web</a>
 </div><div>
-<a href="ascii-art.html" onclick="gotoPage(this.href);return false">ASCII Art</a>
+<a href="ascii.html" onclick="gotoPage(this.href);return false">ASCII Art</a>
 </div><div>
 <a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
