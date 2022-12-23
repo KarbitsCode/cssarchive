@@ -41,11 +41,11 @@ function gotoPage(l) {
   };
 };
 window.onload = function() {
+  history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
   setTimeout(function() {
-    history.pushState("", document.title, window.location.pathname + "");
     window.location.replace("#navigasi");
-  }, 3000);
+  }, 2000);
 };
 </script>
 <script src="update.js"></script>
