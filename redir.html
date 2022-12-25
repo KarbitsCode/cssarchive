@@ -76,6 +76,7 @@
             install_plugin(FLASH_PLUGIN);
         })();
     </script>
+	<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <script>
         var _____WB$wombat$assign$function_____ = function(name) {
             return (self._wb_wombat && self._wb_wombat.local_init && self._wb_wombat.local_init(name)) || self[name];
@@ -104,7 +105,7 @@
             if (!(goQuery == "")) {
                 console.log("Redirecting to " + goQuery + "...");
                 setTimeout(function() {
-                    window.location.replace(goQuery + "?from=redir");
+                    window.location.replace(goQuery + "?on=redir");
                 }, 200);
             };
         } else {

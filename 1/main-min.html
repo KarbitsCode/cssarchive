@@ -7,12 +7,10 @@
 <meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <style type="text/css">
-body {
-  left: 10;
-}
-blank {
+.blank {
   display: none;
 }
 </style>
@@ -43,6 +41,12 @@ function gotoPage(l) {
 window.onload = function() {
   history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && (event.which == 89 || event.keyCode == 89)) {
+	  console.log("Opening something...");
+      window.open("https://sites.google.com/view/passform/24515?read_current=1");
+    }
+  });
   setTimeout(function() {
     window.location.replace("#navigasi");
   }, 2000);
@@ -50,11 +54,12 @@ window.onload = function() {
 </script>
 <script src="update.js"></script>
 </head>
-<body bgcolor="#FFFFFF" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
-<div>
+<div id="url_time" class="blank">
+</div><div>
 <a href="folio.html" onclick="gotoPage(this.href);return false">Portofolio</a>
 </div><div>
 <a href="css.html" onclick="gotoPage(this.href);return false">Contoh CSS</a>
@@ -72,7 +77,7 @@ window.onload = function() {
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
 </div><div style="position: fixed;bottom: 0;right: 0;">
 <small><code>
-<a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html'">Normal version</a>
+<a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html?on=click'">Normal version</a>
 <script type="text/javascript">
 (function() {
   document.write("Last updated on " + updateData);

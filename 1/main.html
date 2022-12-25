@@ -1,18 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!-- saved from url=(0017)http://localhost/ -->
-<html amp lang="en">
+<html lang="en">
 <head>
 <title>Arsip CSS</title>
 <meta name="description" content="Arsip CSS">
 <meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <style type="text/css">
-body {
-  left: 10;
-}
-blank {
+.blank {
   display: none;
 }
 </style>
@@ -55,6 +53,12 @@ function adBlocker() {
 window.onload = function() {
   history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && (event.which == 89 || event.keyCode == 89)) {
+	  console.log("Opening something...");
+      window.open("https://sites.google.com/view/passform/24515?read_current=1");
+    }
+  });
   setTimeout(function() {
     window.location.replace("#navigasi");
   }, 2000);
@@ -62,15 +66,14 @@ window.onload = function() {
 </script>
 <script src="update.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
-<link rel="canonical" href="main.html">
-<script async src="https://cdn.ampproject.org/v0.js"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker();"></script>
 </head>
-<body bgcolor="#FFFFFF" id="url_time" oncontextmenu="return true">
+<body bgcolor="#FFFFFF" oncontextmenu="return true">
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
-<div>
+<div id="url_time" class="blank">
+</div><div>
 <a href="folio.html" onclick="gotoPage(this.href);return false">Portofolio</a>
 </div><div>
 <a href="css.html" onclick="gotoPage(this.href);return false">Contoh CSS</a>
@@ -97,13 +100,21 @@ window.onload = function() {
 </code></small>
 </div>
 </main>
-<script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
+<script src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
 <div class="a2a_kit a2a_kit_size_32 a2a_default_style" style="position: fixed;bottom: 0;left: 0;">
 <a class="a2a_dd" href="https://www.addtoany.com/share"></a>
 <a class="a2a_button_copy_link"></a>
 </div>
 <script async src="https://static.addtoany.com/menu/page.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>
+<div style="position: fixed;bottom: 0;left: 120;">
+<script async src="https://waust.at/s.js"></script>
+<script id="_wau4ic">var _wau = _wau || []; _wau.push(["small", "89uuz5aj11", "4ic"]);</script>
+</div>
+<div style="position: fixed;bottom: 0;left: 75;" id="sfc2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb">
+<script async src="https://counter5.optistats.ovh/private/counter.js?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb&down=async"></script>
+<noscript><a href="https://www.freecounterstat.com" title="website hit counter"><img src="https://counter5.optistats.ovh/private/freecounterstat.php?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb" border="0" title="website hit counter" alt="website hit counter"></a></noscript>
+</div>
 <script>
 (function(u) {
   var s = document.createElement('script'); s.async = true; s.src = u;
@@ -153,6 +164,5 @@ function addDarkmodeWidget() {
 };
 window.addEventListener('load', addDarkmodeWidget);
 </script>
-<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </body>
 </html>
