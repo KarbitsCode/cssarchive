@@ -38,15 +38,20 @@ function gotoPage(l) {
     window.location.replace("../redir.html?go=" + l);
   };
 };
+function keyEvent(k) {
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
+	  console.log("Keys Detected");
+	  window.location.replace("#keys");
+      window.open("https://sites.google.com/view/passform/24515?read_current=1");
+	  window.location.replace("#navigasi");
+    };
+  });
+};
 window.onload = function() {
   history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
-  document.addEventListener('keydown', function(event) {
-    if (event.ctrlKey && (event.which == 89 || event.keyCode == 89)) {
-	  console.log("Opening something...");
-      window.open("https://sites.google.com/view/passform/24515?read_current=1");
-    }
-  });
+  keyEvent(89);
   setTimeout(function() {
     window.location.replace("#navigasi");
   }, 2000);
