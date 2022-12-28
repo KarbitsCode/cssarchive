@@ -19,6 +19,9 @@ if (window.document.documentMode) {
   console.log("IE Detected");
   window.location.replace("main-min.html?on=ie");
 };
+setTimeout(function() {
+  history.pushState("", document.title, window.location.pathname + "");
+}, 1000);
 function autoRefresh(t) {
   let redirect_url = "../redir.html?go=.";
   let delay = 1;
@@ -61,7 +64,6 @@ function keyEvent(k) {
   });
 };
 window.onload = function() {
-  history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
   keyEvent(89);
   setTimeout(function() {
@@ -94,15 +96,15 @@ window.onload = function() {
 <a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
-</div><div style="position: fixed;bottom: 0;right: 0;">
-<small><code>
+</div><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;">
+<code>
 <a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html?on=click'">Minified version</a>
 <script type="text/javascript">
 (function() {
   document.write("Last updated on " + updateData);
 }).call(this);
 </script>
-</code></small>
+</code>
 </div>
 </main>
 <script src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>

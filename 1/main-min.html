@@ -15,6 +15,9 @@
 }
 </style>
 <script type="text/javascript">
+setTimeout(function() {
+  history.pushState("", document.title, window.location.pathname + "");
+}, 1000);
 function autoRefresh(t) {
   let redirect_url = "../redir.html?go=1%2Fmain-min.html";
   let delay = 1;
@@ -49,7 +52,6 @@ function keyEvent(k) {
   });
 };
 window.onload = function() {
-  history.pushState("", document.title, window.location.pathname + "");
   autoRefresh(300000);
   keyEvent(89);
   setTimeout(function() {
@@ -80,15 +82,15 @@ window.onload = function() {
 <a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
-</div><div style="position: fixed;bottom: 0;right: 0;">
-<small><code>
+</div><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;">
+<code>
 <a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html?on=click'">Normal version</a>
 <script type="text/javascript">
 (function() {
   document.write("Last updated on " + updateData);
 }).call(this);
 </script>
-</code></small>
+</code>
 </div>
 </main>
 </body>
