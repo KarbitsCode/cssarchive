@@ -21,7 +21,7 @@ if (window.document.documentMode) {
 };
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
-}, 1000);
+}, 500);
 function autoRefresh(t) {
   let redirect_url = "../redir.html?go=.";
   let delay = 1;
@@ -45,14 +45,6 @@ function gotoPage(l) {
     window.location.replace("../redir.html?go=" + l);
   };
 };
-function adBlocker() {
-  console.log("AdBlocker Detected");
-  setTimeout(function() {
-    window.location.replace("#adblock");
-    alert("AdBlocker Detected");
-	window.location.replace("main-min.html?on=adblock");
-  }, 5000);
-};
 function keyEvent(k) {
   document.addEventListener('keydown', function(event) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
@@ -62,6 +54,14 @@ function keyEvent(k) {
 	  window.location.replace("#navigasi");
     };
   });
+};
+function adBlocker() {
+  console.log("AdBlocker Detected");
+  setTimeout(function() {
+    window.location.replace("#adblock");
+    alert("AdBlocker Detected");
+	window.location.replace("main-min.html?on=adblock");
+  }, 5000);
 };
 window.onload = function() {
   autoRefresh(300000);
