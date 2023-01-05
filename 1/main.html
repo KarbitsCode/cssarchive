@@ -7,7 +7,6 @@
 <meta name="GENERATOR" content="MSHTML 11.00.9600.20671">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <style type="text/css">
 .blank {
@@ -22,58 +21,18 @@ if (window.document.documentMode) {
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
 }, 500);
-function autoRefresh(t) {
-  let redirect_url = "../redir.html?go=.";
-  let delay = 1;
-  let input_time = document.getElementById("url_time");
-  let time = input_time.value = delay; 
-  function redirect_page() {
-    if (time !== 1) {
-      time -= 1;
-      input_time.value = time;
-      setTimeout(redirect_page, 1000);
-    } else {
-      window.location.href = redirect_url;
-    };
-  };
-  setTimeout(redirect_page, t);
-};
-function gotoPage(l) {
-  if (window.document.documentMode) {
-    window.location.replace(l);
-  } else {
-    window.location.replace("../redir.html?go=" + l);
-  };
-};
-function keyEvent(k) {
-  document.addEventListener('keydown', function(event) {
-    if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
-	  console.log("Keys Detected");
-	  window.location.replace("#keys");
-      window.open("https://sites.google.com/view/passform/24515?read_current=1");
-	  window.location.replace("#navigasi");
-    };
-  });
-};
-function adBlocker() {
-  console.log("AdBlocker Detected");
-  setTimeout(function() {
-    window.location.replace("#adblock");
-    alert("AdBlocker Detected");
-	window.location.replace("main-min.html?on=adblock");
-  }, 5000);
-};
 window.onload = function() {
-  autoRefresh(300000);
+  autoRefresh("../redir.html?go=.");
   keyEvent(89);
   setTimeout(function() {
     window.location.replace("#navigasi");
   }, 2000);
 };
 </script>
+<script type="text/javascript" src="common.js"></script>
 <script src="update.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker();"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" onerror="adBlocker('main-min.html?on=adblock');"></script>
 </head>
 <body bgcolor="#FFFFFF" oncontextmenu="return true">
 <main id="main">
