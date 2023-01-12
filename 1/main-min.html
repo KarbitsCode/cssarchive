@@ -14,12 +14,9 @@
 }
 </style>
 <script type="text/javascript">
-setTimeout(function() {
-  history.pushState("", document.title, window.location.pathname + "");
-}, 500);
 window.onload = function() {
   autoRefresh("../redir.html?go=1%2Fmain-min.html");
-  keyEvent(89);
+  keyEvent(76);
   setTimeout(function() {
     window.location.replace("#navigasi");
   }, 2000);
@@ -48,7 +45,7 @@ window.onload = function() {
 </div><div>
 <a href="py.html" onclick="gotoPage(this.href);return false">PyScript</a>
 </div><div>
-<a href="." style="position: fixed;right: 0;cursor: not-allowed;">.</a>
+<a href="." style="position: fixed;right: 0;cursor: not-allowed;text-decoration: none;">.</a>
 </div><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;">
 <code>
 <a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html?on=click'">Normal version</a>

@@ -39,3 +39,6 @@ function adBlocker(u) {
     window.location.replace(u);
   }, 5000);
 };
+setTimeout(function() {
+  history.pushState("", document.title, window.location.pathname + "");
+}, 500);
