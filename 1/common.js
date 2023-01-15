@@ -1,3 +1,4 @@
+const urlParams = new URLSearchParams(window.location.search)
 function autoRefresh(r) {
   let redirect_url = r;
   let delay = 1;
@@ -33,11 +34,15 @@ function keyEvent(k) {
 };
 function adBlocker(u) {
   console.log("AdBlocker Detected");
-  setTimeout(function() {
-    window.location.replace("#adblock");
-    alert("AdBlocker Detected");
-    window.location.replace(u);
-  }, 5000);
+  if (urlParams.get("on") == 'redir') {
+    setTimeout(function() {
+      window.location.replace("#adblock");
+      alert("AdBlocker Detected");
+      window.location.replace(u);
+    }, 5000);
+  } else {
+    console.log("Attribute On");
+  };
 };
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
