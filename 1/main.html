@@ -34,7 +34,8 @@ window.onload = function() {
 <main id="main">
 <h3>Navigasi</h3>
 <p></p>
-<div id="url_time" class="blank">
+<div class="blank">
+<input type="text" size="3" id="url_time">
 </div><div>
 <a href="folio.html" onclick="gotoPage(this.href);return false">Portofolio</a>
 </div><div>
@@ -62,16 +63,19 @@ window.onload = function() {
 </code>
 </div>
 </main>
-<script src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>
-<div style="position: fixed;bottom: 0;left: 45;">
-<script async src="https://waust.at/s.js"></script>
-<script id="_wau4ic">var _wau = _wau || []; _wau.push(["small", "89uuz5aj11", "4ic"]);</script>
+<div style="position: fixed;bottom: 15;left: 0;">
+<iframe src="https://free.timeanddate.com/clock/i8olgcbm/n761/fs11/tt0/tw0/tm2/td1/th2/tb2" frameborder="0" width="120" height="14"></iframe>
 </div>
 <div style="position: fixed;bottom: 0;left: 0;" id="sfc2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb">
 <script async src="https://counter5.optistats.ovh/private/counter.js?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb&down=async"></script>
 <noscript><a href="https://www.freecounterstat.com" title="website hit counter"><img src="https://counter5.optistats.ovh/private/freecounterstat.php?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb" border="0" title="website hit counter" alt="website hit counter"></a></noscript>
 </div>
+<div style="position: fixed;bottom: 0;left: 45;">
+<script async src="https://waust.at/s.js"></script>
+<script id="_wau4ic">var _wau = _wau || []; _wau.push(["small", "89uuz5aj11", "4ic"]);</script>
+</div>
+<script src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-6187e52404fc699d"></script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>
 <script>
 (function(u) {
   var s = document.createElement('script'); s.async = true; s.src = u;
@@ -93,11 +97,10 @@ const options = {
   label: '🌓',
   autoMatchOsTheme: false
 };
-function addDarkmodeWidget() {
+window.addEventListener('load', function() {
   const darkmode = new Darkmode(options);
   darkmode.showWidget();
-};
-window.addEventListener('load', addDarkmodeWidget);
+});
 </script>
 </body>
 </html>

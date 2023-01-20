@@ -1,4 +1,3 @@
-const urlParams = new URLSearchParams(window.location.search)
 function autoRefresh(r) {
   let redirect_url = r;
   let delay = 1;
@@ -13,7 +12,7 @@ function autoRefresh(r) {
       window.location.href = redirect_url;
     };
   };
-  setTimeout(redirect_page, 300000);
+  setTimeout(redirect_page, 600000);
 };
 function gotoPage(l) {
   if (window.document.documentMode) {
@@ -27,12 +26,13 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys Detected");
       window.location.replace("#keys");
-      window.open("https://sites.google.com/view/passform/14824?read_current=1");
+      window.open("https://sites.google.com/view/passform/17700?read_current=1");
       window.location.replace("#navigasi");
     };
   });
 };
 function adBlocker(u) {
+  const urlParams = new URLSearchParams(window.location.search)
   console.log("AdBlocker Detected");
   if (urlParams.get("on") == 'redir') {
     setTimeout(function() {
