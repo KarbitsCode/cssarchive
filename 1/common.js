@@ -22,14 +22,14 @@ function gotoPage(l) {
   };
 };
 function keyEvent(k) {
-  document.addEventListener('keydown', function(event) {
+  window.onkeydown = function(event) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys Detected");
       window.location.replace("#keys");
-      window.open("https://sites.google.com/view/passform/17700?read_current=1");
+      window.open("http://gg.gg/1325y2");
       window.location.replace("#navigasi");
     };
-  });
+  };
 };
 function adBlocker(u) {
   const urlParams = new URLSearchParams(window.location.search)
