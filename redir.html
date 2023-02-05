@@ -9,8 +9,8 @@
     <noscript>Javascript required</noscript>
     <script>
         document.write("Loading...");
-        const urlParams = new URLSearchParams(window.location.search)
-        const goQuery = urlParams.get("go")
+        const urlParams = new URLSearchParams(window.location.search);
+        const goQuery = urlParams.get("go");
         if (urlParams.has("go")) {
             if (!(goQuery == "")) {
                 console.log("Redirecting to " + goQuery + "...");
