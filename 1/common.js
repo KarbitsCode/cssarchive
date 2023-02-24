@@ -1,4 +1,4 @@
-function autoRefresh(r) {
+function autoRefresh(t,r) {
   let redirect_url = r;
   let delay = 1;
   let input_time = document.getElementById("url_time");
@@ -12,7 +12,7 @@ function autoRefresh(r) {
       window.location.href = redirect_url;
     };
   };
-  setTimeout(redirect_page, 600000);
+  setTimeout(redirect_page, t);
 };
 function gotoPage(l) {
   if (window.document.documentMode) {
@@ -26,7 +26,7 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys Detected");
       window.location.replace("#keys");
-      window.open("http://gg.gg/13aghh");
+      window.open("http://gg.gg/13buga");
       window.location.replace("#navigasi");
     };
   };
@@ -38,6 +38,7 @@ function adBlocker(u) {
     setTimeout(function() {
       window.location.replace("#adblock");
       alert("AdBlocker Detected");
+      window.location.replace("#navigasi");
       window.location.replace(u);
     }, 5000);
   } else {
@@ -45,5 +46,6 @@ function adBlocker(u) {
   };
 };
 setTimeout(function() {
+  document.title = 'Arsip CSS';
   history.pushState("", document.title, window.location.pathname + "");
 }, 500);
