@@ -8,11 +8,17 @@
 <body bgcolor="#FFFFFF">
 <py-script>
 print('SELAMAT DATANG')
-radius = int(input('Masukan radius lingkaran:'))
+try:
+    radius = int(input('Masukan radius lingkaran:'))
+except EOFError:
+    print('\nMohon masukan radius lingkaran')
+    raise SystemExit('Mohon masukan radius lingkaran')
+except ValueError:
+    print('\nInput harus berupa angka')
+    raise SystemExit('Input harus berupa angka')
 keliling = 2*22/7*radius
 luas = 22/7*radius**2
-print()
-print('Lingkaran mempunyai radius =',radius)
+print('\nLingkaran mempunyai radius =',radius)
 print('Dengan keliling =',keliling)
 print('Dan luas =',luas)
 </py-script>
