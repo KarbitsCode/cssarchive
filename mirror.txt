@@ -17,3 +17,4 @@ https://css-static-website.000webhostapp.com/
 https://cssarchivewebstatic.infinityfreeapp.com/
 https://cssarchive.web.fc2.com/
 http://cssarchive-webarea.freevar.com/
+http://cssarchivewebstatic.hyperphp.com/

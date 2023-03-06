@@ -8,16 +8,16 @@
 <body bgcolor="#FFFFFF">
     <noscript>Javascript required</noscript>
     <div id="js_html"></div>
-    <script>
+    <script type="text/javascript">
         document.write("Loading...");
         const urlParams = new URLSearchParams(window.location.search);
-        var strVar = "";
         if (urlParams.has("min")) {
-            strVar += "<meta http-equiv=\"refresh\" content=\"1;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2Fmain-min.html\">";
+            var dstVar = "main-min";
         } else {
-            strVar += "<meta http-equiv=\"refresh\" content=\"1;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2Fmain.html\">";
+            var dstVar = "main";
         };
-        strVar += "";
+        var strVar = "";
+        strVar += `<meta http-equiv=\"refresh\" content=\"1;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
         document.getElementById("js_html").innerHTML = strVar;
     </script>
 </body>
