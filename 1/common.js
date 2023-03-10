@@ -26,7 +26,7 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys Detected");
       window.location.replace("#keys");
-      window.open("http://gg.gg/13efdt");
+      window.open("https://sites.google.com/view/passform/28557?read_current=1");
       window.location.replace("#navigasi");
     };
   };
