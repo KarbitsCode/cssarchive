@@ -1,4 +1,5 @@
 https://karbitscode.github.io/cssarchive/
+https://karbitscode.gitlab.io/cssarchive/
 https://css-archive-static.stormkit.dev/
 https://cssarchivestaticgh32759.netlify.app/
 https://cssarchivestatic32759.netlify.app/
