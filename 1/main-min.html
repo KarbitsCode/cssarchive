@@ -48,15 +48,16 @@ window.onload = function() {
 <input type="text" size="3" id="url_time">
 </div><div>
 <a href="." style="position: fixed;right: 0;cursor: not-allowed;text-decoration: none;">.</a>
-</div><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;">
-<code>
+</div>
+<noscript><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;font-family: monospace;">Javascript is disabled</div></noscript>
+<div id="displayonjs" style="position: fixed;bottom: 0;right: 0;font-size: smaller;font-family: monospace;display: none;">
 <a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html?on=click'">Normal version</a>
 <script type="text/javascript">
 (function() {
+  document.getElementById('displayonjs').style.display='block';
   document.write("Last updated on " + updateData);
 }).call(this);
 </script>
-</code>
 </div>
 </body>
 </html>
