@@ -18,7 +18,7 @@ if (window.document.documentMode) {
   window.location.replace("main-min.html?on=ie");
 };
 window.onload = function() {
-  autoRefresh(600000, "..");
+  autoRefresh("..", 600000);
   keyEvent(66);
   setTimeout(function() {
     window.location.replace("#navigasi");

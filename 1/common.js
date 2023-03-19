@@ -1,4 +1,4 @@
-function autoRefresh(t,r) {
+function autoRefresh(r,t) {
   let redirect_url = r;
   let delay = 1;
   let input_time = document.getElementById("url_time");
