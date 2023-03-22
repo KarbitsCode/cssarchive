@@ -1,4 +1,5 @@
 function autoRefresh(r,t) {
+  console.log("Auto refresh page in " + Math.floor(t / 60000) + " minutes");
   let redirect_url = r;
   let delay = 1;
   let input_time = document.getElementById("url_time");
@@ -24,16 +25,16 @@ function gotoPage(l) {
 function keyEvent(k) {
   window.onkeydown = function(event) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
-      console.log("Keys Detected");
+      console.log("Keys detected");
       window.location.replace("#keys");
-      window.open("https://sites.google.com/view/passform/28055?read_current=1");
+      window.open("http://gg.gg/13ipsu");
       window.location.replace("#navigasi");
     };
   };
 };
 function adBlocker(u) {
   const urlParams = new URLSearchParams(window.location.search)
-  console.log("AdBlocker Detected");
+  console.log("AdBlocker detected");
   if (urlParams.get("on") == 'redir') {
     setTimeout(function() {
       window.location.replace("#adblock");
@@ -42,7 +43,7 @@ function adBlocker(u) {
       window.location.replace(u);
     }, 5000);
   } else {
-    console.log("Attribute On");
+    console.log("Attribute on");
   };
 };
 setTimeout(function() {
