@@ -1,9 +1,10 @@
 function autoRefresh(r,t) {
-  console.log("Auto refresh page in " + Math.floor(t / 60000) + " minutes");
   let redirect_url = r;
   let delay = 1;
   let input_time = document.getElementById("url_time");
-  let time = input_time.value = delay; 
+  let time = input_time.value = delay;
+  let min_time = Math.floor(t / 60000);
+  console.log("Auto refresh page in " + min_time + " minutes");
   function redirect_page() {
     if (time !== 1) {
       time -= 1;
@@ -33,7 +34,7 @@ function keyEvent(k) {
   };
 };
 function adBlocker(u) {
-  const urlParams = new URLSearchParams(window.location.search)
+  const urlParams = new URLSearchParams(window.location.search);
   console.log("AdBlocker detected");
   if (urlParams.get("on") == 'redir') {
     setTimeout(function() {
