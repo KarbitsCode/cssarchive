@@ -1,6 +1,5 @@
 https://karbitscode.github.io/cssarchive/
 https://karbitscode.gitlab.io/cssarchive/
-https://free.okeezy.com/cssarchive/
 https://css-archive-static.stormkit.dev/
 https://cssarchiverepo461.on.fleek.co/
 https://css-archive-staticsite.glitch.me/
