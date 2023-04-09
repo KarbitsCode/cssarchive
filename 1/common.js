@@ -35,11 +35,11 @@ function keyEvent(k) {
 };
 function adBlocker(u) {
   const urlParams = new URLSearchParams(window.location.search);
-  console.log("AdBlocker detected");
+  console.log("AdBlock detected");
   if (urlParams.get("on") == 'redir') {
     setTimeout(function() {
       window.location.replace("#adblock");
-      alert("AdBlocker Detected");
+      alert("AdBlock Detected");
       window.location.replace("#navigasi");
       window.location.replace(u);
     }, 5000);
