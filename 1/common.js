@@ -35,11 +35,11 @@ function keyEvent(k) {
 };
 function adBlocker(u) {
   const urlParams = new URLSearchParams(window.location.search);
-  console.log("AdBlock detected");
-  if (urlParams.get("on") == 'redir') {
+  console.log("AdBlocker detected");
+  if (urlParams.get("on") == "redir") {
     setTimeout(function() {
       window.location.replace("#adblock");
-      alert("AdBlock Detected");
+      alert("AdBlocker Detected");
       window.location.replace("#navigasi");
       window.location.replace(u);
     }, 5000);
@@ -48,6 +48,12 @@ function adBlocker(u) {
   };
 };
 setTimeout(function() {
-  document.title = 'Arsip CSS';
   history.pushState("", document.title, window.location.pathname + "");
 }, 500);
+setInterval(function() {
+  if (document.visibilityState === "visible") {
+    document.title = "Arsip CSS";
+  } else {
+    document.title = "Main Page";
+  };
+}, 100);

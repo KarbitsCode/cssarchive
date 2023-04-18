@@ -15,12 +15,12 @@
 document.write("Loading...");
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("min")) {
-  var dstVar = "main-min";
+  var dstVar = "main-min.html";
 } else {
-  var dstVar = "main";
+  var dstVar = "main.html";
 };
 var strVar = "";
-strVar += `<meta http-equiv=\"refresh\" content=\"1;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
+strVar += `<meta http-equiv=\"refresh\" content=\"1;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}\">`;
 document.getElementById("js_html").innerHTML = strVar;
 </script>
 </body>
