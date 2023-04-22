@@ -4,24 +4,15 @@
 <title>PyScript</title>
 <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
 <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<py-config>
+packages = ['pyjokes']
+</py-config>
 </head>
 <body bgcolor="#FFFFFF">
-<noscript>JavaScript is required to run PyScript</noscript>
+<noscript>Javacript is required to run PyScript</noscript>
 <py-script>
-print('SELAMAT DATANG')
-try:
-    radius = int(input('Masukan radius lingkaran:'))
-except EOFError:
-    print('\nMohon masukan radius lingkaran')
-    raise SystemExit('Mohon masukan radius lingkaran')
-except ValueError:
-    print('\nInput harus berupa angka')
-    raise SystemExit('Input harus berupa angka')
-keliling = 2*22/7*radius
-luas = 22/7*radius**2
-print('\nLingkaran mempunyai radius =',radius)
-print('Dengan keliling =',keliling)
-print('Dan luas =',luas)
+from pyjokes.pyjokes import get_joke as joke
+print(format(str(joke(language='en', category='all'))))
 </py-script>
 </body>
 </html>
