@@ -2,14 +2,14 @@
 <html>
 <head>
 <title>PyScript</title>
-<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
 <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 <py-config>
 packages = ['pyjokes']
 </py-config>
 </head>
 <body bgcolor="#FFFFFF">
-<noscript>Javacript is required to run PyScript</noscript>
+<noscript>Javascript is required to run PyScript</noscript>
 <py-script>
 from pyjokes.pyjokes import get_joke as joke
 print(format(str(joke(language='en', category='all'))))

@@ -13,9 +13,11 @@
 <div id="js_html"></div>
 <script type="text/javascript">
 document.write("Loading...");
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has("min")) {
+const urlParams = window.location.search.substr(1);
+if (urlParams == 'min') {
   var dstVar = "main-min.html";
+} else if (urlParams) {
+  var dstVar = `${urlParams}.html`;
 } else {
   var dstVar = "main.html";
 };
