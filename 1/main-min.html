@@ -13,6 +13,9 @@
 }
 </style>
 <script type="text/javascript">
+if (window.document.documentMode) {
+  console.log("IE Detected");
+};
 window.onload = function() {
   autoRefresh("..?min", 600000);
   keyEvent(77);
