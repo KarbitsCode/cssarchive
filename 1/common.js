@@ -49,11 +49,11 @@ function adBlocker(u) {
 };
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
+  setInterval(function() {
+    if (document.visibilityState === "visible") {
+      document.title = "Arsip CSS";
+    } else {
+      document.title = "Main Page";
+    };
+  }, 100);
 }, 500);
-setInterval(function() {
-  if (document.visibilityState === "visible") {
-    document.title = "Arsip CSS";
-  } else {
-    document.title = "Main Page";
-  };
-}, 100);
