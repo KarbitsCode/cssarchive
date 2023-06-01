@@ -16,9 +16,9 @@ document.write("Loading...");
 const urlParams = window.location.search.substr(1);
 console.log(urlParams);
 if (urlParams) {
-  if (urlParams == 'min') {
+  if (urlParams == "min") {
     var dstVar = "main-min.html";
-  } else if (urlParams.slice(0,-2) == 'i') {
+  } else if (urlParams.slice(0,-2) == "i") {
     var dstVar = "main.html";
   } else {
     var dstVar = `${urlParams}.html`;
