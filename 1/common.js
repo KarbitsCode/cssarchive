@@ -28,24 +28,19 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys detected");
       window.location.replace("#keys");
-      window.open("http://bit.ly/3MKfoPE");
-      window.location.replace("#navigasi");
+      window.open("http://bit.ly/3p4mGEN");
+      window.location.replace("#main");
     };
   };
 };
 function adBlocker(u) {
-  const urlParams = new URLSearchParams(window.location.search);
   console.log("AdBlocker detected");
-  if (urlParams.get("on") == "redir") {
-    setTimeout(function() {
-      window.location.replace("#adblock");
-      alert("AdBlocker Detected");
-      window.location.replace("#navigasi");
-      window.location.replace(u);
-    }, 5000);
-  } else {
-    console.log("Attribute on");
-  };
+  setTimeout(function() {
+    window.location.replace("#adblock");
+    alert("AdBlocker Detected");
+    window.location.replace("#main");
+    window.location.replace(u);
+  }, 5000);
 };
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
