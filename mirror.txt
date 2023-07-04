@@ -1,15 +1,14 @@
 https://karbitscode.github.io/cssarchive/
 https://karbitscode.gitlab.io/cssarchive/
-https://css-archive-static.stormkit.dev/
 https://cssarchiverepo461.on.fleek.co/
 https://cssarchive.karbitscode.repl.co/
 https://css-archive-staticsite.glitch.me/
-https://cssarchivestatic32759.netlify.app/
-https://cssarchivestaticgh32759.netlify.app/
 https://cssstaticwebsite27703.pages.dev/
 https://cssstaticwebsitegh27703.pages.dev/
 https://csswebsitestatic091.vercel.app/
 https://csswebsitestaticgh091.vercel.app/
+https://cssarchivestatic32759.netlify.app/
+https://cssarchivestaticgh32759.netlify.app/
 https://csswebarchive-production.up.railway.app/
 https://csswebarchivegh-production.up.railway.app/
 https://csswebsiteproject-6ecd1.firebaseapp.com/
