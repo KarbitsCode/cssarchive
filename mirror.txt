@@ -9,8 +9,6 @@ https://csswebsitestatic091.vercel.app/
 https://csswebsitestaticgh091.vercel.app/
 https://cssarchivestatic32759.netlify.app/
 https://cssarchivestaticgh32759.netlify.app/
-https://csswebarchive-production.up.railway.app/
-https://csswebarchivegh-production.up.railway.app/
 https://csswebsiteproject-6ecd1.firebaseapp.com/
 https://csswebsiteproject-6ecd1.web.app/
 https://css-archive-website276.surge.sh/
