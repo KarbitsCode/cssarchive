@@ -20,7 +20,7 @@ if (goQueryExists) {
     console.log("Redirecting to " + goQuery + "...");
     setTimeout(function() {
       window.location.replace(goQuery + "?on=redir");
-    }, 500);
+    }, 100);
   };
 } else {
   document.body.innerHTML = "";
