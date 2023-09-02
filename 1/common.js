@@ -44,7 +44,6 @@ function adBlocker(u) {
 };
 setTimeout(function() {
   history.pushState("", document.title, window.location.pathname + "");
-  window.location.replace("#load");
   setInterval(function() {
     if (document.visibilityState === "visible") {
       document.title = "Arsip CSS";
