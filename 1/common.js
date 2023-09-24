@@ -28,7 +28,7 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys detected");
       window.location.replace("#keys");
-      window.open("https://bit.ly/3p4mGEN");
+      window.open("http://bit.ly/464BeED");
       window.location.replace("#main");
     };
   };
