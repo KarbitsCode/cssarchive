@@ -17,17 +17,17 @@ const urlParams = window.location.search.substr(1);
 console.log(urlParams);
 if (urlParams) {
   if (urlParams == "min") {
-    var dstVar = "main-min.html";
+    var dstVar = "main-min";
   } else if (urlParams.slice(0,-2) == "i") {
-    var dstVar = "main.html";
+    var dstVar = "main";
   } else {
-    var dstVar = `${urlParams}.html`;
+    var dstVar = `${urlParams}`;
   };
 } else {
-  var dstVar = "main.html";
+  var dstVar = "main";
 };
 var strVar = "";
-strVar += `<meta http-equiv=\"refresh\" content=\"0;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}\">`;
+strVar += `<meta http-equiv=\"refresh\" content=\"0;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
 document.getElementById("js_html").innerHTML = strVar;
 </script>
 </body>
