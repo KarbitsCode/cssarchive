@@ -13,16 +13,22 @@
 <script type="text/javascript">
 document.write("Loading...");
 const urlParams = new URLSearchParams(window.location.search);
-var goQueryExists = urlParams.has("go");
 var goQuery = urlParams.get("go");
-if (goQueryExists) {
-  if (!(goQuery == "")) {
+console.log("Parsing urlParams...");
+if (urlParams.has("go")) {
+  console.log("Parsing goQuery...");
+  if (goQuery != "") {
     console.log("Redirecting to " + goQuery + "...");
     setTimeout(function() {
       window.location.replace(goQuery + "?on=redir");
-    }, 100);
+    }, 500);
+  } else {
+    console.log("Nothing passed to goQuery. Throwing null...");
+    document.body.innerHTML = "";
+    document.write(urlParams.get("null"));
   };
 } else {
+  console.log("Nothing passed to urlParams. Throwing null...");
   document.body.innerHTML = "";
   document.write(goQuery);
 };
