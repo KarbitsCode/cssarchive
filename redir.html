@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Redirection Page</title>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="refresh" content="10;url=1/main.html?on=error">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body bgcolor="#FFFFFF">
+<noscript>Javascript is disabled</noscript>
+<script type="text/javascript">
+document.write("Loading...");
+const urlParams = new URLSearchParams(window.location.search);
+var goQuery = urlParams.get("go");
+console.log("Parsing urlParams...");
+if (urlParams.has("go")) {
+  console.log("Parsing goQuery...");
+  if (goQuery != "") {
+    console.log("Redirecting to " + goQuery + "...");
+    setTimeout(function() {
+      window.location.replace(goQuery + "?on=redir");
+    }, 500);
+  } else {
+    console.log("Nothing passed to goQuery. Throwing null...");
+    document.body.innerHTML = "";
+    document.write(urlParams.get("null"));
+  };
+} else {
+  console.log("Nothing passed to urlParams. Throwing null...");
+  document.body.innerHTML = "";
+  document.write(goQuery);
+};
+</script>
+</body>
+</html>

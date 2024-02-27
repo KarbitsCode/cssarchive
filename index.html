@@ -14,8 +14,9 @@
 <script type="text/javascript">
 document.write("Loading...");
 const urlParams = window.location.search.substr(1);
-console.log(urlParams);
+console.log("Parsing urlParams...");
 if (urlParams) {
+  console.log("Got urlParams: " + urlParams);
   if (urlParams == "min") {
     var dstVar = "main-min";
   } else if (urlParams.slice(0,-2) == "i") {
@@ -24,10 +25,11 @@ if (urlParams) {
     var dstVar = `${urlParams}`;
   };
 } else {
+  console.log("Nothing passed to urlParams. Using default location...");
   var dstVar = "main";
 };
 var strVar = "";
-strVar += `<meta http-equiv=\"refresh\" content=\"0;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
+strVar += `<meta http-equiv=\"refresh\" content=\"0.5;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
 document.getElementById("js_html").innerHTML = strVar;
 </script>
 </body>
