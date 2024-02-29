@@ -1,7 +1,6 @@
 https://karbitscode.github.io/cssarchive/
 https://karbitscode.gitlab.io/cssarchive/
 https://cssarchiverepo461.on.fleek.co/
-https://cssarchive.karbitscode.repl.co/
 https://css-archive-staticsite.glitch.me/
 https://cssstaticwebsite27703.pages.dev/
 https://cssstaticwebsitegh27703.pages.dev/
