@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>PyScript</title>
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.3.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.3.1/core.js"></script>
+</head>
+<body bgcolor="#FFFFFF">
+<noscript>Javascript is required to run PyScript</noscript>
+<script type="py" config='{"packages": ["pyjokes"]}'>
+from pyscript import display
+from pyjokes.pyjokes import get_joke as joke
+display(format(str(joke(language='en', category='neutral'))))
+</script>
+</body>
+</html>
