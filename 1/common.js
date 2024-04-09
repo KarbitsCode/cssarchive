@@ -28,8 +28,10 @@ function keyEvent(k) {
     if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
       console.log("Keys detected");
       window.location.replace("#keys");
-      window.open("http://gg.gg/13vbhf");
-      window.location.replace("#main");
+      setTimeout(function() {
+        window.open("http://gg.gg/13vbhf");
+        window.location.replace("#main");
+      }, 100);
     };
   };
 };
