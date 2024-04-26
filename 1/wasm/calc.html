@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="ui.css">
+    <title>Simple Calculator</title>
+</head>
+<body>
+    <table>
+        <tr>
+            <th colspan="4">
+                <input type="text" id="field" readonly>
+            </th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button class="red" onclick="clearfield()">AC</button>
+            </td>
+            <td colspan="1">
+                <button class="blue" onclick="clearfield()">C</button>
+            </td>
+            <td colspan="1">
+                <button class="orange" onclick="append('*')">*</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1">
+                <button onclick="append('7')">7</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('8')">8</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('9')">9</button>
+            </td>
+            <td colspan="1">
+                <button class="orange" onclick="append('/')">/</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1">
+                <button onclick="append('4')">4</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('5')">5</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('6')">6</button>
+            </td>
+            <td colspan="1">
+                <button class="orange" onclick="append('+')">+</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1">
+                <button onclick="append('1')">1</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('2')">2</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('3')">3</button>
+            </td>
+            <td colspan="1">
+                <button class="orange" onclick="append('-')">-</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="1">
+                <button onclick="backspace()"><-</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('0')">0</button>
+            </td>
+            <td colspan="1">
+                <button onclick="append('.')">.</button>
+            </td>
+            <td colspan="1">
+                <button class="green" onclick="calculate()">=</button>
+            </td>
+        </tr>
+    </table>
+    <script src="loader.js"></script>
+    <script>
+        function append(value) {
+            document.getElementById('field').value += value;
+        }
+
+        function clearfield() {
+            document.getElementById('field').value = '';
+        }
+
+        function backspace() {
+            let currentValue = document.getElementById('field').value;
+            document.getElementById('field').value = currentValue.slice(0, -1);
+        }
+
+        function calculate() {
+            let expression = document.getElementById('field').value;
+            try {
+                let result = calculate_send(expression);
+                document.getElementById('field').value = result;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('field').value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
