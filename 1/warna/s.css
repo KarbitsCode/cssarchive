@@ -1,0 +1,24 @@
+#underscorenone {
+	text-decoration: none;
+}
+.font {
+	font-weight: bold;
+}
+.cursor {
+	cursor: pointers;
+}
+.space {
+	line-height: 36px;
+}
+m {
+	color: red;
+}
+b {
+	color: blue;
+}
+k {
+	color: yellow;
+}
+h {
+	color: black;
+}
