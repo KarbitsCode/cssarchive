@@ -1,10 +1,15 @@
 function autoRefresh(r,t) {
   let redirect_url = r;
-  let delay = 1;
+  let delay = t;
   let input_time = document.getElementById("url_time");
   let time = input_time.value = delay;
-  let min_time = Math.floor(t / 60000);
-  console.log("Auto refresh page in " + min_time + " minutes");
+  let min_time;
+  if (time >= 60) {
+    min_time = time / 60 + " minutes";
+  } else {
+    min_time = time + " seconds";
+  };
+  console.log("Auto refresh page in " + min_time);
   function redirect_page() {
     if (time !== 1) {
       time -= 1;
@@ -14,7 +19,7 @@ function autoRefresh(r,t) {
       window.location.href = redirect_url;
     };
   };
-  setTimeout(redirect_page, t);
+  setTimeout(redirect_page, 1000);
 };
 function gotoPage(l) {
   if (window.document.documentMode) {
