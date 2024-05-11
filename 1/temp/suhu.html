@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://cdn-icons-png.freepik.com/512/8722/8722352.png">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Temperature Converter (RevoU)</title>
+</head>
+<body>
+    <div class="main-field">
+        <div>
+            <div class="title-text">Temperature Converter</div>
+        </div>
+        <div>
+            <div class="instruction-text">Instruksi</div>
+        </div>
+        <div>
+            <div class="normal-text">Masukan suhu derajat Celcius (&deg;C) ke kotak dibawah, lalu klik tombol Convert untuk mendapatkan hasil konversi dalam bentuk Fahrenheit (&deg;F).</div>
+            <div class="normal-text">Atau hasil sebaliknya dengan klik tombol Reverse.</div>
+            <br>
+            <div class="normal-text">&orarr; = Convert, &uarr;&darr; = Reverse, &#88; = Reset</div>
+        </div>
+        <br>
+        <div>
+            <div class="small-text" id="first-label">Celcius (&deg;C)</div>
+            <input type="text" id="number-input" placeholder="Input disini">
+            <br>
+            <button type="button" id="convert-button">&orarr;</button>
+            <button type="button" id="reverse-button">&uarr;&darr;</button>
+            <button type="button" id="reset-button">&#88;</button>
+            <br>
+            <div class="small-text" id="warn-label"></div>
+        </div>
+        <br>
+        <div>
+            <div class="small-text" id="second-label">Fahrenheit (&deg;F)</div>
+            <textarea id="result-output" placeholder="Hasil konversi disini" readonly></textarea>
+        </div>
+        <br>
+        <div>
+            <div class="small-text">Cara Kalkulasi</div>
+            <textarea id="calc-formula" placeholder="Rumus konversi disini" readonly></textarea>
+        </div>
+        <br>
+        <div>
+            <div id="explanation-text"></div>
+        </div>
+    </div>
+    <div>
+        <div class="copyright-text">&#169; KarbitsCode</div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>

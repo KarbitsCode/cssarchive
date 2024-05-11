@@ -1,0 +1,109 @@
+.main-field {
+    background-color: silver;
+    padding: 16px;
+    border-radius: 4px;
+}
+
+.title-text {
+    display: block;
+    font-weight: bold;
+    font-size: 15pt;
+    text-align: center;
+    margin-block-start: 0em;
+    margin-block-end: 0.7em;
+}
+
+.instruction-text {
+    display: block;
+    font-weight: bold;
+    font-size: 13pt;
+    margin-block-start: 0.3em;
+    margin-block-end: 0.3em;
+}
+
+.explanation-text {
+    display: block;
+    font-weight: bold;
+    font-size: 12pt;
+    margin-block-start: 1em;
+    margin-block-end: 0.3em;
+}
+
+.copyright-text {
+    text-align: end;
+    font-size: 8pt;
+}
+
+.normal-text {
+    font-size: 12pt;
+}
+
+.small-text {
+    font-size: 11pt;
+}
+
+#convert-button {
+    background-color: green;
+    color: white;
+}
+
+#reverse-button {
+    background-color: blue;
+    color: white;
+}
+
+#reset-button {
+    background-color: red;
+    color: white;
+}
+
+#convert-button:hover {
+    background-color: limegreen;
+    color: white;
+}
+
+#reverse-button:hover {
+    background-color: dodgerblue;
+    color: white;
+}
+
+#reset-button:hover {
+    background-color: tomato;
+    color: white;
+}
+
+#convert-button:active {
+    background-color: darkgreen;
+    color: gray;
+}
+
+#reverse-button:active {
+    background-color: darkblue;
+    color: gray;
+}
+
+#reset-button:active {
+    background-color: darkred;
+    color: gray;
+}
+
+#number-input {
+    font-family: monospace;
+    font-size: 9.5pt;
+    padding-block: 1px;
+    padding-inline: 2px;
+}
+
+#result-output {
+    font-family: monospace;
+    font-size: 9.5pt;
+    width: 300px;
+    resize: none;
+}
+
+#calc-formula {
+    font-family: monospace;
+    font-size: 9.5pt;
+    width: 300px;
+    resize: none;
+}
