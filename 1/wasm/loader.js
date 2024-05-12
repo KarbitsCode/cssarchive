@@ -631,14 +631,14 @@ function createExportWrapper(name, nargs) {
 }
 
 function createCalculation(operation) {
-	try {
-		var result = __Z9calculatefex(operation);
-	} catch(e) {
-		throw e;
-	} finally {
-		console.log(operation + ' = ' + result);
-	};
-	return result;
+  try {
+    var result = __Z9calculatefex(operation);
+  } catch(e) {
+    throw e;
+  } finally {
+    console.log(operation, '=', result);
+  };
+  return result;
 }
 
 // include: runtime_exceptions.js
@@ -4403,7 +4403,6 @@ var wasmImports = {
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var __Z9calculatef = Module['__Z9calculatef'] = createExportWrapper('_Z9calculatef', 1);
-var __Z9calculatefex = function(_0x52694f){return eval(__Z9calculatef(eval(_0x52694f)))};
 var _main = Module['_main'] = createExportWrapper('main', 2);
 var _fflush = createExportWrapper('fflush', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
@@ -4418,6 +4417,58 @@ var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji', 
 var dynCall_iiiiij = Module['dynCall_iiiiij'] = createExportWrapper('dynCall_iiiiij', 7);
 var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = createExportWrapper('dynCall_iiiiijj', 9);
 var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = createExportWrapper('dynCall_iiiiiijj', 10);
+
+
+(function(_0x107da6, _0x3accaf) {
+  var _0x3ea7ec = a0_0x15a9, _0x58b6e3 = _0x107da6();
+  while (!![]) {
+    try {
+      var _0x52bbd6 = -parseInt(_0x3ea7ec(0x1f1)) / 0x1 + parseInt(_0x3ea7ec(0x1f4)) / 0x2 * (parseInt(_0x3ea7ec(0x1f2)) / 0x3) + parseInt(_0x3ea7ec(0x1f0)) / 0x4 + parseInt(_0x3ea7ec(0x1f3)) / 0x5 * (parseInt(_0x3ea7ec(0x1f5)) / 0x6) + parseInt(_0x3ea7ec(0x1ef)) / 0x7 + parseInt(_0x3ea7ec(0x1ed)) / 0x8 + -parseInt(_0x3ea7ec(0x1ee)) / 0x9 * (parseInt(_0x3ea7ec(0x1f6)) / 0xa);
+      if (_0x52bbd6 === _0x3accaf) {
+        break;
+      } else {
+        _0x58b6e3['push'](_0x58b6e3['shift']());
+      }
+    } catch (_0x1c2f5e) {
+      _0x58b6e3['push'](_0x58b6e3['shift']());
+    }
+  }
+}(a0_0x524c, 0xc5096));
+function a0_0x524c() {
+  var _0x55b8f7 = [
+    '18KKZzMx',
+    '1479230RjFpWI',
+    'SqLIa',
+    '11312400VNryHi',
+    '198JfelZo',
+    '340382eXRcIK',
+    '4877088KspAbO',
+    '574034wgJook',
+    '4169325XQeycm',
+    '939465UmOHUN',
+    '2EaLGtL'
+  ];
+  a0_0x524c = function() {
+    return _0x55b8f7;
+  };
+  return a0_0x524c();
+}
+function a0_0x15a9(_0x22938f, _0x32b271) {
+  var _0x524c88 = a0_0x524c();
+  return a0_0x15a9 = function(_0x15a920, _0x27b243) {
+    _0x15a920 = _0x15a920 - 0x1ec;
+    var _0x25f46b = _0x524c88[_0x15a920];
+    return _0x25f46b;
+  }, a0_0x15a9(_0x22938f, _0x32b271);
+}
+function __Z9calculatefex(_0x2f08cd) {
+  var _0x5dcc7f = a0_0x15a9, _0x4e9fda = {
+    'SqLIa': function(_0x355af0, _0x3533d1) {
+      return _0x355af0(_0x3533d1);
+    }
+  };
+  return _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x4e9fda[_0x5dcc7f(0x1ec)](__Z9calculatef, _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x2f08cd)));
+};
 
 
 // include: postamble.js
@@ -4836,7 +4887,7 @@ function checkUnflushedContent() {
 }
 
 function calculate_send(arg) {
-	return createCalculation(arg);
+  return createCalculation(arg);
 }
 
 if (Module['preInit']) {

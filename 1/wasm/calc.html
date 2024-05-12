@@ -10,7 +10,7 @@
     <table>
         <tr>
             <th colspan="4">
-                <input type="text" id="field" readonly>
+                <input type="text" id="field">
             </th>
         </tr>
         <tr>
@@ -83,27 +83,36 @@
     </table>
     <script src="loader.js"></script>
     <script>
+        let input_field = document.getElementById('field');
+        
         function append(value) {
-            document.getElementById('field').value += value;
+            input_field.value += value;
+            input_field.scrollLeft = input_field.scrollWidth;
         }
-
+        
         function clearfield() {
-            document.getElementById('field').value = '';
+            input_field.value = '';
         }
-
+        
         function backspace() {
-            let currentValue = document.getElementById('field').value;
-            document.getElementById('field').value = currentValue.slice(0, -1);
+            input_field.value = input_field.value.slice(0, -1);
         }
-
+        
         function calculate() {
-            let expression = document.getElementById('field').value;
+            let expression = input_field.value;
             try {
                 let result = calculate_send(expression);
-                document.getElementById('field').value = result;
-            } catch (e) {
+                input_field.value = result;
+            } catch(e) {
                 console.error(e);
-                document.getElementById('field').value = 'Error';
+                input_field.value = 'Error';
+            }
+        }
+        
+        input_field.onkeydown = function(event) {
+            if (event.key == 'Enter') {
+                event.preventDefault();
+                calculate();
             }
         }
     </script>
