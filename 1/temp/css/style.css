@@ -101,7 +101,7 @@
     resize: none;
 }
 
-#calc-formula {
+#formula-output {
     font-family: monospace;
     font-size: 9.5pt;
     width: 300px;

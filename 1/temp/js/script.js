@@ -1,6 +1,6 @@
 const inputText = document.getElementById("number-input")
 const resultText = document.getElementById("result-output")
-const formulaText = document.getElementById("calc-formula")
+const formulaText = document.getElementById("formula-output")
 const explanationText = document.getElementById("explanation-text")
 const inputLabel = document.getElementById("first-label")
 const resultLabel = document.getElementById("second-label")
@@ -16,7 +16,8 @@ const doConvert = () => {
         if (celcius !== "" && !(isNaN(celcius))) {
             celcius = parseFloat(celcius)
             let result = ((celcius * (9/5)) + 32).toFixed(1)
-            let resultFormula = `(${celcius}°C * (9/5)) + 32 = ${result}°F`
+            let resultFormula
+            if (isFinite(result)) {resultFormula = `(${celcius}°F - 32) * (5/9) = ${result}°C`} else {resultFormula = ""}
             console.log("INFO:", resultFormula)
             resultText.value = result
             formulaText.value = resultFormula
@@ -37,7 +38,8 @@ const doConvert = () => {
         if (fahrenheit !== "" && !(isNaN(fahrenheit))) {
             fahrenheit = parseFloat(fahrenheit)
             let result = ((fahrenheit - 32) * (5/9)).toFixed(1)
-            let resultFormula = `(${fahrenheit}°F - 32) * (5/9) = ${result}°C`
+            let resultFormula
+            if (isFinite(result)) {resultFormula = `(${fahrenheit}°F - 32) * (5/9) = ${result}°C`} else {resultFormula = ""}
             console.log("INFO:", resultFormula)
             resultText.value = result
             formulaText.value = resultFormula
@@ -81,7 +83,7 @@ convertButton.addEventListener("click", () => doConvert())
 reverseButton.addEventListener("click", () => doReverse())
 resetButton.addEventListener("click", () => doReset())
 
-inputText.addEventListener("keypress", (event) => {
+inputText.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
         event.preventDefault()
         doConvert()
