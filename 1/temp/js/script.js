@@ -17,7 +17,11 @@ const doConvert = () => {
             celcius = parseFloat(celcius)
             let result = ((celcius * (9/5)) + 32).toFixed(1)
             let resultFormula
-            if (isFinite(result)) {resultFormula = `(${celcius}°F - 32) * (5/9) = ${result}°C`} else {resultFormula = ""}
+            if (isFinite(result)) {
+                resultFormula = `(${celcius}°F - 32) * (5/9) = ${result}°C`
+            } else {
+                resultFormula = ""
+            }
             console.log("INFO:", resultFormula)
             resultText.value = result
             formulaText.value = resultFormula
@@ -39,7 +43,11 @@ const doConvert = () => {
             fahrenheit = parseFloat(fahrenheit)
             let result = ((fahrenheit - 32) * (5/9)).toFixed(1)
             let resultFormula
-            if (isFinite(result)) {resultFormula = `(${fahrenheit}°F - 32) * (5/9) = ${result}°C`} else {resultFormula = ""}
+            if (isFinite(result)) {
+                resultFormula = `(${fahrenheit}°F - 32) * (5/9) = ${result}°C`
+            } else {
+                resultFormula = ""
+            }
             console.log("INFO:", resultFormula)
             resultText.value = result
             formulaText.value = resultFormula
