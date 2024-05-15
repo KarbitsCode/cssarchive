@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * JavaScript code for dropdown menu (created: May 11, 2024 05:57:28, Hash: F892, UID_CRC: 09EA70C0)
  * Copyright (c) 2003-2024 Dropdown Menu Generator. All rights reserved.
  * https://www.dropdownmenugenerator.com
