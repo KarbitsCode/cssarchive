@@ -17,7 +17,7 @@ var goQuery = urlParams.get("go");
 console.log("Parsing urlParams...");
 if (urlParams.has("go")) {
   console.log("Parsing goQuery...");
-  if (goQuery != "") {
+  if (goQuery !== "") {
     console.log("Redirecting to " + goQuery + "...");
     setTimeout(function() {
       window.location.replace(goQuery + "?on=redir");

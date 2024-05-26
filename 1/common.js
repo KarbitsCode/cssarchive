@@ -30,7 +30,7 @@ function gotoPage(l) {
 };
 function keyEvent(k) {
   window.onkeydown = function(event) {
-    if (event.ctrlKey && (event.which == k || event.keyCode == k)) {
+    if (event.ctrlKey && (event.which === k || event.keyCode === k)) {
       console.log("Keys detected");
       window.location.replace("#keys");
       setTimeout(function() {
