@@ -6,10 +6,16 @@
 <script type="module" src="https://pyscript.net/releases/2024.5.1/core.js"></script>
 </head>
 <body bgcolor="#FFFFFF">
+<div></div>
 <noscript>Javascript is required to run PyScript</noscript>
+<script type="text/javascript">
+document.getElementsByTagName("div")[0].innerText = "Loading..."
+</script>
 <script type="py" config='{"packages": ["pyjokes"]}'>
+from js import document
 from pyscript import display
 from pyjokes.pyjokes import get_joke as joke
+document.getElementsByTagName("div")[0].innerText = ''
 display(format(str(joke(language='en', category='neutral'))))
 </script>
 </body>
