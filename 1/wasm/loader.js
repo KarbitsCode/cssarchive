@@ -567,6 +567,13 @@ function removeRunDependency(id) {
   }
 }
 
+function isFileExists(url) {
+  var http = new XMLHttpRequest();
+  http.open('HEAD', url, false);
+  http.send();
+  return http.status != 404;
+}
+
 /** @param {string|number=} what */
 function abort(what) {
   Module['onAbort']?.(what);
@@ -644,10 +651,15 @@ function createCalculation(operation) {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
+if (isFileExists('engine.wasm')) {
   wasmBinaryFile = 'engine.wasm';
-  if (!isDataURI(wasmBinaryFile)) {
-    wasmBinaryFile = locateFile(wasmBinaryFile);
-  }
+} else {
+  wasmBinaryFile = 'engine.bin';
+}
+
+if (!isDataURI(wasmBinaryFile)) {
+  wasmBinaryFile = locateFile(wasmBinaryFile);
+}
 
 function getBinarySync(file) {
   if (file == wasmBinaryFile && wasmBinary) {
