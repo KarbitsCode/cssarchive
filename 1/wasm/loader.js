@@ -568,10 +568,15 @@ function removeRunDependency(id) {
 }
 
 function isFileExists(url) {
-  var http = new XMLHttpRequest();
-  http.open('HEAD', url, false);
-  http.send();
-  return http.status != 404;
+  try {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
 }
 
 /** @param {string|number=} what */
@@ -644,7 +649,7 @@ function createCalculation(operation) {
     throw e;
   } finally {
     console.log(operation, '=', result);
-  };
+  }
   return result;
 }
 
@@ -1545,6 +1550,8 @@ function dbg(...args) {
           if (val === null || val === 10) {
             out(UTF8ArrayToString(tty.output, 0));
             tty.output = [];
+            input_field.value = 'Ready';
+            input_field.removeAttribute('readonly');
           } else {
             if (val != 0) tty.output.push(val); // val == 0 would cut text output off in the middle.
           }
