@@ -10,7 +10,7 @@
     <table>
         <tr>
             <th colspan="4">
-                <input type="text" id="field">
+                <input type="text" id="field" value="Loading..." readonly>
             </th>
         </tr>
         <tr>
@@ -86,19 +86,25 @@
         let input_field = document.getElementById("field");
         
         function append(value) {
+            if (/^(Loading...)$/.test(input_field.value)) return;
+            if (/^(Ready|Error|NaN|Infinity|-Infinity)$/.test(input_field.value)) clearfield();
             input_field.value += value;
             input_field.scrollLeft = input_field.scrollWidth;
         }
         
         function clearfield() {
+            if (/^(Loading...)$/.test(input_field.value)) return;
             input_field.value = "";
         }
         
         function backspace() {
+            if (/^(Loading...)$/.test(input_field.value)) return;
+            if (/^(Ready|Error|NaN|Infinity|-Infinity)$/.test(input_field.value)) clearfield();
             input_field.value = input_field.value.slice(0, -1);
         }
         
         function calculate() {
+            if (/^(Loading...)$/.test(input_field.value)) return;
             let expression = input_field.value;
             try {
                 let result = calculate_send(expression);
