@@ -99,7 +99,7 @@ inputText.addEventListener("keydown", (event) => {
 })
 
 inputText.addEventListener("input", (state) => {
-    let regex = /^[0-9.-]+$/
+    let regex = /^[0-9.Ee+-]+$/
     if (state.data !== null && state.data !== undefined && !(regex.test(state.data))) {
         warnLabel.innerHTML = "Perhatian: Input bukan angka: " + state.data
         warnLabel.style.display = "inline"

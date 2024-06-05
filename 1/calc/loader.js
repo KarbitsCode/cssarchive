@@ -569,10 +569,10 @@ function removeRunDependency(id) {
 
 function isFileExists(url) {
   try {
-    var http = new XMLHttpRequest();
-    http.open('HEAD', url, false);
-    http.send();
-    return true;
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', url, false);
+    xhr.send(null);
+    return (xhr.status >= 200 && xhr.status < 300);
   } catch(e) {
     console.error(e);
     return false;

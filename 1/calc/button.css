@@ -7,6 +7,11 @@ button {
     color: white;
 }
 
+.green {
+    background-color: green;
+    color: white;
+}
+
 .blue {
     background-color: blue;
     color: white;
@@ -15,9 +20,4 @@ button {
 .orange {
     background-color: orange;
     color: black;
-}
-
-.green {
-    background-color: green;
-    color: white;
 }
