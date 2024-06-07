@@ -87,7 +87,7 @@
         
         function append(value) {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
-            if (/^(Ready|Error|NaN|-?Infinity)$/.test(input_field.value)) clearfield();
+            if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             input_field.value += value;
             input_field.scrollLeft = input_field.scrollWidth;
         }
@@ -99,7 +99,7 @@
         
         function backspace() {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
-            if (/^(Ready|Error|NaN|-?Infinity)$/.test(input_field.value)) clearfield();
+            if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             input_field.value = input_field.value.slice(0, -1);
         }
         
@@ -112,6 +112,12 @@
             } catch(e) {
                 console.error(e);
                 input_field.value = "Error";
+            }
+        }
+        
+        input_field.oninput = function(event) {
+            if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) {
+                clearfield();
             }
         }
         
