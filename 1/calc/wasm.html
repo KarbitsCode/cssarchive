@@ -85,6 +85,11 @@
     <script>
         let input_field = document.getElementById("field");
         
+        function clearfield() {
+            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            input_field.value = "";
+        }
+        
         function append(value) {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
@@ -92,22 +97,31 @@
             input_field.scrollLeft = input_field.scrollWidth;
         }
         
-        function clearfield() {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
-            input_field.value = "";
-        }
-        
         function backspace() {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
+            if (input_field.selectionStart === 0 && input_field.selectionEnd === input_field.value.length) clearfield();
             input_field.value = input_field.value.slice(0, -1);
+        }
+        
+        function deletekey() {
+            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
+            const input_field_start = input_field.selectionStart;
+            const input_field_end = input_field.selectionEnd;
+            if (input_field_start === input_field_end && input_field_start < input_field.value.length) {
+                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_start + 1);
+                input_field.setSelectionRange(input_field_start, input_field_start);
+            } else if (input_field_start !== input_field_end) {
+                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
+                input_field.setSelectionRange(input_field_start, input_field_start);
+            }
         }
         
         function calculate() {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
-            let expression = input_field.value;
             try {
-                let result = calculate_send(expression);
+                let result = calculate_send(input_field.value);
                 input_field.value = result;
             } catch(e) {
                 console.error(e);
@@ -115,16 +129,19 @@
             }
         }
         
-        input_field.oninput = function(event) {
-            if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) {
-                clearfield();
-            }
-        }
-        
         input_field.onkeydown = function(event) {
-            if (event.key === "Enter") {
+            if (event.key === "Backspace") {
+                event.preventDefault();
+                backspace();
+            } else if (event.key === "Delete") {
+                event.preventDefault();
+                deletekey();
+            } else if (event.key === "Enter") {
                 event.preventDefault();
                 calculate();
+            } else {
+                if (/^(Loading.{3})$/.test(input_field.value)) return;
+                if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             }
         }
     </script>
