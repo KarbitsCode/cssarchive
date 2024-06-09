@@ -4421,7 +4421,7 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var __Z9calculatef = Module['__Z9calculatef'] = createExportWrapper('_Z9calculatef', 1);
+var __Z9calculated = Module['__Z9calculated'] = createExportWrapper('_Z9calculated', 1);
 var _main = Module['_main'] = createExportWrapper('main', 2);
 var _fflush = createExportWrapper('fflush', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
@@ -4486,7 +4486,7 @@ function __Z9calculatefex(_0x2f08cd) {
       return _0x355af0(_0x3533d1);
     }
   };
-  return _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x4e9fda[_0x5dcc7f(0x1ec)](__Z9calculatef, _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x2f08cd)));
+  return _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x4e9fda[_0x5dcc7f(0x1ec)](__Z9calculated, _0x4e9fda[_0x5dcc7f(0x1ec)](eval, _0x2f08cd)));
 };
 
 
