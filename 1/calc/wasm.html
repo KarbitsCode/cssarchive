@@ -100,8 +100,15 @@
         function backspace() {
             if (/^(Loading.{3})$/.test(input_field.value)) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
-            if (input_field.selectionStart === 0 && input_field.selectionEnd === input_field.value.length) clearfield();
-            input_field.value = input_field.value.slice(0, -1);
+            const input_field_start = input_field.selectionStart;
+            const input_field_end = input_field.selectionEnd;
+            if (input_field_start === input_field_end && input_field_start !== 0 && input_field_start <= input_field.value.length) {
+                input_field.value = input_field.value.slice(0, input_field_start - 1) + input_field.value.slice(input_field_end);
+                input_field.setSelectionRange(input_field_start - 1, input_field_start - 1);
+            } else if (input_field_start !== input_field_end) {
+                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
+                input_field.setSelectionRange(input_field_start, input_field_start);
+            }
         }
         
         function deletekey() {
