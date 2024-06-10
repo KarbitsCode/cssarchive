@@ -1,9 +1,11 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.6.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.6.1/core.js"></script>
 <title>PyScript</title>
-<link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css">
-<script type="module" src="https://pyscript.net/releases/2024.5.1/core.js"></script>
 </head>
 <body bgcolor="#FFFFFF">
 <div></div>
@@ -15,8 +17,8 @@ document.getElementsByTagName("div")[0].innerText = "Loading..."
 from js import document
 from pyscript import display
 from pyjokes.pyjokes import get_joke as joke
-document.getElementsByTagName("div")[0].innerText = ''
-display(format(str(joke(language='en', category='neutral'))))
+document.getElementsByTagName("div")[0].innerText = ""
+display(format(str(joke(language="en", category="neutral"))))
 </script>
 </body>
 </html>
