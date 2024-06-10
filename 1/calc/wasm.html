@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="button.css">
     <title>Simple Calculator</title>
 </head>
@@ -146,9 +146,12 @@
             } else if (event.key === "Enter") {
                 event.preventDefault();
                 calculate();
-            } else {
-                if (/^(Loading.{3})$/.test(input_field.value)) return;
-                if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
+            } else if (event.ctrlKey && /^[a|A]$/.test(event.key)) {
+                event.preventDefault();
+                input_field.select();
+            } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\]$/.test(event.key)) {
+                event.preventDefault();
+                append(event.key);
             }
         }
     </script>
