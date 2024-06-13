@@ -13,14 +13,13 @@
 <script type="text/javascript">
 document.write("Loading...");
 const urlParams = new URLSearchParams(window.location.search);
-var goQuery = urlParams.get("go");
 console.log("Parsing urlParams...");
 if (urlParams.has("go")) {
   console.log("Parsing goQuery...");
-  if (goQuery !== "") {
-    console.log("Redirecting to " + goQuery + "...");
+  if (urlParams.get("go") !== "") {
+    console.log("Redirecting to " + urlParams.get("go") + "...");
     setTimeout(function() {
-      window.location.replace(goQuery + "?on=redir");
+      window.location.replace(urlParams.get("go") + "?on=redir");
     }, 500);
   } else {
     console.log("Nothing passed to goQuery. Throwing null...");
@@ -30,7 +29,7 @@ if (urlParams.has("go")) {
 } else {
   console.log("Nothing passed to urlParams. Throwing null...");
   document.body.innerHTML = "";
-  document.write(goQuery);
+  document.write(urlParams.get("go"));
 };
 </script>
 </body>
