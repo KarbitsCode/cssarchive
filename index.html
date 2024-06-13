@@ -10,7 +10,6 @@
 </head>
 <body bgcolor="#FFFFFF">
 <noscript>Javascript is disabled</noscript>
-<div id="js_html"></div>
 <script type="text/javascript">
 document.write("Loading...");
 const urlParams = window.location.search.substr(1);
@@ -22,15 +21,15 @@ if (urlParams) {
   } else if (urlParams.slice(0,-2) === "i") {
     var dstVar = "main";
   } else {
-    var dstVar = `${urlParams}`;
+    var dstVar = urlParams;
   };
 } else {
   console.log("Nothing passed to urlParams. Using default location...");
   var dstVar = "main";
 };
-var strVar = "";
-strVar += `<meta http-equiv=\"refresh\" content=\"0;url=redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F${dstVar}.html\">`;
-document.getElementById("js_html").innerHTML = strVar;
+setTimeout(function() {
+  window.location.replace("redir.html?utm_source=root&utm_medium=html&utm_campaign=website_init&utm_content=main_page&utm_term=redir&go=1%2F" + dstVar + ".html");
+}, 0);
 </script>
 </body>
 </html>
