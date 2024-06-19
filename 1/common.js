@@ -1,6 +1,6 @@
-function autoRefresh(r,t) {
+function autoRefresh(r,d) {
   let redirect_url = r;
-  let delay = t;
+  let delay = d;
   let input_time = document.getElementById("url_time");
   let time = input_time.value = delay;
   let min_time;
@@ -12,7 +12,7 @@ function autoRefresh(r,t) {
   console.log("Auto refresh page in " + min_time);
   function redirect_page() {
     if (time !== 1) {
-      time -= 1;
+      time = time - 1;
       input_time.value = time;
       setTimeout(redirect_page, 1000);
     } else {
@@ -22,7 +22,7 @@ function autoRefresh(r,t) {
   setTimeout(redirect_page, 1000);
 };
 function gotoPage(l) {
-  if (window.document.documentMode) {
+  if (document.documentMode) {
     window.location.replace(l);
   } else {
     window.location.replace("../redir.html?go=" + l);
@@ -40,13 +40,12 @@ function keyEvent(k) {
     };
   };
 };
-function adBlocker(u) {
+function adBlocker() {
   console.log("AdBlocker detected");
   setTimeout(function() {
     window.location.replace("#adblock");
     alert("AdBlocker Detected");
     window.location.replace("#main");
-    window.location.replace(u);
   }, 5000);
 };
 setTimeout(function() {
