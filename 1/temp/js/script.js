@@ -18,7 +18,7 @@ const doConvert = () => {
             let result = ((celcius * (9/5)) + 32).toFixed(1)
             let resultFormula
             if (isFinite(result)) {
-                resultFormula = `(${celcius}°F - 32) * (5/9) = ${result}°C`
+                resultFormula = `(${celcius}°C * (9/5)) + 32 = ${result}°F`
             } else {
                 resultFormula = ""
             }
@@ -100,11 +100,12 @@ inputText.addEventListener("keydown", (event) => {
 
 inputText.addEventListener("input", (state) => {
     let regex = /^[0-9.Ee+-]+$/
-    if (state.data !== null && state.data !== undefined && !(regex.test(state.data))) {
-        warnLabel.innerHTML = "Perhatian: Input bukan angka: " + state.data
+    let array = [null, undefined]
+    if (!(array.includes(state.data)) && !(regex.test(state.data))) {
+        warnLabel.textContent = "Perhatian: Input bukan angka: " + state.data
         warnLabel.style.display = "inline"
         console.warn("WARNING: Input bukan angka:", state.data)
-    } else if (state.data === null || state.data === undefined) {
+    } else if (array.includes(state.data) || regex.test(state.data)) {
         warnLabel.style.display = "none"
     }
 })
