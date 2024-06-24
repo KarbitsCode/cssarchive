@@ -41,15 +41,16 @@ function keyEvent(k) {
   };
 };
 function adBlocker() {
-  console.log("AdBlocker detected");
   setTimeout(function() {
+    console.log("AdBlocker detected");
     window.location.replace("#adblock");
-    alert("AdBlocker Detected");
-    window.location.replace("#main");
-  }, 5000);
+    setTimeout(function() {
+      history.replaceState("", document.title, window.location.pathname + "");
+    }, 100);
+  }, 1000);
 };
 setTimeout(function() {
-  history.pushState("", document.title, window.location.pathname + "");
+  history.replaceState("", document.title, window.location.pathname + "");
   setInterval(function() {
     if (document.visibilityState === "visible") {
       document.title = "Arsip CSS";
