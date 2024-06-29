@@ -5,7 +5,7 @@
 	font-weight: bold;
 }
 .cursor {
-	cursor: pointers;
+	cursor: pointer;
 }
 .space {
 	line-height: 36px;
