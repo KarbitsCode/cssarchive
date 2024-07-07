@@ -46,6 +46,9 @@ function adBlocker() {
     window.location.replace("#adblock");
     setTimeout(function() {
       history.replaceState("", document.title, window.location.pathname + "");
+      setTimeout(function() {
+        document.getElementById("displaymiddle").textContent = "AdBlocker detected";
+      }, 1000);
     }, 100);
   }, 1000);
 };

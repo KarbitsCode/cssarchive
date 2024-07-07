@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://pyscript.net/releases/2024.6.2/core.css">
-<script type="module" src="https://pyscript.net/releases/2024.6.2/core.js"></script>
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.7.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.7.1/core.js"></script>
 <link rel="icon" type="image/svg+xml" href="pys.svg">
 <title>PyScript</title>
 </head>
@@ -12,7 +12,7 @@
 <div></div>
 <noscript>Javascript is required to run PyScript</noscript>
 <script type="text/javascript">
-document.getElementsByTagName("div")[0].innerText = "Loading..."
+window.addEventListener("load",function(){setTimeout(function(){document.getElementsByTagName("div")[0].innerText = "Loading..."},1000)})
 </script>
 <script type="py" config='{"packages": ["pyjokes"]}'>
 from js import document
