@@ -659,8 +659,10 @@ function createCalculation(operation) {
 var wasmBinaryFile;
 if (isFileExists('engine.wasm')) {
   wasmBinaryFile = 'engine.wasm';
-} else {
+} else if (isFileExists('engine.bin')) {
   wasmBinaryFile = 'engine.bin';
+} else {
+  wasmBinaryFile = '';
 }
 
 if (!isDataURI(wasmBinaryFile)) {
