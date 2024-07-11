@@ -42,12 +42,12 @@ function keyEvent(k) {
 };
 function adBlocker() {
   setTimeout(function() {
-    console.log("AdBlocker detected");
+    console.log("Adblocker detected");
     window.location.replace("#adblock");
     setTimeout(function() {
       history.replaceState("", document.title, window.location.pathname + "");
       setTimeout(function() {
-        document.getElementById("displaymiddle").textContent = "AdBlocker detected";
+        document.getElementById("displaymiddle").textContent = "Adblocker detected";
       }, 1000);
     }, 100);
   }, 1000);
