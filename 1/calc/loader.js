@@ -607,6 +607,7 @@ function abort(what) {
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
   input_field.value = 'Error';
+  input_field.setAttribute('disabled', '');
 
   // Throw the error whether or not MODULARIZE is set because abort is used
   // in code paths apart from instantiation where an exception is expected

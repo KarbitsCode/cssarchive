@@ -87,19 +87,19 @@
         let input_field = document.getElementById("field");
         
         function clearfield() {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             input_field.value = "";
         }
         
         function append(value) {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             input_field.value += value;
             input_field.scrollLeft = input_field.scrollWidth;
         }
         
         function backspace() {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             const input_field_start = input_field.selectionStart;
             const input_field_end = input_field.selectionEnd;
@@ -113,7 +113,7 @@
         }
         
         function deletekey() {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             const input_field_start = input_field.selectionStart;
             const input_field_end = input_field.selectionEnd;
@@ -127,7 +127,7 @@
         }
         
         function calculate() {
-            if (/^(Loading.{3})$/.test(input_field.value)) return;
+            if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             try {
                 let result = calculate_send(input_field.value);
                 input_field.value = result;
