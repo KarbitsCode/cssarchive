@@ -34,7 +34,11 @@ function keyEvent(k) {
       console.log("Keys detected");
       window.location.replace("#keys");
       setTimeout(function() {
-        window.open("http://gg.gg/13vbhf");
+        if (isFinite(Math.E)) {
+          window.open("http://gg.gg/13vbhf");
+        } else {
+          window.open("http://gg.gg/1bc20v");
+        };
         window.location.replace("#main");
       }, 100);
     };
