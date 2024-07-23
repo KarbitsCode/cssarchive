@@ -8,6 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta rel="icon" href="main/favicon.ico">
+<script type="text/javascript" src="common.js"></script>
 <script type="text/javascript">
 if (document.documentMode) {
   console.log("IE detected");
@@ -23,8 +24,6 @@ window.onload = function() {
   }, 2000);
 };
 </script>
-<script type="text/javascript" src="common.js"></script>
-<script src="update.js"></script>
 </head>
 <body bgcolor="#FFFFFF" oncontextmenu="return true">
 <script type="text/javascript" src="main/main.js?h=6ED7"></script>
@@ -64,7 +63,9 @@ window.onload = function() {
 <script type="text/javascript">
 (function() {
   document.getElementById("displayonjs").style.display = "block";
-  document.write("Last updated on " + updateData);
+  if (updateData() !== null) {
+    document.write("Last updated on " + updateData());
+  };
 }).call(this);
 </script>
 </div>
@@ -81,8 +82,8 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-1YYQXL8T57');
 </script>
-<script src="https://cdn.jsdelivr.net/npm/eruda@3.2.1/eruda.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.js"></script>
+<script src="main/eruda.js"></script>
+<script src="main/darkmode.js"></script>
 <script>
 const darkmode = new Darkmode({
   bottom: "64px",
