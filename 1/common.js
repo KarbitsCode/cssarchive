@@ -56,6 +56,16 @@ function adBlocker() {
     }, 100);
   }, 1000);
 };
+function updateData() {
+  let data = null;
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", "../update.txt", false);
+  xhr.send(null);
+  if (xhr.status >= 200 && xhr.status < 300) {
+    data = xhr.responseText.replace(/\.LOG\s*/, "").replace(/\r?\n/g, "");
+  };
+  return data;
+};
 setTimeout(function() {
   history.replaceState("", document.title, window.location.pathname + "");
   setInterval(function() {
