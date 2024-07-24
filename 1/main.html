@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta rel="icon" href="main/favicon.ico">
-<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="main/common.js"></script>
 <script type="text/javascript">
 if (document.documentMode) {
   console.log("IE detected");
@@ -57,13 +57,13 @@ window.onload = function() {
 <div style="position: fixed;bottom: 0;left: 50;font-size: smaller;font-family: monospace;"><a href="https://karbitscode.github.io/" target="_blank">GitHub</a>&nbsp;|&nbsp;<a href="https://m.youtube.com/channel/UC02_oXrsUEjIQYYSI3Zfqlg" target="_blank">YouTube</a></div>
 <noscript><meta http-equiv="refresh" content="1;url=main-min.html?on=noscript"></noscript>
 <div id="displaymiddle" style="position: fixed;bottom: 0;right: 0;left: 50%;transform: translateX(-50%);text-align: center;font-size: smaller;font-family: monospace;"></div>
-<div id="displayonjs" style="position: fixed;bottom: 0;right: 0;font-size: smaller;font-family: monospace;display: none;">
+<div id="displayonjs" style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;display: none;">
 <a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){eruda.init();document.getElementsByTagName('a')[3].style.display='none';})();">Inspect</a>
 <a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html?on=click'">Minified version</a>
 <script type="text/javascript">
 (function() {
   document.getElementById("displayonjs").style.display = "block";
-  if (updateData() !== null) {
+  if (updateData() !== null && updateData().length !== 0) {
     document.write("Last updated on " + updateData());
   };
 }).call(this);
