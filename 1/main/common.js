@@ -61,18 +61,19 @@ function updateData() {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", "../update.txt", false);
   xhr.send(null);
-  if (200 <= xhr.status < 300) {
+  if (xhr.status >= 200 && xhr.status < 300) {
     data = xhr.responseText.replace(/\.LOG\s*|\r?\n/, "");
   };
   return data;
 };
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "visible") {
+    document.title = "Arsip CSS";
+  } else {
+    document.title = "Main Page";
+  };
+});
 setTimeout(function() {
   history.replaceState("", document.title, window.location.pathname + "");
-  document.addEventListener("visibilitychange", function() {
-    if (document.visibilityState === "visible") {
-      document.title = "Arsip CSS";
-    } else {
-      document.title = "Main Page";
-    };
-  });
+  document.dispatchEvent(new Event("visibilitychange"));
 }, 500);
