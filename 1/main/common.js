@@ -62,7 +62,7 @@ function updateData() {
   xhr.open("GET", "../update.txt", false);
   xhr.send(null);
   if (xhr.status >= 200 && xhr.status < 300) {
-    data = xhr.responseText.replace(/\.LOG\s*|\r?\n/, "");
+    data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "");
   };
   return data;
 };
