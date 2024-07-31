@@ -63,6 +63,9 @@ function updateData() {
   xhr.send(null);
   if (xhr.status >= 200 && xhr.status < 300) {
     data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "");
+	if (data.length === 0) {
+      data = null;
+    };
   };
   return data;
 };
