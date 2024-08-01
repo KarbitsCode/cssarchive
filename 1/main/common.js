@@ -62,20 +62,20 @@ function updateData() {
   xhr.open("GET", "../update.txt", false);
   xhr.send(null);
   if (xhr.status >= 200 && xhr.status < 300) {
-    data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "");
-	if (data.length === 0) {
-      data = null;
+    data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
+    if (data !== null) {
+      data = data[data.length - 1];
     };
   };
   return data;
 };
-document.addEventListener("visibilitychange", function() {
+document.onvisibilitychange = function() {
   if (document.visibilityState === "visible") {
     document.title = "Arsip CSS";
   } else {
     document.title = "Main Page";
   };
-});
+};
 setTimeout(function() {
   history.replaceState("", document.title, window.location.pathname + "");
   document.dispatchEvent(new Event("visibilitychange"));
