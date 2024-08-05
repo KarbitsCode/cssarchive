@@ -23,9 +23,9 @@ function autoRefresh(r,d) {
 };
 function gotoPage(l) {
   if (document.documentMode) {
-    window.location.replace(l);
+    window.location.assign(l);
   } else {
-    window.location.replace("../redir.html?go=" + l);
+    window.location.assign("../redir.html?go=" + l);
   };
 };
 function keyEvent(k) {
@@ -60,7 +60,7 @@ function updateData() {
   let data = null;
   const xhr = new XMLHttpRequest();
   xhr.open("GET", "../update.txt", false);
-  xhr.send(null);
+  xhr.send(data);
   if (xhr.status >= 200 && xhr.status < 300) {
     data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
     if (data !== null) {
