@@ -4,6 +4,7 @@
  * https://www.dropdownmenugenerator.com
  */
 var cmn = new cmnc();
+
 function cmnc() {
     this.ComponentName = 'APNSoft WebControls JS source file.';
     this.Version = 'Version 4.1 (34)';
@@ -19,7 +20,7 @@ function cmnc() {
     this.FdOnId = '';
     this.BdX = 0;
     this.BdY = 0;
-    this.ErrHr = function (ex, args) {
+    this.ErrHr = function(ex, args) {
         try {
             var wen = cmn.Gisv('wen');
             if (wen != 'true')
@@ -60,13 +61,13 @@ function cmnc() {
         } catch (ex) {}
         return true;
     };
-    this.AddEvt = function (el, evt, fn, bubble) {
+    this.AddEvt = function(el, evt, fn, bubble) {
         if ("addEventListener" in el) {
             try {
                 el.addEventListener(evt, fn, bubble);
             } catch (e) {
                 if (typeof fn === "object" && fn.handleEvent) {
-                    el.addEventListener(evt, function (e) {
+                    el.addEventListener(evt, function(e) {
                         fn.handleEvent.call(fn, e);
                     }, bubble);
                 } else {
@@ -75,7 +76,7 @@ function cmnc() {
             }
         } else if ("attachEvent" in el) {
             if (typeof fn === "object" && fn.handleEvent) {
-                el.attachEvent("on" + evt, function () {
+                el.attachEvent("on" + evt, function() {
                     fn.handleEvent.call(fn);
                 });
             } else {
@@ -83,7 +84,7 @@ function cmnc() {
             }
         }
     };
-    this.GtnIds = function (UID) {
+    this.GtnIds = function(UID) {
         var res = cmn.Gisv('nidsXML', UID);
         if (res == null || res == undefined) {
             var nids = cmn.Gisv('nids', UID);
@@ -99,13 +100,13 @@ function cmnc() {
             res = null;
         return res;
     };
-    this.sDv = function (w) {
+    this.sDv = function(w) {
         if (w == null || w == undefined)
             return;
         w.style.display = 'block';
         w.style.visibility = 'visible';
     };
-    this.hDv = function (w, fnc) {
+    this.hDv = function(w, fnc) {
         if (w == null || w == undefined)
             return;
         w.style.display = '';
@@ -113,7 +114,7 @@ function cmnc() {
         if (fnc != null && fnc != undefined)
             fnc();
     };
-    this.sDvOpc = function (w, sp, opTo) {
+    this.sDvOpc = function(w, sp, opTo) {
         if (w == null || w == undefined)
             return;
         var wid = w.id;
@@ -148,7 +149,7 @@ function cmnc() {
             cmn.FdOnId = '';
         }
         var i = opFr;
-        cmn.TmrFdOn = setInterval(function () {
+        cmn.TmrFdOn = setInterval(function() {
             i = i + opcStp;
             if (i > opTo) {
                 clearInterval(cmn.TmrFdOn);
@@ -159,7 +160,7 @@ function cmnc() {
             cmn.FdOnId = wid;
         }, 30);
     };
-    this.hDvOpc = function (w, sp, opFr, mvAw, fnc) {
+    this.hDvOpc = function(w, sp, opFr, mvAw, fnc) {
         if (w == null || w == undefined)
             return;
         if (cmn.oVs(w) == false) {
@@ -180,7 +181,7 @@ function cmnc() {
             }
         }
         var i = 0;
-        var TmrFdOff = setInterval(function () {
+        var TmrFdOff = setInterval(function() {
             i = i + opcStp;
             if (i > opFr) {
                 clearInterval(TmrFdOff);
@@ -189,7 +190,7 @@ function cmnc() {
             cmn.SetOpAut(wid, procID, opcStp, mvAw, fnc);
         }, 10);
     };
-    this.SetOpAut = function (wid, procID, opcStp, mvAw, fnc) {
+    this.SetOpAut = function(wid, procID, opcStp, mvAw, fnc) {
         var w = cmn.Mko(wid);
         if (w == null || w == undefined)
             return;
@@ -225,7 +226,7 @@ function cmnc() {
             }
         }
     };
-    this.oVs = function (w) {
+    this.oVs = function(w) {
         var rs = false;
         if (!w)
             return rs;
@@ -233,7 +234,7 @@ function cmnc() {
             rs = true;
         return rs;
     };
-    this.rvs = function (nm, uid) {
+    this.rvs = function(nm, uid) {
         var UID = cmn.uid;
         if (uid != null && uid != undefined) {
             UID = uid;
@@ -248,7 +249,7 @@ function cmnc() {
         }
         return hf.value;
     };
-    this.svs = function (nm, vl, uid) {
+    this.svs = function(nm, vl, uid) {
         var UID = cmn.uid;
         if (uid != null && uid != undefined) {
             UID = uid;
@@ -259,7 +260,7 @@ function cmnc() {
         }
         hf.value = vl;
     };
-    this.RmSl = function () {
+    this.RmSl = function() {
         try {
             if (window.getSelection) {
                 var myRange = window.getSelection();
@@ -269,7 +270,7 @@ function cmnc() {
             }
         } catch (ex) {}
     };
-    this.GtTtl = function (wid) {
+    this.GtTtl = function(wid) {
         var ttl = '';
         try {
             ttl = cmn.Mko(wid).innerHTML;
@@ -282,7 +283,7 @@ function cmnc() {
         ttl = ttl.replace(re, '%FD0');
         return ttl;
     };
-    this.ItmPrc = function (prc, uid, id, ttl) {
+    this.ItmPrc = function(prc, uid, id, ttl) {
         try {
             if (prc != null && prc != undefined) {
                 var re = null;
@@ -322,7 +323,7 @@ function cmnc() {
             }
         }
     };
-    this.AjaxRzErr = function (Tx, cntx) {
+    this.AjaxRzErr = function(Tx, cntx) {
         try {
             var wen = cmn.Gisv('wen', cntx);
             if (wen == 'true') {
@@ -333,14 +334,14 @@ function cmnc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.WF_CBCa = function () {
+    this.WF_CBCa = function() {
         if (typeof(WebForm_CallbackComplete) == "function") {
             if (WebForm_CallbackComplete != cmn.WF_CBC) {
                 WebForm_CallbackComplete = cmn.WF_CBC;
             };
         }
     };
-    this.WF_CBC = function () {
+    this.WF_CBC = function() {
         for (var i = 0; i < __pendingCallbacks.length; i++) {
             callbackObject = __pendingCallbacks[i];
             if (callbackObject && callbackObject.xmlRequest && (callbackObject.xmlRequest.readyState == 4)) {
@@ -359,7 +360,7 @@ function cmnc() {
             };
         };
     };
-    this.getDomAdapter = function () {
+    this.getDomAdapter = function() {
         var adapter = '';
         if ('undefined' != typeof(ActiveXObject)) {
             adapter = 'MS';
@@ -367,57 +368,57 @@ function cmnc() {
             adapter = 'default';
         }
         switch (adapter) {
-        case 'MS':
-            return new(function () {
-                this.createDocument = function () {
-                    var names = ["Msxml2.DOMDocument.6.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument", "Microsoft.XMLDOM"];
-                    for (var key in names) {
-                        try {
-                            return new ActiveXObject(names[key]);
-                        } catch (e) {}
-                    }
-                    throw new Error('Unable to create DOMDocument');
-                };
-                this.serialize = function (doc) {
-                    return doc.xml;
-                };
-                this.parseXml = function (xml) {
-                    var doc = this.createDocument();
-                    if (!doc.loadXML(xml)) {
-                        throw new Error('Parse error');
-                    }
-                    return doc;
-                };
-            })();
-        case 'default':
-            return new(function () {
-                this.createDocument = function () {
-                    return document.implementation.createDocument("", "", null);
-                };
-                this.serialize = function (doc) {
-                    return new XMLSerializer().serializeToString(doc);
-                };
-                this.parseXml = function (xml) {
-                    var doc = new DOMParser().parseFromString(xml, "text/xml");
-                    if ("parsererror" == doc.documentElement.nodeName) {
-                        throw new Error('Parse error');
-                    }
-                    return doc;
-                };
-            })();
-        default:
-            throw new Error('Unable to select the DOM adapter');
+            case 'MS':
+                return new(function() {
+                    this.createDocument = function() {
+                        var names = ["Msxml2.DOMDocument.6.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument", "Microsoft.XMLDOM"];
+                        for (var key in names) {
+                            try {
+                                return new ActiveXObject(names[key]);
+                            } catch (e) {}
+                        }
+                        throw new Error('Unable to create DOMDocument');
+                    };
+                    this.serialize = function(doc) {
+                        return doc.xml;
+                    };
+                    this.parseXml = function(xml) {
+                        var doc = this.createDocument();
+                        if (!doc.loadXML(xml)) {
+                            throw new Error('Parse error');
+                        }
+                        return doc;
+                    };
+                })();
+            case 'default':
+                return new(function() {
+                    this.createDocument = function() {
+                        return document.implementation.createDocument("", "", null);
+                    };
+                    this.serialize = function(doc) {
+                        return new XMLSerializer().serializeToString(doc);
+                    };
+                    this.parseXml = function(xml) {
+                        var doc = new DOMParser().parseFromString(xml, "text/xml");
+                        if ("parsererror" == doc.documentElement.nodeName) {
+                            throw new Error('Parse error');
+                        }
+                        return doc;
+                    };
+                })();
+            default:
+                throw new Error('Unable to select the DOM adapter');
         }
     };
-    this.StrToXml = function (str) {
+    this.StrToXml = function(str) {
         var res = cmn.getDomAdapter().parseXml('<t>' + str + '</t>');
         return res;
     };
-    this.InnXml = function (xml) {
+    this.InnXml = function(xml) {
         var str = (new XMLSerializer()).serializeToString(xml);
         return str;
     };
-    this.NdAtr = function (nam, atr, UID) {
+    this.NdAtr = function(nam, atr, UID) {
         var nIds = cmn.GtnIds(UID);
         if (nIds == null)
             return null;
@@ -427,7 +428,7 @@ function cmnc() {
         var vl = nd.getAttribute(atr);
         return vl;
     };
-    this.ShwShd = function (Obj, PngShdCnt, ccp) {
+    this.ShwShd = function(Obj, PngShdCnt, ccp) {
         if (PngShdCnt == null || PngShdCnt == '')
             return;
         if (PngShdCnt < 2)
@@ -453,11 +454,11 @@ function cmnc() {
             ShLft.style.height = Obj.offsetHeight + 'px';
             try {
                 if (dm) {
-                    cmn.AddEvt(ShLft, 'mouseover', function () {
+                    cmn.AddEvt(ShLft, 'mouseover', function() {
                         clearTimeout(dm.ocM);
                         dm.ocM = null;
                     }, false);
-                    cmn.AddEvt(ShLft, 'mouseout', function () {
+                    cmn.AddEvt(ShLft, 'mouseout', function() {
                         dm.uD();
                     }, false);
                 }
@@ -470,11 +471,11 @@ function cmnc() {
         ShRgt.style.height = Obj.offsetHeight + 'px';
         try {
             if (dm) {
-                cmn.AddEvt(ShRgt, 'mouseover', function () {
+                cmn.AddEvt(ShRgt, 'mouseover', function() {
                     clearTimeout(dm.ocM);
                     dm.ocM = null;
                 }, false);
-                cmn.AddEvt(ShRgt, 'mouseout', function () {
+                cmn.AddEvt(ShRgt, 'mouseout', function() {
                     dm.uD();
                 }, false);
             }
@@ -485,11 +486,11 @@ function cmnc() {
         cmn.setTop(ShCrn, y + Obj.offsetHeight);
         try {
             if (dm) {
-                cmn.AddEvt(ShCrn, 'mouseover', function () {
+                cmn.AddEvt(ShCrn, 'mouseover', function() {
                     clearTimeout(dm.ocM);
                     dm.ocM = null;
                 }, false);
-                cmn.AddEvt(ShCrn, 'mouseout', function () {
+                cmn.AddEvt(ShCrn, 'mouseout', function() {
                     dm.uD();
                 }, false);
             }
@@ -507,18 +508,18 @@ function cmnc() {
         }
         try {
             if (dm) {
-                cmn.AddEvt(ShBtm, 'mouseover', function () {
+                cmn.AddEvt(ShBtm, 'mouseover', function() {
                     clearTimeout(dm.ocM);
                     dm.ocM = null;
                 }, false);
-                cmn.AddEvt(ShBtm, 'mouseout', function () {
+                cmn.AddEvt(ShBtm, 'mouseout', function() {
                     dm.uD();
                 }, false);
             }
         } catch (ex) {}
         cmn.sDv(ShBtm);
     };
-    this.HdShd = function (Obj) {
+    this.HdShd = function(Obj) {
         var ShDv = null;
         for (var i = 0; i < 4; i++) {
             ShDv = cmn.Mko(Obj.id + '_Sh' + i);
@@ -529,7 +530,7 @@ function cmnc() {
             }
         }
     };
-    this.GtCssRl = function (cls, rul) {
+    this.GtCssRl = function(cls, rul) {
         var res = '';
         try {
             for (var i = 0; i < document.styleSheets.length; i++) {
@@ -550,7 +551,7 @@ function cmnc() {
         } catch (ex) {}
         return res;
     };
-    this.cmc = function (e) {
+    this.cmc = function(e) {
         if (!e)
             e = window.event;
         if (e) {
@@ -563,7 +564,7 @@ function cmnc() {
             }
         };
     };
-    this.ScrVals = function () {
+    this.ScrVals = function() {
         var doc = document.documentElement;
         var scL = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         var scT = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
@@ -572,24 +573,23 @@ function cmnc() {
             'scT': scT
         };
     };
-    this.WinScrV = function () {
+    this.WinScrV = function() {
         if (typeof window.innerWidth === 'number')
             return window.innerWidth > document.documentElement.clientWidth;
         var rt = document.documentElement || document.body;
         var of = null;
         if (typeof rt.currentStyle !== 'undefined')
-            of = rt.currentStyle.overflow;
-        of = of || window.getComputedStyle(rt, '').overflow;
+            of = rt.currentStyle.overflow; of = of || window.getComputedStyle(rt, '').overflow;
         var ofY = null;
         if (typeof rt.currentStyle !== 'undefined')
             ofY = rt.currentStyle.overflowY;
         ofY = ofY || window.getComputedStyle(rt, '').overflowY;
         var cnof = rt.scrollHeight > rt.clientHeight;
-        var ovSh = /^(visible|auto)$/.test(of) || /^(visible|auto)$/.test(ofY);
+        var ovSh = /^(visible|auto)$/.test( of ) || /^(visible|auto)$/.test(ofY);
         var alShSc = of === 'scroll' || ofY === 'scroll';
         return (cnof && ovSh) || (alShSc);
     };
-    this.pX = function (w) {
+    this.pX = function(w) {
         var cl = 0;
         if (w == null)
             return cl;
@@ -607,7 +607,7 @@ function cmnc() {
         }
         return cl;
     };
-    this.pY = function (w) {
+    this.pY = function(w) {
         var ct = 0;
         if (w == null)
             return ct;
@@ -625,7 +625,7 @@ function cmnc() {
         }
         return ct;
     };
-    this.pX2 = function (w) {
+    this.pX2 = function(w) {
         var ct = 0;
         while (w) {
             ct += (w.offsetLeft - w.scrollLeft + w.clientLeft);
@@ -633,7 +633,7 @@ function cmnc() {
         }
         return ct;
     };
-    this.pY2 = function (w) {
+    this.pY2 = function(w) {
         var ct = 0;
         while (w) {
             ct += (w.offsetTop - w.scrollTop + w.clientTop);
@@ -641,13 +641,13 @@ function cmnc() {
         }
         return ct;
     };
-    this.pX3 = function (w) {
+    this.pX3 = function(w) {
         return cmn.pXY3(w).left;
     };
-    this.pY3 = function (w) {
+    this.pY3 = function(w) {
         return cmn.pXY3(w).top;
     };
-    this.pXY3 = function (elem) {
+    this.pXY3 = function(elem) {
         var box = elem.getBoundingClientRect();
         var body = document.body;
         var docEl = document.documentElement;
@@ -662,7 +662,7 @@ function cmnc() {
             left: Math.round(left)
         };
     };
-    this.GetBdXY = function () {
+    this.GetBdXY = function() {
         try {
             var Dv = document.createElement('DIV');
             Dv.id = "Dv4567345";
@@ -684,7 +684,7 @@ function cmnc() {
                 cmn.BdY = 0;
         } catch (e) {}
     };
-    this.setLeft = function (w, L) {
+    this.setLeft = function(w, L) {
         if (w == null || w == undefined)
             return;
         w.style.left = L + 'px';
@@ -693,7 +693,7 @@ function cmnc() {
         var Del = Req - Cur;
         w.style.left = (L + Del) + 'px';
     };
-    this.setTop = function (w, T) {
+    this.setTop = function(w, T) {
         if (w == null || w == undefined)
             return;
         w.style.top = T + 'px';
@@ -702,7 +702,7 @@ function cmnc() {
         var Del = Req - Cur;
         w.style.top = (T + Del) + 'px';
     };
-    this.Sisv = function (key, val, uid) {
+    this.Sisv = function(key, val, uid) {
         var UID = cmn.uid;
         if (uid != null && uid != undefined) {
             UID = uid;
@@ -719,7 +719,7 @@ function cmnc() {
         }
         cmn.InsVrb.obj[key] = val;
     };
-    this.Gisv = function (key, uid) {
+    this.Gisv = function(key, uid) {
         var UID = cmn.uid;
         if (uid != null && uid != undefined) {
             UID = uid;
@@ -741,7 +741,7 @@ function cmnc() {
         val = cmn.InsVrb.obj[key];
         return val;
     };
-    this.href = function (u, t) {
+    this.href = function(u, t) {
         if (this.HrfEnb == false)
             return;
         var v;
@@ -783,14 +783,14 @@ function cmnc() {
             v = open(u, t);
         } catch (e) {}
     };
-    this.APB = function (uid, id) {
+    this.APB = function(uid, id) {
         try {
             __doPostBack(uid, id);
         } catch (ex) {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.CrtDv = function (id) {
+    this.CrtDv = function(id) {
         var Dv = cmn.Mko(id);
         if (Dv == null) {
             Dv = document.createElement('DIV');
@@ -806,7 +806,7 @@ function cmnc() {
         }
         return Dv;
     };
-    this.cIFR = function (ifid, uid) {
+    this.cIFR = function(ifid, uid) {
         var ifr = document.createElement('iframe');
         ifr.id = ifid;
         ifr.src = cmn.Gisv('EmpHtm', uid);
@@ -824,7 +824,7 @@ function cmnc() {
         ifr.style.backgroundColor = 'transparent';
         return ifr;
     };
-    this.cmb = function () {
+    this.cmb = function() {
         var r = false;
         if (!document.compatMode || document.compatMode == undefined) {
             var tmp = null;
@@ -841,7 +841,7 @@ function cmnc() {
         }
         return r;
     };
-    this.Mko = function (n) {
+    this.Mko = function(n) {
         var Ob;
         try {
             Ob = document.getElementById(n);
@@ -852,20 +852,20 @@ function cmnc() {
             return null;
         return Ob;
     };
-    this.trim = function (str) {
+    this.trim = function(str) {
         var s = new String(str);
         if (s == '' || s == null || s == undefined)
             return s;
         s = s.replace(/^\s*/, '').replace(/\s*$/, '');
         return s;
     };
-    this.rnd = function () {
+    this.rnd = function() {
         var RND = '';
         var _rnd = Math.random() * 100000000;
         RND = Math.round(_rnd) + '';
         return RND;
     };
-    this.dBv = function (nm) {
+    this.dBv = function(nm) {
         var mj = 0;
         try {
             mj = parseInt(navigator.appVersion);
@@ -897,21 +897,21 @@ function cmnc() {
         var FF3p = (FF && (ua.indexOf("firefox/2") == -1));
         return (eval(nm));
     };
-    this.GPg = function () {
+    this.GPg = function() {
         var P = location.href;
         if (P.indexOf('?') > -1) {
             P = P.substring(0, P.indexOf('?'));
         }
         return P;
     };
-    this.Delay = function (ms) {
+    this.Delay = function(ms) {
         var date = new Date();
         var curDate = null;
         do {
             curDate = new Date();
         } while (curDate - date < ms);
     };
-    this.outerHTML = function (elm) {
+    this.outerHTML = function(elm) {
         try {
             var res = elm.outerHTML;
             if ((res != null) && (res != undefined)) {
@@ -927,7 +927,7 @@ function cmnc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.GtSdStr = function (cls) {
+    this.GtSdStr = function(cls) {
         var Shd = 0;
         var shd = cmn.GtCssRl(cls, 'filter');
         if (shd != undefined && shd != null) {
@@ -940,7 +940,7 @@ function cmnc() {
         }
         return Shd;
     };
-    this.StOpcObj = function (w, op) {
+    this.StOpcObj = function(w, op) {
         if (w == null || w == undefined)
             return;
         var ws = w.style;
@@ -972,13 +972,13 @@ function cmnc() {
             return;
         }
     };
-    this.StOpc = function (wid, op) {
+    this.StOpc = function(wid, op) {
         var w = cmn.Mko(wid);
         if (w == null || w == undefined)
             return;
         cmn.StOpcObj(w, op);
     };
-    this.GtAjxLd = function () {
+    this.GtAjxLd = function() {
         var res = null;
         try {
             res = zcc46jhssgd54ffggesh4;
@@ -987,7 +987,7 @@ function cmnc() {
             res = '';
         return res;
     };
-    this.EncodeValue = function (val) {
+    this.EncodeValue = function(val) {
         var res = val;
         var re;
         re = new RegExp(';', 'gi');
@@ -1008,7 +1008,7 @@ function cmnc() {
         res = res.replace(re, '%FFFBR');
         return res;
     };
-    this.DecodeValue = function (val) {
+    this.DecodeValue = function(val) {
         var res = val;
         var re;
         re = new RegExp('%FA0', 'gi');
@@ -1027,7 +1027,7 @@ function cmnc() {
         res = res.replace(re, '<BR>');
         return res;
     };
-    this.SetAttr2 = function (obj, name, val) {
+    this.SetAttr2 = function(obj, name, val) {
         try {
             var attr = obj.attributes[name];
             if (attr == null || attr == undefined) {
@@ -1041,7 +1041,7 @@ function cmnc() {
             alert(e);
         }
     };
-    this.SetAttr = function (id, name, val) {
+    this.SetAttr = function(id, name, val) {
         try {
             var obj = cmn.Mko(id);
             if (obj == null) {
@@ -1053,7 +1053,7 @@ function cmnc() {
             alert(e);
         }
     };
-    this.GetAttr = function (id, name) {
+    this.GetAttr = function(id, name) {
         var res = '';
         try {
             var obj = cmn.Mko(id);
@@ -1068,7 +1068,7 @@ function cmnc() {
         }
         return res;
     };
-    this.GetAttr2 = function (obj, name) {
+    this.GetAttr2 = function(obj, name) {
         var res = '';
         var attr = obj.attributes[name];
         if (attr == null || attr == undefined) {
@@ -1087,7 +1087,7 @@ function cmnc() {
             res = '';
         return res;
     };
-    this.PBtoURL = function (u) {
+    this.PBtoURL = function(u) {
         var url = u.toLowerCase();
         if ((url.indexOf('http:') == 0) || (url.indexOf('https:') == 0)) {
             var x = open(u, '_top');
@@ -1097,7 +1097,7 @@ function cmnc() {
         document.forms[0].__VIEWSTATE.name = 'NOVIEWSTATE';
         __doPostBack(document.forms[0].id, null);
     };
-    this.IsHTML5 = function () {
+    this.IsHTML5 = function() {
         var res = false;
         var pbid = null;
         var dt = document.doctype;
@@ -1118,7 +1118,7 @@ function cmnc() {
         }
         return res;
     };
-    this.IsMobChk = function () {
+    this.IsMobChk = function() {
         try {
             if (sessionStorage.desktop)
                 return false;
@@ -1137,7 +1137,7 @@ function cmnc() {
         } catch (ex) {}
         return false;
     };
-    this.RegWbFnt = function (Fid, Fml, Path, Rnd, Frmt) {
+    this.RegWbFnt = function(Fid, Fml, Path, Rnd, Frmt) {
         var CssFn = '@font-face {font-family: \'' + Fml + '\';src:url(\'' + Path + '.eot?a' + Rnd + '\');src:url(\'' + Path + '.eot?a' + Rnd + '#iefix\') format(\'embedded-opentype\'), url(\'' + Path + '.woff?a' + Rnd + '\') format(\'woff\'), url(\'' + Path + '.ttf?a' + Rnd + '\') format(\'truetype\');font-weight: normal;font-style: normal;}';
         var Css = '';
         if (Frmt) {
@@ -1145,7 +1145,7 @@ function cmnc() {
         }
         cmn.RegPageCss(Fid, CssFn + Css, true);
     };
-    this.UnRegStyle = function (Sid, Msk, Excl) {
+    this.UnRegStyle = function(Sid, Msk, Excl) {
         var res = 0;
         var Hd = document.getElementsByTagName('head')[0];
         var stls = document.getElementsByTagName('style');
@@ -1168,7 +1168,7 @@ function cmnc() {
         }
         return res;
     };
-    this.RegPageCss = function (id, Css, SkipAdd) {
+    this.RegPageCss = function(id, Css, SkipAdd) {
         if (SkipAdd == true) {
             var Reg = true;
             var stls = document.getElementsByTagName('style');
@@ -1206,10 +1206,10 @@ function cmnc() {
         }
         Hd.appendChild(stl);
     };
-    this.GetCompStyle = function (w, nm) {
+    this.GetCompStyle = function(w, nm) {
         return parseInt(window.getComputedStyle(w, null).getPropertyValue(nm));
     };
-    this.DeCompact = function (s, c, m, g, r) {
+    this.DeCompact = function(s, c, m, g, r) {
         if (r == '1') {
             s = s.replace(/<2>/gi, '!important;" onclick="cmn.href(\'');
             s = s.replace(/<1>/gi, '\');dm.RspSubHd(\'<r>\');');
@@ -1233,7 +1233,7 @@ function cmnc() {
         s = s.replace(/<c>/gi, '"><table border="0" cellspacing="0" cellpadding="0"');
         return s;
     };
-    this.Show = function (vrb, clr) {
+    this.Show = function(vrb, clr) {
         var ID = 'DebugDiv';
         var Dv = cmn.Mko(ID);
         if (Dv == null) {
@@ -1267,6 +1267,7 @@ function cmnc() {
 };
 
 var dm = new dmc();
+
 function dmc() {
     this.ComponentName = 'APNSoft WebControls JS source file.';
     this.Version = 'Version 4.2 (127)';
@@ -1307,7 +1308,7 @@ function dmc() {
     this.HovItm = '';
     this.OnEmptSp = false;
     this.BdRltv = false;
-    this.i = function (mid, t, wbfnt) {
+    this.i = function(mid, t, wbfnt) {
         try {
             if (wbfnt == null || wbfnt == undefined)
                 wbfnt = '';
@@ -1372,7 +1373,7 @@ function dmc() {
                                 dm.itw(mid, 0);
                             }
                         } else {
-                            var asn = function () {
+                            var asn = function() {
                                 tbl.wprc = '0';
                                 dm.StEqWd(tbl);
                             };
@@ -1384,14 +1385,14 @@ function dmc() {
                 }
                 var DvMb = cmn.Mko(mid + '_Mob');
                 if (DvMb) {
-                    var InRs = function () {
+                    var InRs = function() {
                         try {
                             var SbDv = cmn.Mko(mid + '_Mob-p');
                             var dv = cmn.Mko(mid + '_-0p');
-                            cmn.AddEvt(window, 'resize', function (e) {
+                            cmn.AddEvt(window, 'resize', function(e) {
                                 dm.WinRsz(e, mid, DvMb, SbDv, dv);
                             }, false);
-                            cmn.AddEvt(window, 'scroll', function (e) {
+                            cmn.AddEvt(window, 'scroll', function(e) {
                                 dm.WinRsz(e, mid, DvMb, SbDv, dv);
                             }, false);
                             dm.RspMnAct(mid, DvMb, SbDv, dv);
@@ -1412,10 +1413,10 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.WinRsz = function (e, uid, DvMb, SbDv, dv) {
+    this.WinRsz = function(e, uid, DvMb, SbDv, dv) {
         dm.RspMnAct(uid, DvMb, SbDv, dv);
     };
-    this.RspMnAct = function (uid, DvMb, SbDv, dv) {
+    this.RspMnAct = function(uid, DvMb, SbDv, dv) {
         try {
             var MnTbl = dv.childNodes[0];
             var pdL = cmn.pX(MnTbl);
@@ -1482,7 +1483,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.RspSubShHd = function (mid) {
+    this.RspSubShHd = function(mid) {
         var DvMb = cmn.Mko(mid + '_Mob');
         if (DvMb == null)
             return;
@@ -1514,7 +1515,7 @@ function dmc() {
             }
         }
     };
-    this.RspSubHd = function (mid) {
+    this.RspSubHd = function(mid) {
         var SbDv = cmn.Mko(mid + '_Mob-p');
         SbDv.style.overflow = 'hidden';
         SbDv.style.width = '1px';
@@ -1526,7 +1527,7 @@ function dmc() {
         if (Icn != null)
             Icn.innerHTML = '&#xe777;';
     };
-    this.RspSubPos = function (DvMb, SbDv) {
+    this.RspSubPos = function(DvMb, SbDv) {
         var FxX = 0;
         var FxY = 0;
         var PosX = cmn.pX(DvMb);
@@ -1558,7 +1559,7 @@ function dmc() {
         }
         SbDv.style.width = DvMb.offsetWidth + 'px';
     };
-    this.RspExCll = function (mid, id) {
+    this.RspExCll = function(mid, id) {
         var obj = cmn.Mko('MobSub_' + mid + '_' + id);
         if (obj == null)
             return;
@@ -1573,7 +1574,7 @@ function dmc() {
                 icn.innerHTML = '&#xe920;';
         }
     };
-    this.dInO = function (uid) {
+    this.dInO = function(uid) {
         try {
             var UID = dm.uid;
             if (uid != null && uid != undefined) {
@@ -1596,7 +1597,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.StEqWd = function (tbl) {
+    this.StEqWd = function(tbl) {
         if (tbl == null || tbl == undefined)
             return;
         if (tbl.rows == null || tbl.rows == undefined)
@@ -1693,7 +1694,7 @@ function dmc() {
             PrDv.style.width = tbl.offsetWidth + (_pd * 2) + 'px';
         }
     };
-    this.itw = function (mid, t) {
+    this.itw = function(mid, t) {
         try {
             var div = cmn.Mko(mid + '_-0p');
             var tbl = div.childNodes[0];
@@ -1706,7 +1707,7 @@ function dmc() {
             if (div.intw != rlwd) {
                 tbl.wprc = '0';
                 dm.StEqWd(tbl);
-                var gxe = function () {
+                var gxe = function() {
                     tbl.wprc = '0';
                     dm.StEqWd(tbl);
                 };
@@ -1717,7 +1718,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.DsplHdrs = function (tbl) {
+    this.DsplHdrs = function(tbl) {
         if (tbl == null || tbl == undefined)
             return;
         if (tbl.rows == null || tbl.rows == undefined)
@@ -1735,7 +1736,7 @@ function dmc() {
             }
         }
     };
-    this.HSPth = function (mid) {
+    this.HSPth = function(mid) {
         var hpth = cmn.Gisv('hpth', mid);
         if (hpth != 'true')
             return false;
@@ -1758,11 +1759,11 @@ function dmc() {
         }
         return false;
     };
-    this.vD = function () {
+    this.vD = function() {
         clearTimeout(dm.ocM);
         dm.ocM = null;
     };
-    this.uD = function () {
+    this.uD = function() {
         try {
             clearTimeout(dm.ocD);
             dm.ocD = null;
@@ -1772,7 +1773,7 @@ function dmc() {
             var smc = cmn.Gisv('smc', dm.uid);
             if (smc == '1') {
                 var _th = this;
-                dm.ocM = setTimeout(function () {
+                dm.ocM = setTimeout(function() {
                     _th.cAm();
                 }, dm.ocMt);
             }
@@ -1780,7 +1781,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.v = function (w, lvl) {
+    this.v = function(w, lvl) {
         try {
             dm.OnEmptSp = false;
             clearTimeout(dm.ocD);
@@ -1830,7 +1831,7 @@ function dmc() {
             clearTimeout(dm.dttob);
             dm.dttob = null;
             var _th = this;
-            dm.dttob = setTimeout(function () {
+            dm.dttob = setTimeout(function() {
                 _th.dtt();
             }, 400);
             if (document.onmousemove != dm.omm && document.onmousemove != cmn.cmc) {
@@ -1860,13 +1861,13 @@ function dmc() {
             var _th = this;
             if (dm.smo == '1') {
                 if ((dm.mO != 1) || (dm.Lvl > 1)) {
-                    dm.ocD = setTimeout(function () {
+                    dm.ocD = setTimeout(function() {
                         _th.oChe();
                     }, dm.ocDt);
                 } else {
                     var ocDth = cmn.Gisv('ocDth', dm.uid);
                     dm.cCl('n');
-                    dm.ocD = setTimeout(function () {
+                    dm.ocD = setTimeout(function() {
                         _th.oChe();
                     }, ocDth);
                 }
@@ -1882,7 +1883,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.vEmp = function (lvl) {
+    this.vEmp = function(lvl) {
         if (dm.OnEmptSp == false)
             return;
         clearTimeout(dm.ocD);
@@ -1891,7 +1892,7 @@ function dmc() {
         dm.ocM = null;
         clearTimeout(dm.cAmt);
         dm.cAmt = null;
-        dm.ocD = setTimeout(function () {
+        dm.ocD = setTimeout(function() {
             dm.MrkItm(dm.HovItm, 'n', dm.Lvl, dm.uid);
             try {
                 if (typeof dm.Oms[lvl] != 'undefined') {
@@ -1913,7 +1914,7 @@ function dmc() {
             }
         }, 500);
     };
-    this.u = function (w) {
+    this.u = function(w) {
         try {
             dm.OnEmptSp = true;
             clearTimeout(dm.ocD);
@@ -1925,7 +1926,7 @@ function dmc() {
             var _th = this;
             var smc = cmn.Gisv('smc', dm.uid);
             if (smc == '1') {
-                dm.ocM = setTimeout(function () {
+                dm.ocM = setTimeout(function() {
                     _th.cAm();
                 }, dm.ocMt);
                 if (cmn.dBv('FF3p')) {
@@ -1945,7 +1946,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.dtt = function (tx) {
+    this.dtt = function(tx) {
         try {
             if (dm.tObj == null) {
                 return;
@@ -2004,11 +2005,11 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.dttl = function (w) {
+    this.dttl = function(w) {
         cmn.sDv(w);
         cmn.sDv(dm.tmpo);
     };
-    this.htt = function () {
+    this.htt = function() {
         clearTimeout(dm.dttob);
         dm.dttob = null;
         try {
@@ -2026,7 +2027,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.stp = function () {
+    this.stp = function() {
         try {
             var dX = -5;
             var dY = 20;
@@ -2083,14 +2084,14 @@ function dmc() {
             return false;
         }
     };
-    this.cDIV = function () {
+    this.cDIV = function() {
         var d = document.createElement('DIV');
         d.id = 'tt' + dm.uid;
         d.style.position = 'absolute';
         d.style.visibility = 'hidden';
         return d;
     };
-    this.cIFRs = function () {
+    this.cIFRs = function() {
         if (dm.cifs == null) {
             dm.cifs = new Array(12);
             var ifc = cmn.Mko(dm.uid + 'ifc');
@@ -2102,18 +2103,18 @@ function dmc() {
             }
         }
     };
-    this.mc = function () {
+    this.mc = function() {
         dm.mwc = 1;
         if (dm.smo == '2') {
             dm.oChe();
         }
     };
-    this.bmo = function () {
+    this.bmo = function() {
         if (dm.cAmt == null) {
             dm.cAmt = setTimeout('dm.cAm()', 100);
         }
     };
-    this.bmo2 = function () {
+    this.bmo2 = function() {
         if (dm.tmpo) {
             dm.tmpo = null;
             return;
@@ -2123,14 +2124,14 @@ function dmc() {
         }
         dm.tmpo = null;
     };
-    this.bmo3 = function () {
+    this.bmo3 = function() {
         dm.tmpo = true;
     };
-    this.oChe = function () {
+    this.oChe = function() {
         dm.cCl('t');
         dm.oCh(dm.tObj);
     };
-    this.oCh = function (w) {
+    this.oCh = function(w) {
         if (w == null || w == undefined)
             return;
         var chOb = cmn.Mko(w.id + '-p');
@@ -2214,12 +2215,12 @@ function dmc() {
         }
         dm.Oms[dm.Lvl] = w.id + '-p';
     };
-    this.cCl = function (t) {
+    this.cCl = function(t) {
         for (i = dm.Lvl; i < 12; i++) {
             dm.HdSbm(i, t);
         }
     };
-    this.cAm = function () {
+    this.cAm = function() {
         try {
             clearTimeout(dm.cAmt);
             dm.cAmt = null;
@@ -2264,17 +2265,17 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.HdScrDv = function (ScrDv) {
+    this.HdScrDv = function(ScrDv) {
         ScrDv.style.position = 'absolute';
         ScrDv.style.left = '-6000px';
     };
-    this.HdSbm = function (i, t) {
+    this.HdSbm = function(i, t) {
         var obj = cmn.Mko(dm.Oms[i]);
         if (obj != null) {
             var ScrDv = cmn.Mko(obj.id.substring(0, obj.id.indexOf('-p')) + 'sd');
             var _th = this;
             if (ScrDv != null) {
-                dm.ShHdObj(obj, t, 'h', null, function () {
+                dm.ShHdObj(obj, t, 'h', null, function() {
                     _th.HdScrDv(ScrDv);
                 });
             } else {
@@ -2292,7 +2293,7 @@ function dmc() {
             }
         }
     };
-    this.UhlHv = function (uid) {
+    this.UhlHv = function(uid) {
         var UID = dm.uid;
         if (uid != undefined && uid != null) {
             UID = uid;
@@ -2325,7 +2326,7 @@ function dmc() {
             }
         }
     };
-    this.gCd = function (w) {
+    this.gCd = function(w) {
         var dOb = w.parentNode;
         if (cmn.dBv('SafWin')) {
             while (dOb.parentNode) {
@@ -2344,7 +2345,7 @@ function dmc() {
         }
         return null;
     };
-    this.Hv = function (w) {
+    this.Hv = function(w) {
         dm.UhlHv(dm.uid);
         var UID = w.id.substring(0, w.id.indexOf('_'));
         var ItemID = w.id.substring(UID.length + 1);
@@ -2364,7 +2365,7 @@ function dmc() {
         }
         cmn.Sisv('HovIts', HovIts, dm.uid);
     };
-    this.MrkItm = function (w, Ind, lvl, uid) {
+    this.MrkItm = function(w, Ind, lvl, uid) {
         var UID = dm.uid;
         if (uid != null && uid != undefined) {
             UID = uid;
@@ -2418,7 +2419,7 @@ function dmc() {
             }
         }
     };
-    this.ItClk = function (w, alt, clceff) {
+    this.ItClk = function(w, alt, clceff) {
         if (dm.IsMob == true) {
             try {
                 w.onmouseover();
@@ -2435,7 +2436,7 @@ function dmc() {
         if (clceff == '1') {
             dm.Hv(w);
             dm.MrkItm(w, 's', dm.Lvl, dm.uid);
-            var asn = function () {
+            var asn = function() {
                 if (dm.tObj == w) {
                     dm.MrkItm(w, 'h', dm.Lvl, dm.uid);
                 }
@@ -2452,7 +2453,7 @@ function dmc() {
             cmn.ItmPrc(prc, cid, ItemID, ttl);
         }
     };
-    this.UnhItm = function (uid, ItemID) {
+    this.UnhItm = function(uid, ItemID) {
         var sit = cmn.rvs('sit', uid);
         if (sit != '' && sit != ItemID) {
             var SlIts = dm.GtPrnItm(sit, uid);
@@ -2465,7 +2466,7 @@ function dmc() {
             }
         }
     };
-    this.GtPrnItm = function (ItemID, UID) {
+    this.GtPrnItm = function(ItemID, UID) {
         try {
             var res = new Array();
             res[0] = cmn.Mko(UID + '_' + ItemID);
@@ -2491,7 +2492,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.GtPrnID = function (w) {
+    this.GtPrnID = function(w) {
         try {
             var res = '';
             var UID = w.id.substring(0, w.id.indexOf('_'));
@@ -2511,7 +2512,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.dCr = function (w, cOb) {
+    this.dCr = function(w, cOb) {
         var UID = w.id.substring(0, w.id.indexOf('_'));
         var ItemID = w.id.substring(UID.length + 1);
         var OvH = -5;
@@ -2740,20 +2741,20 @@ function dmc() {
         cmn.setLeft(cOb, stX);
         w.offsetParent;
     };
-    this.rDr = function () {
+    this.rDr = function() {
         if (dm.oDr == 1) {
             dm.oDr = 2;
         } else {
             dm.oDr = 1;
         }
     };
-    this.rsDr = function () {
+    this.rsDr = function() {
         var dDd = cmn.Gisv('ed', dm.uid);
         if (dDd) {
             dm.oDr = dDd;
         }
     };
-    this.cFt = function (w, pXw, cDw, wW, cDo, scL) {
+    this.cFt = function(w, pXw, cDw, wW, cDo, scL) {
         if ((dm.Lvl == 1) && (dm.mO == 1)) {
             return true;
         }
@@ -2770,7 +2771,7 @@ function dmc() {
         }
         return r;
     };
-    this.ShHdObj = function (w, t, sh, opCst, fnc) {
+    this.ShHdObj = function(w, t, sh, opCst, fnc) {
         try {
             if (w == null || w == undefined)
                 return;
@@ -2812,7 +2813,7 @@ function dmc() {
             cmn.ErrHr(ex, arguments);
         }
     };
-    this.GetFullMenuID = function (mid) {
+    this.GetFullMenuID = function(mid) {
         var midF = null;
         try {
             midF = eval('gbd4Hirq0nTyd' + mid);
@@ -2823,7 +2824,7 @@ function dmc() {
         }
         return midF;
     };
-    this.GetHref = function (mid, iid) {
+    this.GetHref = function(mid, iid) {
         var midF = dm.GetFullMenuID(mid);
         if (midF == '')
             return;
@@ -2845,7 +2846,7 @@ function dmc() {
         var href = oncl.substring(ind + 10, ind2);
         return href;
     };
-    this.HideSubmenus = function (mid) {
+    this.HideSubmenus = function(mid) {
         var midF = dm.GetFullMenuID(mid);
         if (midF == '')
             return;
@@ -2855,7 +2856,7 @@ function dmc() {
         dm.cAm();
         dm.uid = uidRm;
     };
-    this.HighlightItem = function (mid, iid, t) {
+    this.HighlightItem = function(mid, iid, t) {
         var uid = dm.GetFullMenuID(mid);
         if (uid == '')
             return;
@@ -2913,7 +2914,7 @@ function dmc() {
         }
         return Res;
     };
-    this.SelUnselMlt = function (uid, Elms, op) {
+    this.SelUnselMlt = function(uid, Elms, op) {
         var Res = false;
         var Elm = null;
         var _lvl = -1;
@@ -2929,13 +2930,13 @@ function dmc() {
         }
         return Res;
     };
-    this.HideItem = function (mid, iid) {
+    this.HideItem = function(mid, iid) {
         dm.ShHdItm(mid, iid, '0');
     };
-    this.ShowItem = function (mid, iid) {
+    this.ShowItem = function(mid, iid) {
         dm.ShHdItm(mid, iid, '1');
     };
-    this.ShHdItm = function (mid, iid, ShHd, t) {
+    this.ShHdItm = function(mid, iid, ShHd, t) {
         var uid = dm.GetFullMenuID(mid);
         if (uid == '')
             return;
@@ -2959,7 +2960,7 @@ function dmc() {
             attr = 'display:none !important';
         cmn.SetAttr2(itm, 'style', attr);
     };
-    this.ApplyCSS = function (mid, cls, sbm, t) {
+    this.ApplyCSS = function(mid, cls, sbm, t) {
         var uid = dm.GetFullMenuID(mid);
         if (uid == '')
             return;
@@ -2989,7 +2990,7 @@ function dmc() {
             }
         }
     };
-    this.SetVar = function (mid, name, value, t) {
+    this.SetVar = function(mid, name, value, t) {
         var uid = dm.GetFullMenuID(mid);
         if (uid == '')
             return;
@@ -3020,10 +3021,11 @@ function AddCss_main(Path, HostURL) {
     cmn.RegPageCss('Style_Menu_A81', Css, true);
 };
 var gbd4Hirq0nTydmain = 'mnF3216978';
-var mnF3216978i = function () {
+var mnF3216978i = function() {
     dm.i('mnF3216978', 0);
 };
 var mnF3216978L = null;
+
 function mnF3216978LCn(Path) {
     this.id = 'main';
     this.uid = 'main';
@@ -3058,7 +3060,7 @@ var main = {
     Plcd: false,
     ItmsCnt: 10,
     CCP: 'A81',
-    Prepare: function () {
+    Prepare: function() {
         var Ident = 'main';
         var Path = main._path;
         var HostURL = '';
@@ -3108,7 +3110,7 @@ var main = {
         if (lst != '/')
             Path = Path + '/';
 
-        var gl = function (h) {
+        var gl = function(h) {
             var l = document.createElement('a');
             l.href = h;
             return l;
@@ -3129,7 +3131,7 @@ var main = {
         main.SubMnu = cmn.DeCompact(main.SubMnu, 'A81', 'mnF3216978', 'MG_Icons', '1');
     },
 
-    addEvent: function (el, evnt, func) {
+    addEvent: function(el, evnt, func) {
         try {
             if (el.addEventListener) {
                 el.addEventListener(evnt, func, false);
@@ -3139,7 +3141,7 @@ var main = {
         } catch (e) {}
     },
 
-    GetDst: function () {
+    GetDst: function() {
         var DstID = main._div;
         if (DstID == '')
             DstID = 'main';
@@ -3147,7 +3149,7 @@ var main = {
         return Dst;
     },
 
-    PlaceAuto: function (p, d, sb) {
+    PlaceAuto: function(p, d, sb) {
         main.Plcd = false;
         main._path = '';
         main._div = '';
@@ -3166,7 +3168,7 @@ var main = {
         main.PutInDIV_TO(0);
     },
 
-    PutInDIV_TO: function (t) {
+    PutInDIV_TO: function(t) {
         var Dst = main.GetDst();
         if (Dst == null || Dst == undefined) {
             if (t < 50) {
@@ -3179,7 +3181,7 @@ var main = {
         }
     },
 
-    PutInDIV: function () {
+    PutInDIV: function() {
         if (main.Plcd == true)
             return;
         var Dst = main.GetDst();
@@ -3200,14 +3202,14 @@ var main = {
         main.Plcd = true;
         var Mnu = cmn.Mko('mnF3216978_-0p');
         if (Mnu != null) {
-            var ShMn = function () {
+            var ShMn = function() {
                 Mnu.childNodes[0].style.visibility = 'visible';
             };
             setTimeout(ShMn, 20);
         }
     },
 
-    Show: function () {
+    Show: function() {
         main.Plcd = false;
         main.Prepare();
         document.write(main.Mnu + main.SubMnu);
@@ -3216,4 +3218,3 @@ var main = {
     }
 
 };
-setTimeout(function(){main.PlaceAuto();},1000);
