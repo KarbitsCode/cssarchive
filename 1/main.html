@@ -10,15 +10,10 @@
 <link rel="icon" type="image/vnd.microsoft.icon" href="main/favicon.ico">
 <script type="text/javascript" src="main/common.js"></script>
 <script type="text/javascript">
-if (document.documentMode) {
-  console.log("IE detected");
-  if (window.location.pathname.split("/").slice(-1)[0].replace(/\.html$/, "") !== "main-min") {
-    window.location.replace("main-min.html?on=ie");
-  };
-};
 window.onload = function() {
   autoRefresh("..", 600);
   keyEvent(77);
+  detectIE();
   setTimeout(function() {
     window.location.replace("#main");
   }, 2000);
@@ -26,7 +21,6 @@ window.onload = function() {
 </script>
 </head>
 <body bgcolor="#FFFFFF" oncontextmenu="return true">
-<script type="text/javascript" src="main/main.js?h=6ED7"></script>
 <main id="main">
 <noscript>
 <h3>Navigasi</h3>
@@ -82,8 +76,9 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-1YYQXL8T57');
 </script>
-<script src="main/eruda.js"></script>
-<script src="main/darkmode.js"></script>
+<script type="text/javascript" src="main/main.js?h=6ED7"></script>
+<script type="text/javascript" src="main/eruda.js"></script>
+<script type="text/javascript" src="main/darkmode.js"></script>
 <script>
 const darkmode = new Darkmode({
   bottom: "64px",
@@ -98,6 +93,7 @@ const darkmode = new Darkmode({
   label: "🌓",
   autoMatchOsTheme: false
 });
+setTimeout(main.PlaceAuto, 1000);
 document.getElementById("main").classList.add("darkmode-ignore");
 window.addEventListener("load", function() {
   darkmode.showWidget();

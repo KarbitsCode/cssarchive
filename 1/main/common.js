@@ -5,24 +5,24 @@ function autoRefresh(r,d) {
   let time = input_time.value = delay;
   let min_time;
   if (time >= 60) {
-    min_time = time / 60 + " minutes";
+    min_time = Math.round(time / 60) + " minutes";
   } else {
     min_time = time + " seconds";
   };
   console.log("Auto refresh page in " + min_time);
-  function redirect_page() {
+  function pageTimer() {
     if (time !== 1) {
       time = time - 1;
       input_time.value = time;
-      setTimeout(redirect_page, 1000);
+      setTimeout(pageTimer, 1000);
     } else {
-      window.location.href = redirect_url;
+      gotoPage(redirect_url);
     };
   };
-  setTimeout(redirect_page, 1000);
+  setTimeout(pageTimer, 1000);
 };
 function gotoPage(l) {
-  if (document.documentMode) {
+  if (detectIE()) {
     window.location.assign(l);
   } else {
     window.location.assign("../redir.html?go=" + l);
@@ -55,6 +55,18 @@ function adBlocker() {
       }, 1000);
     }, 100);
   }, 1000);
+};
+function detectIE() {
+  if (document.documentMode) {
+    console.log("IE detected");
+    if (window.location.pathname.split("/").slice(-1)[0].replace(/\.html$/, "") !== "main-min") {
+      window.location.replace("main-min.html?on=ie");
+    } else {
+      document.getElementById("displaymiddle").textContent = "IE detected";
+    };
+    return true;
+  };
+  return false;
 };
 function updateData() {
   let data = null;
