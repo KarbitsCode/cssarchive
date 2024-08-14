@@ -151,8 +151,8 @@
                 event.preventDefault();
                 input_field.select();
             } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\]$/.test(event.key)) {
-                event.preventDefault();
-                append(event.key);
+                if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) event.preventDefault();
+                if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             }
         }
     </script>
