@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <title>Ruffle Flash Emulator</title>
+</head>
+<body>
+    <div id="frame"></div><br>
+    <div id="status">Playing Quiz Parampaa <span id="state"></span></div>
+    <div id="choose">Choose a flash game to play</div>
+    <a href="javascript:void(0)" onclick="run('1')">Quiz Parampaa 1</a><br>
+    <a href="javascript:void(0)" onclick="run('2')">Quiz Parampaa 2</a><br>
+    <a href="javascript:void(0)" onclick="run('X')">Quiz Parampaa Kita Semua</a><br>
+    <script>
+        window.RufflePlayer = window.RufflePlayer || {};
+        const frame = document.getElementById("frame")
+        const status = document.getElementById("status")
+        const state = document.getElementById("state")
+        const choose = document.getElementById("choose")
+        const ruffle = window.RufflePlayer.newest()
+        const player = ruffle.createPlayer()
+        frame.appendChild(player)
+        status.setAttribute("hidden", "")
+        const run = (to) => {
+            player.load("http://parampaa.net/QP" + to + ".swf")
+            state.textContent = to !== "X" ? to : "Kita Semua"
+            status.removeAttribute("hidden", "")
+            choose.setAttribute("hidden", "")
+        }
+    </script>
+</body>
+</html>
