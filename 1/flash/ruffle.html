@@ -23,6 +23,7 @@
         const player = ruffle.createPlayer()
         frame.appendChild(player)
         status.setAttribute("hidden", "")
+        document.getElementsByTagName("ruffle-player")[0].style.borderStyle = 'solid'
         const run = (to) => {
             player.load("http://parampaa.net/QP" + to + ".swf")
             state.textContent = to !== "X" ? to : "Kita Semua"
