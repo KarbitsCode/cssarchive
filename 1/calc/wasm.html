@@ -82,9 +82,18 @@
             </td>
         </tr>
     </table>
-    <script src="loader.js"></script>
     <script>
-        let input_field = document.getElementById("field");
+        const input_field = document.getElementById("field");
+        
+        function inputready() {
+            input_field.value = "Ready";
+            input_field.removeAttribute("readonly");
+        }
+        
+        function inputerror() {
+            input_field.value = "Error";
+            input_field.setAttribute("disabled", "");
+        }
         
         function clearfield() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
@@ -156,5 +165,6 @@
             }
         }
     </script>
+    <script src="loader.js" onerror="inputerror()"></script>
 </body>
 </html>

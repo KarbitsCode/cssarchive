@@ -22,12 +22,14 @@
         const ruffle = window.RufflePlayer.newest()
         const player = ruffle.createPlayer()
         frame.appendChild(player)
+        frame.style.height = "400px"
+        frame.style.width = "550px"
+        frame.style.borderStyle = "solid"
         status.setAttribute("hidden", "")
-        document.getElementsByTagName("ruffle-player")[0].style.borderStyle = 'solid'
         const run = (to) => {
-            player.load("http://parampaa.net/QP" + to + ".swf")
+            player.load("https://parampaa.net/QP" + to + ".swf")
             state.textContent = to !== "X" ? to : "Kita Semua"
-            status.removeAttribute("hidden", "")
+            status.removeAttribute("hidden")
             choose.setAttribute("hidden", "")
         }
     </script>
