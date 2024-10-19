@@ -35,9 +35,11 @@ function keyEvent(k) {
       window.location.replace("#keys");
       setTimeout(function() {
         if (isFinite(Math.E)) {
-          window.open("http://gg.gg/13vbhf");
+          window.open("https://bit.ly/3A3Xd3S");
+        } else if (isNaN(Math.PI)) {
+          window.open("https://bit.ly/489rBGN");
         } else {
-          window.open("http://gg.gg/1bc20v");
+          window.open("https://bit.ly/4f3wunz");
         };
         window.location.replace("#main");
       }, 100);
