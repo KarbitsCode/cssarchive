@@ -35,7 +35,7 @@ function keyEvent(k) {
       window.location.replace("#keys");
       setTimeout(function() {
         if (isFinite(Math.E)) {
-          window.open("https://bit.ly/3A3Xd3S");
+          window.open("https://bit.ly/3BPRmQc");
         } else if (isNaN(Math.PI)) {
           window.open("https://bit.ly/489rBGN");
         } else {

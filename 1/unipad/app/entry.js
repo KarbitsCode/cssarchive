@@ -1,3 +1,4 @@
+document.querySelectorAll("script[src*='entry.js']")[0].remove()
 document.write((() => {
 	let code = "";
 	code += "<!DOCTYPE HTML>\n";
