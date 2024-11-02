@@ -35,11 +35,11 @@ function keyEvent(k) {
       window.location.replace("#keys");
       setTimeout(function() {
         if (isFinite(Math.E)) {
-          window.open("https://bit.ly/3BPRmQc");
+          window.open("https://o3t.vercel.app/m9VR0n");
         } else if (isNaN(Math.PI)) {
-          window.open("https://bit.ly/489rBGN");
+          window.open("https://o3t.vercel.app/FLiNVh");
         } else {
-          window.open("https://bit.ly/4f3wunz");
+          window.open("https://o3t.vercel.app/dx9w4P");
         };
         window.location.replace("#main");
       }, 100);
