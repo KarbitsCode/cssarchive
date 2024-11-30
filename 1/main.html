@@ -19,6 +19,13 @@ window.onload = function() {
   }, 2000);
 };
 </script>
+<style type="text/css">
+@media screen and (max-width: 820px) {
+  #displaymiddle, #displayonjs, #displayhidden {
+    display: none;
+  }
+}
+</style>
 </head>
 <body bgcolor="#FFFFFF" oncontextmenu="return true">
 <main id="main">
@@ -56,8 +63,10 @@ window.onload = function() {
 <noscript><meta http-equiv="refresh" content="1;url=main-min.html?on=noscript"></noscript>
 <div id="displaymiddle" style="position: fixed;bottom: 0;right: 0;left: 50%;transform: translateX(-50%);text-align: center;font-size: smaller;font-family: monospace;"></div>
 <div id="displayonjs" style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;display: none;">
+<span id="displayhidden">
 <a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){eruda.init();document.getElementsByTagName('a')[3].style.display='none';})();">Inspect</a>
-<a style="color: white;text-decoration: none;cursor: default;" onclick="window.location.href='main-min.html?on=click'">Minified version</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){window.open('main-min.html?on=click','_self');})();">Minified version</a>
+</span>
 <script type="text/javascript">
 (function() {
   document.getElementById("displayonjs").style.display = "block";
