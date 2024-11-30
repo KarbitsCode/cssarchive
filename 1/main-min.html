@@ -19,6 +19,13 @@ window.onload = function() {
   }, 2000);
 };
 </script>
+<style type="text/css">
+@media screen and (max-width: 420px) {
+  #displaymiddle, #displayonjs, #displayhidden {
+    display: none;
+  }
+}
+</style>
 </head>
 <body bgcolor="#FFFFFF" oncontextmenu="return true">
 <main id="main">
@@ -50,11 +57,13 @@ window.onload = function() {
 </main>
 <input type="text" size="3" id="url_time" hidden="true">
 <div><a href="." style="position: fixed;right: 0;cursor: help;text-decoration: none;">&#46;</a></div>
-<div style="position: fixed;bottom: 0;left: 50;font-size: smaller;font-family: monospace;"><a href="https://karbitscode.github.io/" target="_blank">GitHub</a>&nbsp;|&nbsp;<a href="https://m.youtube.com/channel/UC02_oXrsUEjIQYYSI3Zfqlg" target="_blank">YouTube</a></div>
-<noscript><div style="position: fixed;bottom: 0;right: 0;font-size: smaller;font-family: monospace;">Javascript is disabled</div></noscript>
+<div style="position: fixed;bottom: 0;left: 5;font-size: smaller;font-family: monospace;"><a href="https://karbitscode.github.io/" target="_blank">GitHub</a>&nbsp;|&nbsp;<a href="https://m.youtube.com/channel/UC02_oXrsUEjIQYYSI3Zfqlg" target="_blank">YouTube</a></div>
+<noscript><div style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;">Javascript is disabled</div></noscript>
 <div id="displaymiddle" style="position: fixed;bottom: 0;right: 0;left: 50%;transform: translateX(-50%);text-align: center;font-size: smaller;font-family: monospace;"></div>
 <div id="displayonjs" style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;display: none;">
-<a style="color: blue;text-decoration: none;cursor: pointer;" onclick="window.location.href='main.html?on=click'">Normal version</a>
+<span id="displayhidden">
+<a style="color: blue;text-decoration: none;cursor: pointer;" onclick="javascript:(function(){window.open('main.html?on=click','_self');})();">Normal version</a>
+</span>
 <script type="text/javascript">
 (function() {
   document.getElementById("displayonjs").style.display = "block";
