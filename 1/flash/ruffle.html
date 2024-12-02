@@ -22,9 +22,9 @@
         const ruffle = window.RufflePlayer.newest()
         const player = ruffle.createPlayer()
         frame.appendChild(player)
-        frame.style.height = "400px"
-        frame.style.width = "550px"
-        frame.style.borderStyle = "solid"
+        frame.style.setProperty("height", "400px", "")
+        frame.style.setProperty("width", "550px", "")
+        frame.style.setProperty("border-style", "solid", "")
         status.setAttribute("hidden", "")
         const run = (to) => {
             player.load("https://parampaa.net/QP" + to + ".swf")
