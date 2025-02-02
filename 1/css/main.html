@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>CSS Projects</title>
+<style>
+iframe {
+  pointer-events: none;
+}
+section {
+  display: flex;
+}
+a {
+  display: flex;
+  justify-content: center;
+}
+</style>
+</head>
+<body bgcolor="#FFFFFF" oncontextmenu="return true">
+<main id="main">
+<h3>CSS Projects</h3>
+<p></p>
+<section>
+<div>
+<iframe src="css.html" width="400" height="400" title="css" scrolling="no"></iframe>
+<a href="css.html" title="css" onclick="gotoPage(this.href);return false">Contoh CSS</a>
+</div><div>
+<iframe src="gmbr.html" width="400" height="400" title="gmbr" scrolling="no"></iframe>
+<a href="gmbr.html" title="gmbr" onclick="gotoPage(this.href);return false">Gambar Bergerak</a>
+</div><div>
+<iframe src="psd.html" width="400" height="400" title="psd" scrolling="no"></iframe>
+<a href="psd.html" title="psd" onclick="gotoPage(this.href);return false">Photoshop Web</a>
+</div><div>
+<iframe src="warna.html" width="400" height="400" title="warna" scrolling="no"></iframe>
+<a href="warna.html" title="warna" onclick="gotoPage(this.href);return false">Warna</a>
+</div>
+</section>
+<script>
+document.querySelectorAll('iframe').forEach((element) => {
+	element.addEventListener('load', () => {
+		element.contentWindow.document.body.style.setProperty('zoom', '50%')
+	})
+})
+</script>
+</body>
+</html>
