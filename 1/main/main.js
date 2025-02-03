@@ -1,5 +1,5 @@
 /*!
- * JavaScript code for dropdown menu (created: February 01, 2025 12:30:14, Hash: 81A4, UID_CRC: EF967046)
+ * JavaScript code for dropdown menu (created: February 02, 2025 07:53:05, Hash: CE4C, UID_CRC: EF967046)
  * Copyright (c) 2003-2025 Dropdown Menu Generator. All rights reserved.
  * https://www.dropdownmenugenerator.com
  */
@@ -3012,7 +3012,7 @@ function dmc() {
 /*DSRGFT5675443*/
 
 function AddGlyphs(Path) {
-    cmn.RegWbFnt('MG_Icons', 'MG_Icons', Path + 'MG_Icons', 'r729009850', true);
+    cmn.RegWbFnt('MG_Icons', 'MG_Icons', Path + 'MG_Icons', 'r179151910', true);
 };
 
 function AddCss_main(Path, HostURL) {
@@ -3052,7 +3052,7 @@ function mnF3216978LCn(Path) {
     this.ttt_mnF3216978_i4 = 'ascii';
     this.ttt_mnF3216978_i6 = 'css';
     this.ttt_mnF3216978_i5 = 'dcd';
-    this.ttt_mnF3216978_i9 = 'temp';
+    this.ttt_mnF3216978_i9 = 'rvu';
     this.ttt_mnF3216978_i10 = 'unipad';
     this.ttt_mnF3216978_i11 = 'flash';
     this.ttt_mnF3216978_i12 = 'calc';
@@ -3135,7 +3135,7 @@ var main = {
         var s0 = '-p" style="Z-INDEX:999999;height:auto;visibility:hidden;POSITION:absolute;LEFT:1px;TOP:1px;WIDTH:auto;padding:0px;"><div<t>SubMenuDIV" onclick="dm.mc();" onmouseover="dm.vD();" onmouseout="dm.uD();<c> id="<r>_i';
         var s2 = '-smt"><g><r>_i';
         var s3 = '<j>ArrowTD<f><g><r>_i';
-        main.SubMnu = '<div id="<r>ifc"></div><div id="<r>_i3' + s0 + '3' + s2 + '4<n>\'\',\'1\<z>../redir.html?go=1/ascii.html\',\'_self\');<l>2<y>>&#xe74e;<h>4-tl">ASCII Art' + s3 + '6<n>\'\',\'1\<z>../redir.html?go=1/css.html\',\'_self\');<l>2<y>>&#xe74e;<h>6-tl">CSS Projects' + s3 + '5<n>\'\',\'1\<z>../redir.html?go=1/dcd.html\',\'_self\');<l>2<y>>&#xe74e;<h>5-tl">Dicoding Projects' + s3 + '9<n>\'\',\'1\<z>../redir.html?go=1/temp.html\',\'_self\');<l>2<y>>&#xe74e;<h>9-tl">Konversi Suhu' + s3 + '10<n>\'\',\'1\<z>../redir.html?go=1/unipad.html\',\'_self\');<l>2<y>>&#xe74e;<h>10-tl">Unipad Player' + s3 + '11<n>\'\',\'1\<z>../redir.html?go=1/flash.html\',\'_self\');<l>2<y>>&#xe74e;<h>11-tl">Flash Games' + s3 + '12<n>\'\',\'1\<z>../redir.html?go=1/calc.html\',\'_self\');<l>2<y>>&#xe74e;<h>12-tl">Kalkulator' + s3 + '13<n>\'\',\'1\<z>../redir.html?go=1/py.html\',\'_self\');<l>2<y>>&#xe74e;<h>13-tl">PyScript' + s3 + '14<n>\'\',\'1\<z>../redir.html?go=1/cnt.html\',\'_self\');<l>2<y>>&#xe74e;<h>14-tl">Counter<j>ArrowTD<f></table></div></div>';
+        main.SubMnu = '<div id="<r>ifc"></div><div id="<r>_i3' + s0 + '3' + s2 + '4<n>\'\',\'1\<z>../redir.html?go=1/ascii.html\',\'_self\');<l>2<y>>&#xe74e;<h>4-tl">ASCII Art' + s3 + '6<n>\'\',\'1\<z>../redir.html?go=1/css.html\',\'_self\');<l>2<y>>&#xe74e;<h>6-tl">CSS Projects' + s3 + '5<n>\'\',\'1\<z>../redir.html?go=1/dcd.html\',\'_self\');<l>2<y>>&#xe74e;<h>5-tl">Dicoding Projects' + s3 + '9<n>\'\',\'1\<z>../redir.html?go=1/rvu.html\',\'_self\');<l>2<y>>&#xe74e;<h>9-tl">RevoU Projects' + s3 + '10<n>\'\',\'1\<z>../redir.html?go=1/unipad.html\',\'_self\');<l>2<y>>&#xe74e;<h>10-tl">Unipad Player' + s3 + '11<n>\'\',\'1\<z>../redir.html?go=1/flash.html\',\'_self\');<l>2<y>>&#xe74e;<h>11-tl">Flash Games' + s3 + '12<n>\'\',\'1\<z>../redir.html?go=1/calc.html\',\'_self\');<l>2<y>>&#xe74e;<h>12-tl">Kalkulator' + s3 + '13<n>\'\',\'1\<z>../redir.html?go=1/py.html\',\'_self\');<l>2<y>>&#xe74e;<h>13-tl">PyScript' + s3 + '14<n>\'\',\'1\<z>../redir.html?go=1/cnt.html\',\'_self\');<l>2<y>>&#xe74e;<h>14-tl">Counter<j>ArrowTD<f></table></div></div>';
         main.SubMnu = cmn.DeCompact(main.SubMnu, 'A81', 'mnF3216978', 'MG_Icons', '1');
     },
 
