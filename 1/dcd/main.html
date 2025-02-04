@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Dicoding Projects</title>
+<style>
+iframe {
+  pointer-events: none;
+}
+section {
+  display: flex;
+}
+a {
+  display: flex;
+  justify-content: center;
+}
+</style>
+</head>
+<body bgcolor="#FFFFFF" oncontextmenu="return true">
+<main id="main">
+<h3>Dicoding Projects</h3>
+<p></p>
+<section>
+<div>
+<iframe src="cpp.html" width="400" height="400" title="cpp" scrolling="no"></iframe>
+<a href="cpp.html" title="cpp" onclick="gotoPage(this.href);return false">Artikel C++</a>
+</div>
+</section>
+<script>
+document.querySelectorAll('iframe').forEach((element) => {
+	element.addEventListener('load', () => {
+		element.contentWindow.document.body.style.setProperty('zoom', '50%')
+	})
+})
+</script>
+</body>
+</html>

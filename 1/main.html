@@ -94,22 +94,22 @@ gtag('config', 'G-1YYQXL8T57');
 <script type="text/javascript" src="main/eruda.js"></script>
 <script type="text/javascript" src="main/darkmode.js"></script>
 <script type="text/javascript">
-const darkmode = new Darkmode({
-  bottom: "64px",
-  right: "unset",
-  left: "32px",
-  time: "0.5s",
-  mixColor: "#fff",
-  backgroundColor: "#fff",
-  buttonColorDark: "#100f2c",
-  buttonColorLight: "#fff",
-  saveInCookies: false,
-  label: "🌓",
-  autoMatchOsTheme: false
-});
 setTimeout(main.PlaceAuto, 1000);
-document.getElementById("main").classList.add("darkmode-ignore");
 window.addEventListener("load", function() {
+  const darkmode = new Darkmode({
+    bottom: "64px",
+    right: "unset",
+    left: "32px",
+    time: "0.5s",
+    mixColor: "#fff",
+    backgroundColor: "#fff",
+    buttonColorDark: "#100f2c",
+    buttonColorLight: "#fff",
+    saveInCookies: false,
+    label: "🌓",
+    autoMatchOsTheme: false
+  });
+  document.getElementById("main").classList.add("darkmode-ignore");
   darkmode.showWidget();
   setInterval(function() {
     for (const a of document.querySelectorAll('a')) {
