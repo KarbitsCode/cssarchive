@@ -18,7 +18,7 @@ if (urlParams) {
   console.log("Got urlParams: " + urlParams);
   if (urlParams === "min") {
     var dstVar = "main-min";
-  } else if (urlParams.slice(0,-2) === "i") {
+  } else if (urlParams.split("&")[0].includes("=")) {
     var dstVar = "main";
   } else {
     var dstVar = urlParams;
