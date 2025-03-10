@@ -20,17 +20,31 @@
         const state = document.getElementById("state")
         const choose = document.getElementById("choose")
         const ruffle = window.RufflePlayer.newest()
-        const player = ruffle.createPlayer()
-        frame.appendChild(player)
+        const container = ruffle.createPlayer()
+        const player = container.ruffle(1)
+        frame.appendChild(container)
         frame.style.setProperty("height", "400px", "")
         frame.style.setProperty("width", "550px", "")
         frame.style.setProperty("border-style", "solid", "")
         status.setAttribute("hidden", "")
         const run = (to) => {
-            player.load("https://parampaa.net/QP" + to + ".swf")
             state.textContent = to !== "X" ? to : "Kita Semua"
             status.removeAttribute("hidden")
             choose.setAttribute("hidden", "")
+            let executable = "./QP" + to + ".swf"
+            fetch(executable, { method: "HEAD" }).then(r => {
+                if (r.ok) {
+                    player.load(executable)
+                } else {
+                    fetch(executable.replace("swf", "bin"), { method: "HEAD" }).then(r => {
+                        if (r.ok) {
+                            player.load(executable.replace("swf", "bin"))
+                        } else {
+                            player.load(executable.replace("./", "https://parampaa.net/"))
+                        }
+                    })
+                }
+            })
         }
     </script>
 </body>
