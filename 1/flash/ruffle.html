@@ -27,24 +27,38 @@
         frame.style.setProperty("width", "550px", "")
         frame.style.setProperty("border-style", "solid", "")
         status.setAttribute("hidden", "")
-        const run = (to) => {
+        const run = async (to) => {
             state.textContent = to !== "X" ? to : "Kita Semua"
             status.removeAttribute("hidden")
             choose.setAttribute("hidden", "")
             let executable = "./QP" + to + ".swf"
-            fetch(executable, { method: "HEAD" }).then(r => {
-                if (r.ok) {
-                    player.load(executable)
-                } else {
-                    fetch(executable.replace("swf", "bin"), { method: "HEAD" }).then(r => {
-                        if (r.ok) {
-                            player.load(executable.replace("swf", "bin"))
-                        } else {
-                            player.load(executable.replace("./", "https://parampaa.net/"))
-                        }
-                    })
+            if (await exists(executable)) {
+                player.load(executable)
+            } else if (await exists(executable.replace("swf", "bin"))) {
+                player.load(executable.replace("swf", "bin"))
+            } else if (await exists(executable.replace("./", "https://karbitscode.github.io/cssarchive/1/flash/"))) {
+               player.load(executable.replace("./", "https://karbitscode.github.io/cssarchive/1/flash/"))
+            } else if (await exists(executable.replace("./", "https://parampaa.net/"))) {
+               player.load(executable.replace("./", "https://parampaa.net/"))
+            }
+        }
+        const exists = async (to, method = "HEAD") => {
+            try {
+                let r = await fetch(to, { method: method })
+                if (r.ok && r.status >= 200 && r.status < 300) {
+                    return r.status
+                } else if (!r.ok && r.status >= 400 && r.status < 600) {
+                    r = await fetch(to, { method: method.replace("HEAD", "GET") })
+                    if (r.ok && r.status >= 200 && r.status < 300) {
+                        return r.status
+                    } else {
+                        return false
+                    }
                 }
-            })
+            } catch(e) {
+                console.error(e)
+                return false
+            }
         }
     </script>
 </body>
