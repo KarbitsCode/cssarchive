@@ -42,13 +42,13 @@
                player.load(executable.replace("./", "https://parampaa.net/"))
             }
         }
-        const exists = async (to, method = "HEAD") => {
+        const exists = async (to) => {
             try {
-                let r = await fetch(to, { method: method })
+                let r = await fetch(to, { method: "HEAD" })
                 if (r.ok && r.status >= 200 && r.status < 300) {
                     return r.status
                 } else if (!r.ok && r.status >= 400 && r.status < 600) {
-                    r = await fetch(to, { method: method.replace("HEAD", "GET") })
+                    r = await fetch(to, { method: "GET" })
                     if (r.ok && r.status >= 200 && r.status < 300) {
                         return r.status
                     } else {
