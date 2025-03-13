@@ -59,7 +59,7 @@ function locateFile(path) {
     return Module['locateFile'](path, scriptDirectory);
   }
   if (path.startsWith('http')) {
-    return path
+    return path;
   }
   return scriptDirectory + path;
 }
@@ -661,7 +661,7 @@ function isFileExists(url) {
     request.send(null);
     if (request.status >= 400 && request.status < 600) {
       request = prepare('GET');
-      request.send(null)
+      request.send(null);
     }
     return (request.status >= 200 && request.status < 300);
   } catch(e) {
