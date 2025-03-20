@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RevoU Projects</title>
 <style>
 iframe {
@@ -27,10 +29,10 @@ a {
 </section>
 <script>
 document.querySelectorAll('iframe').forEach((element) => {
-	element.addEventListener('load', () => {
-		element.contentWindow.document.body.style.setProperty('zoom', '50%')
-	})
-})
+  element.addEventListener('load', () => {
+    element.contentWindow.document.body.style.setProperty('zoom', '50%');
+  });
+});
 </script>
 </body>
 </html>
