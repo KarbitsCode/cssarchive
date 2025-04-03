@@ -1,10 +1,18 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta charset="UTF-8">
+<title>Main Page</title>
+<meta name="description" content="RevoU Projects">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RevoU Projects</title>
-<style>
+<link rel="icon" type="image/vnd.microsoft.icon" href="../main/favicon.ico">
+<script type="text/javascript" src="../main/common.js"></script>
+<script type="text/javascript">
+window.onload = function() {
+  autoRefresh(getRoot() + "?rvu/main", 600);
+};
+</script>
+<style type="text/css">
 iframe {
   pointer-events: none;
 }
@@ -23,16 +31,10 @@ a {
 <p></p>
 <section>
 <div>
-<iframe src="temp.html" width="400" height="400" title="temp" scrolling="no"></iframe>
-<a href="temp.html" title="temp" onclick="gotoPage(this.href);return false">Temperature Converter</a>
+<iframe src="temp.html" width="400" height="400" title="rvu/temp" scrolling="no"></iframe>
+<a href="temp.html" title="rvu/temp">Temperature Converter</a>
 </div>
 </section>
-<script>
-document.querySelectorAll('iframe').forEach((element) => {
-  element.addEventListener('load', () => {
-    element.contentWindow.document.body.style.setProperty('zoom', '50%');
-  });
-});
-</script>
+<input type="text" size="3" id="url_time" hidden="true">
 </body>
 </html>

@@ -1,10 +1,18 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta charset="UTF-8">
+<title>Main Page</title>
+<meta name="description" content="CSS Projects">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CSS Projects</title>
-<style>
+<link rel="icon" type="image/vnd.microsoft.icon" href="../main/favicon.ico">
+<script type="text/javascript" src="../main/common.js"></script>
+<script type="text/javascript">
+window.onload = function() {
+  autoRefresh(getRoot() + "?css/main", 600);
+};
+</script>
+<style type="text/css">
 iframe {
   pointer-events: none;
 }
@@ -23,25 +31,19 @@ a {
 <p></p>
 <section>
 <div>
-<iframe src="css.html" width="400" height="400" title="css" scrolling="no"></iframe>
-<a href="css.html" title="css" onclick="gotoPage(this.href);return false">Contoh CSS</a>
+<iframe src="css.html" width="400" height="400" title="css/css" scrolling="no"></iframe>
+<a href="css.html" title="css/css">Contoh CSS</a>
 </div><div>
-<iframe src="gmbr.html" width="400" height="400" title="gmbr" scrolling="no"></iframe>
-<a href="gmbr.html" title="gmbr" onclick="gotoPage(this.href);return false">Gambar Bergerak</a>
+<iframe src="gmbr.html" width="400" height="400" title="css/gmbr" scrolling="no"></iframe>
+<a href="gmbr.html" title="css/gmbr">Gambar Bergerak</a>
 </div><div>
-<iframe src="psd.html" width="400" height="400" title="psd" scrolling="no"></iframe>
-<a href="psd.html" title="psd" onclick="gotoPage(this.href);return false">Photoshop Web</a>
+<iframe src="psd.html" width="400" height="400" title="css/psd" scrolling="no"></iframe>
+<a href="psd.html" title="css/psd">Photoshop Web</a>
 </div><div>
-<iframe src="warna.html" width="400" height="400" title="warna" scrolling="no"></iframe>
-<a href="warna.html" title="warna" onclick="gotoPage(this.href);return false">Warna</a>
+<iframe src="warna.html" width="400" height="400" title="css/warna" scrolling="no"></iframe>
+<a href="warna.html" title="css/warna">Warna</a>
 </div>
 </section>
-<script>
-document.querySelectorAll('iframe').forEach((element) => {
-  element.addEventListener('load', () => {
-    element.contentWindow.document.body.style.setProperty('zoom', '50%');
-  });
-});
-</script>
+<input type="text" size="3" id="url_time" hidden="true">
 </body>
 </html>
