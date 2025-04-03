@@ -10,6 +10,7 @@ function autoRefresh(r,d) {
     min_time = time + " seconds";
   };
   console.log("Auto refresh page in " + min_time);
+  console.log("Target redirect: " + redirect_url);
   function pageTimer() {
     if (time !== 1) {
       time = time - 1;
@@ -22,14 +23,15 @@ function autoRefresh(r,d) {
   setTimeout(pageTimer, 1000);
 };
 function gotoPage(l) {
+  console.log("Redirecting to: " + l);
   if (detectIE()) {
     window.location.assign(l);
   } else {
-    window.location.assign("../redir.html?go=" + l);
+    window.location.assign(getRoot() + "/redir.html?go=" + l);
   };
 };
 function keyEvent(k) {
-  window.onkeydown = function(event) {
+  window.addEventListener("keydown", function(event) {
     if (event.ctrlKey && (event.which === k || event.keyCode === k)) {
       console.log("Keys detected");
       window.location.replace("#keys");
@@ -44,14 +46,14 @@ function keyEvent(k) {
         window.location.replace("#main");
       }, 100);
     };
-  };
+  });
 };
 function adBlocker() {
   setTimeout(function() {
     console.log("Adblocker detected");
     window.location.replace("#adblock");
     setTimeout(function() {
-      history.replaceState("", document.title, window.location.pathname + "");
+      history.replaceState(null, document.title, window.location.pathname);
       setTimeout(function() {
         document.getElementById("displaymiddle").textContent = "Adblocker detected";
       }, 1000);
@@ -61,7 +63,8 @@ function adBlocker() {
 function detectIE() {
   if (document.documentMode) {
     console.log("IE detected");
-    if (window.location.pathname.split("/").slice(-1)[0].replace(/\.html$/, "") !== "main-min") {
+    let url = window.location.pathname.replace(/\.html$/, "").split("/");
+    if (adjacentArr(url, "1", "main") && url.slice(-1)[0] !== "main-min") {
       window.location.replace("main-min.html?on=ie");
     } else {
       document.getElementById("displaymiddle").textContent = "IE detected";
@@ -71,26 +74,59 @@ function detectIE() {
   return false;
 };
 function updateData() {
-  let data = null;
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", "../update.txt", false);
+  let data = null;
+  let src = getRoot() + "/update.txt";
+  xhr.open("HEAD", src, false);
   xhr.send(data);
-  if (xhr.status >= 200 && xhr.status < 300) {
-    data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
-    if (data !== null) {
-      data = data[data.length - 1];
+  if (xhr.status >= 200 && xhr.status < 600) {
+    xhr.open("GET", src, false);
+    xhr.send(data);
+    if (xhr.status >= 200 && xhr.status < 300) {
+      data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
+      if (data !== null) {
+        data = data[data.length - 1];
+      };
     };
   };
   return data;
 };
-document.onvisibilitychange = function() {
+function adjacentArr(a,f,s) {
+  for (let i = 0; i < a.length - 1; i++) {
+    if (a[i] === f && a[i + 1] === s) {
+      return true;
+    };
+  };
+  return false;
+};
+function getRoot() {
+  let url = window.location.pathname.split("/");
+  return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/");
+}
+document.addEventListener("DOMContentLoaded", function(event) {
+  document.querySelectorAll("a[title]").forEach(function(element) {
+    element.addEventListener("click", function(event) {
+      event.preventDefault();
+      gotoPage(event.target.href);
+    });
+  });
+  document.querySelectorAll('iframe').forEach(function(element) {
+    element.addEventListener('load', function(event) {
+      element.contentWindow.document.body.style.setProperty('zoom', '50%');
+    });
+  });
+});
+document.addEventListener("visibilitychange", function(event) {
   if (document.visibilityState === "visible") {
-    document.title = "Arsip CSS";
+    document.title = document.querySelector("meta[name=description]").getAttribute("content");
   } else {
     document.title = "Main Page";
   };
-};
+});
 setTimeout(function() {
-  history.replaceState("", document.title, window.location.pathname + "");
+  history.replaceState(null, document.title, window.location.pathname);
   document.dispatchEvent(new Event("visibilitychange"));
 }, 500);
+setTimeout(function() {
+  window.location.replace("#main");
+}, 2000);
