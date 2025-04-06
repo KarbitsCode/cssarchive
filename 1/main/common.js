@@ -64,7 +64,7 @@ function detectIE() {
   if (document.documentMode) {
     console.log("IE detected");
     let url = window.location.pathname.replace(/\.html$/, "").split("/");
-    if (adjacentArr(url, "1", "main") && url.slice(-1)[0] !== "main-min") {
+    if (url.some(function(_, i) {return (url[i] === "1" && url[i + 1] === "main")}) && url.slice(-1)[0] !== "main-min") {
       window.location.replace("main-min.html?on=ie");
     } else {
       document.getElementById("displaymiddle").textContent = "IE detected";
@@ -91,23 +91,15 @@ function updateData() {
   };
   return data;
 };
-function adjacentArr(a,f,s) {
-  for (let i = 0; i < a.length - 1; i++) {
-    if (a[i] === f && a[i + 1] === s) {
-      return true;
-    };
-  };
-  return false;
-};
 function getRoot() {
   let url = window.location.pathname.split("/");
   return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/");
-}
+};
 document.addEventListener("DOMContentLoaded", function(event) {
   document.querySelectorAll("a[title]").forEach(function(element) {
     element.addEventListener("click", function(event) {
       event.preventDefault();
-      gotoPage(event.target.href);
+      gotoPage(event.target.href.replace(/\.*$/, ""));
     });
   });
   document.querySelectorAll('iframe').forEach(function(element) {
