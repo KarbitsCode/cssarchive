@@ -14,7 +14,8 @@
     <a href="javascript:void(0)" onclick="run('2')">Quiz Parampaa 2</a><br>
     <a href="javascript:void(0)" onclick="run('X')">Quiz Parampaa Kita Semua</a><br>
     <script>
-        window.RufflePlayer = window.RufflePlayer || {};
+        window.RufflePlayer = window.RufflePlayer || {}
+        window.RufflePlayer.config = {"allowFullscreen": true}
         const frame = document.getElementById("frame")
         const status = document.getElementById("status")
         const state = document.getElementById("state")
@@ -22,6 +23,7 @@
         const ruffle = window.RufflePlayer.newest()
         const container = ruffle.createPlayer()
         const player = container.ruffle(1)
+        let interval = 0;
         frame.appendChild(container)
         frame.style.setProperty("height", "400px", "")
         frame.style.setProperty("width", "550px", "")
@@ -41,6 +43,12 @@
             } else if (await exists(executable.replace("./", "https://parampaa.net/"))) {
                player.load(executable.replace("./", "https://parampaa.net/"))
             }
+            clearInterval(interval)
+            interval = setInterval(() => {
+                if (player.suspended) {
+                    player.resume()
+                }
+            }, 5)
         }
         const exists = async (to) => {
             try {
