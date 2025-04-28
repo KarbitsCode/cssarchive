@@ -5,9 +5,9 @@ function autoRefresh(r,d) {
   let time = input_time.value = delay;
   let min_time;
   if (time >= 60) {
-    min_time = Math.round(time / 60) + " minutes";
+    min_time = Math.round(time / 60) + " minute" + (Math.abs(Math.round(time / 60)) <= 1 ? "" : "s");
   } else {
-    min_time = time + " seconds";
+    min_time = time + " second" + (Math.abs(time) <= 1 ? "" : "s");
   };
   console.log("Auto refresh page in " + min_time);
   console.log("Target redirect: " + redirect_url);
