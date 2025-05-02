@@ -40,8 +40,9 @@
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
+        if (type == 'error') {
+          div.style = 'background: red; padding: 10px;';
+        } else {
           if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
           setTimeout(function() {
             warningBanner.removeChild(div);
@@ -50,20 +51,6 @@
         }
         updateBannerVisibility();
       }
-
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/DistWeb.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/DistWeb.data.bin",
-        frameworkUrl: buildUrl + "/DistWeb.framework.js.bin",
-        codeUrl: buildUrl + "/DistWeb.wasm.bin",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "T3A",
-        productVersion: "1.0",
-        showBanner: unityShowBanner,
-      };
 
       // By default, Unity keeps WebGL canvas render target size matched with
       // the DOM size of the canvas element (scaled by window.devicePixelRatio)
@@ -104,21 +91,34 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/DistWeb.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/DistWeb.data.bin",
+        frameworkUrl: buildUrl + "/DistWeb.framework.js.bin",
+        codeUrl: buildUrl + "/DistWeb.wasm.bin",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "KarbitsCode",
+        productName: "T3A",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-
-              }).catch((message) => {
-                alert(message);
-              });
-            };
+        }).then((unityInstance) => {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
 
       document.body.appendChild(script);
 
