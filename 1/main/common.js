@@ -12,7 +12,7 @@ function autoRefresh(r,d) {
   console.log("Auto refresh page in " + min_time);
   console.log("Target redirect: " + redirect_url);
   function pageTimer() {
-    if (time !== 1) {
+    if (time >= 1) {
       time = time - 1;
       input_time.value = time;
       setTimeout(pageTimer, 1000);
@@ -97,14 +97,16 @@ function getRoot() {
 };
 document.addEventListener("DOMContentLoaded", function(event) {
   document.querySelectorAll("a[title]").forEach(function(element) {
-    element.addEventListener("click", function(event) {
-      event.preventDefault();
-      gotoPage(event.target.href.replace(/\.*$/, ""));
-    });
+    if (!element.hasAttribute("onclick") && element.getAttribute("href") !== "javascript:void(0)") {
+      element.addEventListener("click", function(event) {
+        event.preventDefault();
+        gotoPage(event.target.href.replace(/\.*$/, ""));
+      });
+    }
   });
-  document.querySelectorAll('iframe').forEach(function(element) {
-    element.addEventListener('load', function(event) {
-      element.contentWindow.document.body.style.setProperty('zoom', '50%');
+  document.querySelectorAll("iframe").forEach(function(element) {
+    element.addEventListener("load", function(event) {
+      element.contentWindow.document.body.style.setProperty("zoom", "50%");
     });
   });
 });
