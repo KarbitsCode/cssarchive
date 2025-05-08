@@ -91,37 +91,50 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/DistWeb.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/DistWeb.data.bin",
-        frameworkUrl: buildUrl + "/DistWeb.framework.js.bin",
-        codeUrl: buildUrl + "/DistWeb.wasm.bin",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "KarbitsCode",
-        productName: "T3A",
-        productVersion: "1.0",
-        showBanner: unityShowBanner,
+      var buildUrls = ["Build", "https://karbitscode.github.io/cssarchive/1/unity/Build"];
+      function tryLoadUnity(index = 0) {
+        if (index >= buildUrls.length) {
+          alert("Failed to load Unity WebGL content from all fallback sources.");
+          return;
+        }
+
+        var buildUrl = buildUrls[index];
+        var loaderUrl = buildUrl + "/DistWeb.loader.js";
+        var config = {
+          arguments: [],
+          dataUrl: buildUrl + "/DistWeb.data.bin",
+          frameworkUrl: buildUrl + "/DistWeb.framework.js.bin",
+          codeUrl: buildUrl + "/DistWeb.wasm.bin",
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: "KarbitsCode",
+          productName: "T3A",
+          productVersion: "1.0",
+          showBanner: unityShowBanner,
+        };
+  
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+          }).then((unityInstance) => {
+            document.querySelector("#unity-loading-bar").style.display = "none";
+            document.querySelector("#unity-fullscreen-button").onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }).catch((message) => {
+            // alert(message);
+            console.warn("Unity instance failed to load from " + buildUrl + ": " + message + ".\nRetrying with alternative location...");
+            tryLoadUnity(index + 1);
+          });
+        };
+        script.onerror = () => {
+          console.warn("Failed to load loader script: " + loaderUrl + ".\nRetrying with alternative location...");
+          tryLoadUnity(index + 1); // Retry with next buildUrl
+        };
+        document.body.appendChild(script);
       };
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          document.querySelector("#unity-loading-bar").style.display = "none";
-          document.querySelector("#unity-fullscreen-button").onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-        }).catch((message) => {
-          alert(message);
-        });
-      };
-
-      document.body.appendChild(script);
-
+      tryLoadUnity();
     </script>
   </body>
 </html>

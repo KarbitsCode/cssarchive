@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Main Page</title>
+<meta name="description" content="Unity Games">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="../main/common.js"></script>
+<script type="text/javascript">
+let list = ["T3A"];
+</script>
+<style type="text/css">
+section {
+  display: flex;
+}
+a {
+  display: flex;
+  justify-content: center;
+}
+</style>
+</head>
+<body bgcolor="#FFFFFF" oncontextmenu="return true">
+<main id="main">
+<input type="text" size="3" id="url_time" hidden="true">
+<section>
+<div>
+<img src="TemplateData/T3A.png" height="400" title="unity/t3a"></img>
+<a href="T3A.html" title="unity/t3a" onclick="return false">Tic Tac Toe</a>
+</div>
+</section>
+<script>
+document.querySelectorAll('a[title]').forEach(function(element) {
+  element.addEventListener('click', function(event) {
+    replacePage(event.target.attributes.getNamedItem('href').value.replace(/\.html$/, ''));
+  });
+});
+async function replacePage(target) {
+  window.location.replace('#' + target);
+  setTimeout(function() {
+    window.location.replace('#' + target);
+  }, 2500);
+  document.write(await((await fetch(target + '.html')).text()));
+};
+if (list.length === 1) {
+  (async function() {
+    await replacePage(list[0])
+  })();
+};
+</script>
+</body>
+</html>
