@@ -110,12 +110,13 @@ window.addEventListener("load", function() {
   document.getElementById("main").classList.add("darkmode-ignore");
   darkmode.showWidget();
   setInterval(function() {
+    document.cookie = 'acceptcookie=okg; path=/; max-age=1';
     for (const a of document.querySelectorAll('a')) {
       if (a.textContent.includes('Inspect') || a.textContent.includes('Minified version')) {
         if (darkmode.isActivated()) {
-          a.style.cursor = 'pointer'
+          a.style.cursor = 'pointer';
         } else {
-          a.style.cursor = 'default'
+          a.style.cursor = 'default';
         };
       };
     };

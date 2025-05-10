@@ -93,7 +93,8 @@ function updateData() {
 };
 function getRoot() {
   let url = window.location.pathname.split("/");
-  return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/");
+  let res = url.reverse().slice(url.indexOf("1") + 1).reverse().join("/");
+  return res === '' ? '/' : res;
 };
 document.addEventListener("DOMContentLoaded", function(event) {
   document.querySelectorAll("a[title]").forEach(function(element) {
