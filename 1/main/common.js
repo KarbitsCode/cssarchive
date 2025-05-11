@@ -1,13 +1,13 @@
 function autoRefresh(r,d) {
-  let redirect_url = r;
+  let redirect_url = getRoot() + r;
   let delay = d;
   let input_time = document.getElementById("url_time");
   let time = input_time.value = delay;
   let min_time;
   if (time >= 60) {
-    min_time = Math.round(time / 60) + " minute" + (Math.abs(Math.round(time / 60)) <= 1 ? "" : "s");
+    min_time = Math.round(time / 60) + " minute" + (Math.abs(Math.round(time / 60)) === 1 ? "" : "s");
   } else {
-    min_time = time + " second" + (Math.abs(time) <= 1 ? "" : "s");
+    min_time = time + " second" + (Math.abs(time) === 1 ? "" : "s");
   };
   console.log("Auto refresh page in " + min_time);
   console.log("Target redirect: " + redirect_url);
@@ -27,7 +27,7 @@ function gotoPage(l) {
   if (detectIE()) {
     window.location.assign(l);
   } else {
-    window.location.assign(getRoot() + "/redir.html?go=" + l);
+    window.location.assign(getRoot() + "redir.html?go=" + l);
   };
 };
 function keyEvent(k) {
@@ -76,7 +76,7 @@ function detectIE() {
 function updateData() {
   const xhr = new XMLHttpRequest();
   let data = null;
-  let src = getRoot() + "/update.txt";
+  let src = getRoot() + "update.txt";
   xhr.open("HEAD", src, false);
   xhr.send(data);
   if (xhr.status >= 200 && xhr.status < 600) {
@@ -93,10 +93,10 @@ function updateData() {
 };
 function getRoot() {
   let url = window.location.pathname.split("/");
-  let res = url.reverse().slice(url.indexOf("1") + 1).reverse().join("/");
-  return res === '' ? '/' : res;
+  return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/") + "/";
 };
 document.addEventListener("DOMContentLoaded", function(event) {
+  document.head.appendChild(Object.assign(document.createElement("script"), { src: "https://cdnjs.cloudflare.com/polyfill/v3/polyfill.js?version=4.8.0&features=default" }));
   document.querySelectorAll("a[title]").forEach(function(element) {
     if (!element.hasAttribute("onclick") && element.getAttribute("href") !== "javascript:void(0)") {
       element.addEventListener("click", function(event) {
