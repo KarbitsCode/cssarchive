@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <title>Unity Web Player | T3A</title>
+    <title>Unity Web Player</title>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -16,11 +16,11 @@
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"> </div>
+      <div id="unity-warning"></div>
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">T3A</div>
+        <div id="unity-build-title"></div>
       </div>
     </div>
     <script>
@@ -111,7 +111,19 @@
           productVersion: "1.0",
           showBanner: unityShowBanner,
         };
-  
+
+        if (document.title.length > 16) {
+          document.title = document.title.substring(0, 16);
+        }
+        document.title += " | " + config.productName;
+
+        let unityBuildTitle = document.getElementById("unity-build-title");
+        if (unityBuildTitle.hasChildNodes()) {
+          unityBuildTitle.childNodes[0].replaceWith(document.createTextNode(config.productName));
+        } else {
+          unityBuildTitle.appendChild(document.createTextNode(config.productName));
+        }
+
         var script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
