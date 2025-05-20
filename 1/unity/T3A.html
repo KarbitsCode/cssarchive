@@ -36,7 +36,7 @@
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
+        };
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
@@ -48,9 +48,9 @@
             warningBanner.removeChild(div);
             updateBannerVisibility();
           }, 5000);
-        }
+        };
         updateBannerVisibility();
-      }
+      };
 
       // By default, Unity keeps WebGL canvas render target size matched with
       // the DOM size of the canvas element (scaled by window.devicePixelRatio)
@@ -87,7 +87,7 @@
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
         canvas.style.width = "960px";
         canvas.style.height = "600px";
-      }
+      };
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
@@ -96,7 +96,7 @@
         if (index >= buildUrls.length) {
           alert("Failed to load Unity WebGL content from all fallback sources.");
           return;
-        }
+        };
 
         var buildUrl = buildUrls[index];
         var loaderUrl = buildUrl + "/DistWeb.loader.js";
@@ -114,15 +114,13 @@
 
         if (document.title.length > 16) {
           document.title = document.title.substring(0, 16);
-        }
+        };
         document.title += " | " + config.productName;
-
-        let unityBuildTitle = document.getElementById("unity-build-title");
-        if (unityBuildTitle.hasChildNodes()) {
-          unityBuildTitle.childNodes[0].replaceWith(document.createTextNode(config.productName));
-        } else {
-          unityBuildTitle.appendChild(document.createTextNode(config.productName));
-        }
+        let unityBuildTitle = document.getElementById("unity-build-title")
+        while (unityBuildTitle.hasChildNodes()) {
+          unityBuildTitle.removeChild(unityBuildTitle.childNodes[0])
+        };
+        unityBuildTitle.appendChild(document.createTextNode(config.productName));
 
         var script = document.createElement("script");
         script.src = loaderUrl;
@@ -134,15 +132,15 @@
             document.querySelector("#unity-fullscreen-button").onclick = () => {
               unityInstance.SetFullscreen(1);
             };
+            document.close();
           }).catch((message) => {
-            // alert(message);
             console.warn("Unity instance failed to load from " + buildUrl + ": " + message + ".\nRetrying with alternative location...");
             tryLoadUnity(index + 1);
           });
         };
         script.onerror = () => {
           console.warn("Failed to load loader script: " + loaderUrl + ".\nRetrying with alternative location...");
-          tryLoadUnity(index + 1); // Retry with next buildUrl
+          tryLoadUnity(index + 1);
         };
         document.body.appendChild(script);
       };
