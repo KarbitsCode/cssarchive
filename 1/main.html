@@ -85,8 +85,8 @@ window.onload = function() {
 <script type="text/javascript">
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-1YYQXL8T57');
+gtag("js", new Date());
+gtag("config", "G-1YYQXL8T57");
 </script>
 <script type="text/javascript" src="main/main.js?h=113D"></script>
 <script type="text/javascript" src="main/eruda.js"></script>
@@ -94,29 +94,48 @@ gtag('config', 'G-1YYQXL8T57');
 <script type="text/javascript">
 setTimeout(main.PlaceAuto, 1000);
 window.addEventListener("load", function() {
-  const darkmode = new Darkmode({
-    bottom: "64px",
-    right: "unset",
-    left: "32px",
-    time: "0.5s",
-    mixColor: "#fff",
-    backgroundColor: "#fff",
-    buttonColorDark: "#100f2c",
-    buttonColorLight: "#fff",
-    saveInCookies: false,
-    label: "🌓",
-    autoMatchOsTheme: false
-  });
+  try {
+    eruda.init();
+    setTimeout(eruda.destroy.bind(eruda), 50);
+  } catch(e) {
+    console.warn(e);
+    console.warn("Eruda is unavailable, skipping widget");
+    document.getElementsByTagName("a")[3].style.display = "none";
+  };
+  const darkmode = (function() {
+    try {
+      return new Darkmode({
+        bottom: "64px",
+        right: "unset",
+        left: "32px",
+        time: "0.5s",
+        mixColor: "#fff",
+        backgroundColor: "#fff",
+        buttonColorDark: "#100f2c",
+        buttonColorLight: "#fff",
+        saveInCookies: false,
+        label: "🌓",
+        autoMatchOsTheme: false
+      });
+    } catch(e) {
+      console.warn(e);
+      return {
+        showWidget: function() {return console.warn("Darkmode is unavailable, skipping widget")},
+        toggle: function() {return console.warn("Darkmode is unavailable, skipping toggle")},
+        isActivated: function() {return false},
+      };
+    };
+  })();
   document.getElementById("main").classList.add("darkmode-ignore");
   darkmode.showWidget();
   setInterval(function() {
-    document.cookie = 'acceptcookie=okg; path=/; max-age=1';
-    for (const a of document.querySelectorAll('a')) {
-      if (a.textContent.includes('Inspect') || a.textContent.includes('Minified version')) {
+    document.cookie = "acceptcookie=okg; path=/; max-age=1";
+    for (const a of document.querySelectorAll("a")) {
+      if (a.textContent.includes("Inspect") || a.textContent.includes("Minified version")) {
         if (darkmode.isActivated()) {
-          a.style.cursor = 'pointer';
+          a.style.cursor = "pointer";
         } else {
-          a.style.cursor = 'default';
+          a.style.cursor = "default";
         };
       };
     };

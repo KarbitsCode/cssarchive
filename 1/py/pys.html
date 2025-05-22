@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://pyscript.net/releases/2025.3.1/core.css">
-<script type="module" src="https://pyscript.net/releases/2025.3.1/core.js"></script>
+<link rel="stylesheet" href="https://pyscript.net/releases/2025.5.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2025.5.1/core.js"></script>
 <link rel="icon" type="image/svg+xml" href="pys.svg">
 <title>PyScript</title>
 </head>
@@ -14,7 +14,7 @@
 <script type="text/javascript">
 window.addEventListener("load", () => {
   setTimeout(() => {
-    document.getElementsByTagName("div")[0].appendChild(document.createTextNode("Loading..."));
+    document.querySelector("div").appendChild(document.createTextNode("Loading..."));
   }, 1000);
 });
 </script>
@@ -22,7 +22,7 @@ window.addEventListener("load", () => {
 from js import document
 from pyscript import display
 from pyjokes.pyjokes import get_joke as joke
-document.getElementsByTagName('div')[0].replaceChildren()
+document.querySelector('div').replaceChildren()
 display(format(str(joke(language='en', category='neutral'))))
 </script>
 </body>
