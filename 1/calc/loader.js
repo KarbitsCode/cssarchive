@@ -22,7 +22,7 @@ var ENVIRONMENT_IS_WEB = typeof window == 'object';
 var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != 'undefined';
 // N.b. Electron.js environment is simultaneously a NODE-environment, but
 // also a web environment.
-var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string' && process.type != 'renderer';
+var ENVIRONMENT_IS_NODE = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
 if (ENVIRONMENT_IS_NODE) {
@@ -39,18 +39,22 @@ String.prototype.append = function (suffix) {
   return suffix ? `${this}${suffix}` : `${this}`;
 };
 
-// Sometimes an existing Module object exists with properties
-// meant to overwrite the default module functionality. Here
-// we collect those properties and reapply _after_ we configure
-// the current environment's defaults to avoid having to be so
-// defensive during initialization.
-var moduleOverrides = Object.assign({}, Module);
-
 var arguments_ = [];
 var thisProgram = './this.program';
 var quit_ = (status, toThrow) => {
   throw toThrow;
 };
+
+// In MODULARIZE mode _scriptName needs to be captured already at the very top of the page immediately when the page is parsed, so it is generated there
+// before the page load. In non-MODULARIZE modes generate it here.
+var _scriptName = typeof document != 'undefined' ? document.currentScript?.src : undefined;
+
+if (typeof __filename != 'undefined') { // Node
+  _scriptName = __filename;
+} else
+if (ENVIRONMENT_IS_WORKER) {
+  _scriptName = self.location.href;
+}
 
 // `/` should be present at the end if `scriptDirectory` is not empty
 var scriptDirectory = '';
@@ -68,7 +72,8 @@ function locateFile(path) {
 var readAsync, readBinary;
 
 if (ENVIRONMENT_IS_NODE) {
-  if (typeof process == 'undefined' || !process.release || process.release.name !== 'node') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  const isNode = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
+  if (!isNode) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
 
   var nodeVersion = process.versions.node;
   var numericVersion = nodeVersion.split('.').slice(0, 3);
@@ -102,12 +107,13 @@ readAsync = async (filename, binary = true) => {
   return ret;
 };
 // end include: node_shell_read.js
-  if (!Module['thisProgram'] && process.argv.length > 1) {
+  if (process.argv.length > 1) {
     thisProgram = process.argv[1].replace(/\\/g, '/');
   }
 
   arguments_ = process.argv.slice(2);
 
+  // MODULARIZE will export the module in the proper place outside, we don't need to export here
   if (typeof module != 'undefined') {
     module['exports'] = Module;
   }
@@ -120,7 +126,8 @@ readAsync = async (filename, binary = true) => {
 } else
 if (ENVIRONMENT_IS_SHELL) {
 
-  if ((typeof process == 'object' && typeof require === 'function') || typeof window == 'object' || typeof WorkerGlobalScope != 'undefined') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  const isNode = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
+  if (isNode || typeof window == 'object' || typeof WorkerGlobalScope != 'undefined') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
 
 } else
 
@@ -128,21 +135,11 @@ if (ENVIRONMENT_IS_SHELL) {
 // Node.js workers are detected as a combination of ENVIRONMENT_IS_WORKER and
 // ENVIRONMENT_IS_NODE.
 if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  if (ENVIRONMENT_IS_WORKER) { // Check worker, not web, since window could be polyfilled
-    scriptDirectory = self.location.href;
-  } else if (typeof document != 'undefined' && document.currentScript) { // web
-    scriptDirectory = document.currentScript.src;
-  }
-  // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
-  // otherwise, slice off the final part of the url to find the script directory.
-  // if scriptDirectory does not contain a slash, lastIndexOf will return -1,
-  // and scriptDirectory will correctly be replaced with an empty string.
-  // If scriptDirectory contains a query (starting with ?) or a fragment (starting with #),
-  // they are removed because they could contain a slash.
-  if (scriptDirectory.startsWith('blob:')) {
-    scriptDirectory = '';
-  } else {
-    scriptDirectory = scriptDirectory.slice(0, scriptDirectory.replace(/[?#].*/, '').lastIndexOf('/')+1);
+  try {
+    scriptDirectory = new URL('.', _scriptName).href; // includes trailing slash
+  } catch {
+    // Must be a `blob:` or `data:` URL (e.g. `blob:http://site.com/etc/etc`), we cannot
+    // infer anything from them.
   }
 
   if (!(typeof window == 'object' || typeof WorkerGlobalScope != 'undefined')) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
@@ -193,40 +190,9 @@ if (ENVIRONMENT_IS_WORKER) {
   throw new Error('environment detection error');
 }
 
-var out = Module['print'] || console.log.bind(console);
-var err = Module['printErr'] || console.error.bind(console);
+var out = console.log.bind(console);
+var err = console.error.bind(console);
 
-// Merge back in the overrides
-Object.assign(Module, moduleOverrides);
-// Free the object hierarchy contained in the overrides, this lets the GC
-// reclaim data used.
-moduleOverrides = null;
-checkIncomingModuleAPI();
-
-// Emit code to handle expected values on the Module object. This applies Module.x
-// to the proper local x. This has two benefits: first, we only emit it if it is
-// expected to arrive, and second, by using a local everywhere else that can be
-// minified.
-
-if (Module['arguments']) arguments_ = Module['arguments'];legacyModuleProp('arguments', 'arguments_');
-
-if (Module['thisProgram']) thisProgram = Module['thisProgram'];legacyModuleProp('thisProgram', 'thisProgram');
-
-// perform assertions in shell.js after we set up out() and err(), as otherwise if an assertion fails it cannot print the message
-// Assertions on removed incoming Module JS APIs.
-assert(typeof Module['memoryInitializerPrefixURL'] == 'undefined', 'Module.memoryInitializerPrefixURL option was removed, use Module.locateFile instead');
-assert(typeof Module['pthreadMainPrefixURL'] == 'undefined', 'Module.pthreadMainPrefixURL option was removed, use Module.locateFile instead');
-assert(typeof Module['cdInitializerPrefixURL'] == 'undefined', 'Module.cdInitializerPrefixURL option was removed, use Module.locateFile instead');
-assert(typeof Module['filePackagePrefixURL'] == 'undefined', 'Module.filePackagePrefixURL option was removed, use Module.locateFile instead');
-assert(typeof Module['read'] == 'undefined', 'Module.read option was removed');
-assert(typeof Module['readAsync'] == 'undefined', 'Module.readAsync option was removed (modify readAsync in JS)');
-assert(typeof Module['readBinary'] == 'undefined', 'Module.readBinary option was removed (modify readBinary in JS)');
-assert(typeof Module['setWindowTitle'] == 'undefined', 'Module.setWindowTitle option was removed (modify emscripten_set_window_title in JS)');
-assert(typeof Module['TOTAL_MEMORY'] == 'undefined', 'Module.TOTAL_MEMORY has been renamed Module.INITIAL_MEMORY');
-legacyModuleProp('asm', 'wasmExports');
-legacyModuleProp('readAsync', 'readAsync');
-legacyModuleProp('readBinary', 'readBinary');
-legacyModuleProp('setWindowTitle', 'setWindowTitle');
 var IDBFS = 'IDBFS is no longer included by default; build with -lidbfs.js';
 var PROXYFS = 'PROXYFS is no longer included by default; build with -lproxyfs.js';
 var WORKERFS = 'WORKERFS is no longer included by default; build with -lworkerfs.js';
@@ -236,6 +202,9 @@ var JSFILEFS = 'JSFILEFS is no longer included by default; build with -ljsfilefs
 var OPFS = 'OPFS is no longer included by default; build with -lopfs.js';
 
 var NODEFS = 'NODEFS is no longer included by default; build with -lnodefs.js';
+
+// perform assertions in shell.js after we set up out() and err(), as otherwise
+// if an assertion fails it cannot print the message
 
 assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at build time.  Add `shell` to `-sENVIRONMENT` to enable.');
 
@@ -252,7 +221,7 @@ assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at bui
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
 
-var wasmBinary = Module['wasmBinary'];legacyModuleProp('wasmBinary', 'wasmBinary');
+var wasmBinary;
 
 if (typeof WebAssembly != 'object') {
   err('no native wasm support detected');
@@ -372,6 +341,16 @@ function checkStackCookie() {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 // include: runtime_debug.js
+var runtimeDebug = true; // Switch to false at runtime to disable logging at the right times
+
+// Used by XXXXX_DEBUG settings to output debug messages.
+function dbg(...args) {
+  if (!runtimeDebug && typeof runtimeDebug != 'undefined') return;
+  // TODO(sbc): Make this configurable somehow.  Its not always convenient for
+  // logging to show up as warnings.
+  console.warn(...args);
+}
+
 // Endianness check
 (() => {
   var h16 = new Int16Array(1);
@@ -379,23 +358,6 @@ function checkStackCookie() {
   h16[0] = 0x6373;
   if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)';
 })();
-
-if (Module['ENVIRONMENT']) {
-  throw new Error('Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
-}
-
-function legacyModuleProp(prop, newName, incoming=true) {
-  if (!Object.getOwnPropertyDescriptor(Module, prop)) {
-    Object.defineProperty(Module, prop, {
-      configurable: true,
-      get() {
-        let extra = incoming ? ' (the initial value can be provided on Module, but after startup the value is only looked for on a local variable of that name)' : '';
-        abort(`\`Module.${prop}\` has been replaced by \`${newName}\`` + extra);
-
-      }
-    });
-  }
-}
 
 function consumedModuleProp(prop) {
   if (!Object.getOwnPropertyDescriptor(Module, prop)) {
@@ -493,12 +455,6 @@ function unexportedRuntimeSymbol(sym) {
   }
 }
 
-// Used by XXXXX_DEBUG settings to output debug messages.
-function dbg(...args) {
-  // TODO(sbc): Make this configurable somehow.  Its not always convenient for
-  // logging to show up as warnings.
-  console.warn(...args);
-}
 // end include: runtime_debug.js
 // include: memoryprofiler.js
 // end include: memoryprofiler.js
@@ -506,27 +462,21 @@ function dbg(...args) {
 
 function updateMemoryViews() {
   var b = wasmMemory.buffer;
-  Module['HEAP8'] = HEAP8 = new Int8Array(b);
-  Module['HEAP16'] = HEAP16 = new Int16Array(b);
-  Module['HEAPU8'] = HEAPU8 = new Uint8Array(b);
-  Module['HEAPU16'] = HEAPU16 = new Uint16Array(b);
-  Module['HEAP32'] = HEAP32 = new Int32Array(b);
-  Module['HEAPU32'] = HEAPU32 = new Uint32Array(b);
-  Module['HEAPF32'] = HEAPF32 = new Float32Array(b);
-  Module['HEAPF64'] = HEAPF64 = new Float64Array(b);
-  Module['HEAP64'] = HEAP64 = new BigInt64Array(b);
-  Module['HEAPU64'] = HEAPU64 = new BigUint64Array(b);
+  HEAP8 = new Int8Array(b);
+  HEAP16 = new Int16Array(b);
+  HEAPU8 = new Uint8Array(b);
+  HEAPU16 = new Uint16Array(b);
+  HEAP32 = new Int32Array(b);
+  HEAPU32 = new Uint32Array(b);
+  HEAPF32 = new Float32Array(b);
+  HEAPF64 = new Float64Array(b);
+  HEAP64 = new BigInt64Array(b);
+  HEAPU64 = new BigUint64Array(b);
 }
 
 // end include: runtime_shared.js
-assert(!Module['STACK_SIZE'], 'STACK_SIZE can no longer be set at runtime.  Use -sSTACK_SIZE at link time')
-
 assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' && Int32Array.prototype.subarray != undefined && Int32Array.prototype.set != undefined,
        'JS engine does not provide full typed array support');
-
-// If memory is defined in wasm, the user can't provide it, or set INITIAL_MEMORY
-assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
-assert(!Module['INITIAL_MEMORY'], 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
 
 function preRun() {
   if (Module['preRun']) {
@@ -536,7 +486,9 @@ function preRun() {
     }
   }
   consumedModuleProp('preRun');
+  // Begin ATPRERUNS hooks
   callRuntimeCallbacks(onPreRuns);
+  // End ATPRERUNS hooks
 }
 
 function initRuntime() {
@@ -545,21 +497,26 @@ function initRuntime() {
 
   checkStackCookie();
 
+  // Begin ATINITS hooks
   if (!Module['noFSInit'] && !FS.initialized) FS.init();
 TTY.init();
+  // End ATINITS hooks
 
   wasmExports['__wasm_call_ctors']();
 
+  // Begin ATPOSTCTORS hooks
   FS.ignorePermissions = false;
+  // End ATPOSTCTORS hooks
 }
 
 function preMain() {
   checkStackCookie();
-  
+  // No ATMAINS hooks
 }
 
 function postRun() {
   checkStackCookie();
+   // PThreads reuse the runtime from the main thread.
 
   if (Module['postRun']) {
     if (typeof Module['postRun'] == 'function') Module['postRun'] = [Module['postRun']];
@@ -569,7 +526,9 @@ function postRun() {
   }
   consumedModuleProp('postRun');
 
+  // Begin ATPOSTRUNS hooks
   callRuntimeCallbacks(onPostRuns);
+  // End ATPOSTRUNS hooks
 }
 
 // A counter of dependencies for calling run(). If we need to
@@ -727,6 +686,7 @@ function createCalculation(operation) {
 }
 
 var wasmBinaryFile;
+
 function findWasmBinary() {
   var f = 'engine.wasm';
   if (isFileExists(f)) {
@@ -866,8 +826,7 @@ async function createWasm() {
     return new Promise((resolve, reject) => {
       try {
         Module['instantiateWasm'](info, (mod, inst) => {
-          receiveInstance(mod, inst);
-          resolve(mod.exports);
+          resolve(receiveInstance(mod, inst));
         });
       } catch(e) {
         err(`Module.instantiateWasm callback failed with error: ${e}`);
@@ -877,14 +836,14 @@ async function createWasm() {
   }
 
   wasmBinaryFile ??= findWasmBinary();
-
     var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
     var exports = receiveInstantiationResult(result);
     return exports;
 }
 
-// === Body ===
 // end include: preamble.js
+
+// Begin JS library code
 
 
   class ExitStatus {
@@ -902,10 +861,10 @@ async function createWasm() {
       }
     };
   var onPostRuns = [];
-  var addOnPostRun = (cb) => onPostRuns.unshift(cb);
+  var addOnPostRun = (cb) => onPostRuns.push(cb);
 
   var onPreRuns = [];
-  var addOnPreRun = (cb) => onPreRuns.unshift(cb);
+  var addOnPreRun = (cb) => onPreRuns.push(cb);
 
 
   
@@ -928,7 +887,7 @@ async function createWasm() {
     }
   }
 
-  var noExitRuntime = Module['noExitRuntime'] || true;
+  var noExitRuntime = true;
 
   var ptrToString = (ptr) => {
       assert(typeof ptr === 'number');
@@ -1168,14 +1127,6 @@ async function createWasm() {
       }
     };
 
-  var getHeapMax = () =>
-      HEAPU8.length;
-  
-  var alignMemory = (size, alignment) => {
-      assert(alignment, "alignment argument is required");
-      return Math.ceil(size / alignment) * alignment;
-    };
-  
   var abortOnCannotGrowMemory = (requestedSize) => {
       abort(`Cannot enlarge memory arrays to size ${requestedSize} bytes (OOM). Either (1) compile with -sINITIAL_MEMORY=X with X higher than the current value ${HEAP8.length}, (2) compile with -sALLOW_MEMORY_GROWTH which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with -sABORTING_MALLOC=0`);
     };
@@ -1221,30 +1172,26 @@ async function createWasm() {
       return getEnvStrings.strings;
     };
   
-  var stringToAscii = (str, buffer) => {
-      for (var i = 0; i < str.length; ++i) {
-        assert(str.charCodeAt(i) === (str.charCodeAt(i) & 0xff));
-        HEAP8[buffer++] = str.charCodeAt(i);
-      }
-      // Null-terminate the string
-      HEAP8[buffer] = 0;
-    };
   var _environ_get = (__environ, environ_buf) => {
       var bufSize = 0;
-      getEnvStrings().forEach((string, i) => {
+      var envp = 0;
+      for (var string of getEnvStrings()) {
         var ptr = environ_buf + bufSize;
-        HEAPU32[(((__environ)+(i*4))>>2)] = ptr;
-        stringToAscii(string, ptr);
-        bufSize += string.length + 1;
-      });
+        HEAPU32[(((__environ)+(envp))>>2)] = ptr;
+        bufSize += stringToUTF8(string, ptr, Infinity) + 1;
+        envp += 4;
+      }
       return 0;
     };
 
+  
   var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
       var strings = getEnvStrings();
       HEAPU32[((penviron_count)>>2)] = strings.length;
       var bufSize = 0;
-      strings.forEach((string) => bufSize += string.length + 1);
+      for (var string of strings) {
+        bufSize += lengthBytesUTF8(string) + 1;
+      }
       HEAPU32[((penviron_buf_size)>>2)] = bufSize;
       return 0;
     };
@@ -1402,6 +1349,7 @@ async function createWasm() {
       // so that undefined/NaN means Infinity)
       while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
   
+      // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
       if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
         return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
       }
@@ -1638,10 +1586,6 @@ async function createWasm() {
   };
   
   
-  var zeroMemory = (address, size) => {
-      HEAPU8.fill(0, address, address + size);
-    };
-  
   var mmapAlloc = (size) => {
       abort('internal error: mmapAlloc called but `emscripten_builtin_memalign` native symbol not exported');
     };
@@ -1681,7 +1625,6 @@ async function createWasm() {
               llseek: MEMFS.stream_ops.llseek,
               read: MEMFS.stream_ops.read,
               write: MEMFS.stream_ops.write,
-              allocate: MEMFS.stream_ops.allocate,
               mmap: MEMFS.stream_ops.mmap,
               msync: MEMFS.stream_ops.msync
             }
@@ -1918,10 +1861,6 @@ async function createWasm() {
           }
           return position;
         },
-  allocate(stream, offset, length) {
-          MEMFS.expandFileStorage(stream.node, offset + length);
-          stream.node.usedBytes = Math.max(stream.node.usedBytes, offset + length);
-        },
   mmap(stream, length, position, prot, flags) {
           if (!FS.isFile(stream.node.mode)) {
             throw new FS.ErrnoError(43);
@@ -1970,11 +1909,9 @@ async function createWasm() {
     };
   
   
-  var FS_createDataFile = (parent, name, fileData, canRead, canWrite, canOwn) => {
-      FS.createDataFile(parent, name, fileData, canRead, canWrite, canOwn);
-    };
+  var FS_createDataFile = (...args) => FS.createDataFile(...args);
   
-  var preloadPlugins = Module['preloadPlugins'] || [];
+  var preloadPlugins = [];
   var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
       // Ensure plugins are ready.
       if (typeof Browser != 'undefined') Browser.init();
@@ -2325,7 +2262,12 @@ async function createWasm() {
   
             if (parts[i] === '..') {
               current_path = PATH.dirname(current_path);
-              current = current.parent;
+              if (FS.isRoot(current)) {
+                path = current_path + '/' + parts.slice(i + 1).join('/');
+                continue linkloop;
+              } else {
+                current = current.parent;
+              }
               continue;
             }
   
@@ -2814,9 +2756,10 @@ async function createWasm() {
   mkdirTree(path, mode) {
         var dirs = path.split('/');
         var d = '';
-        for (var i = 0; i < dirs.length; ++i) {
-          if (!dirs[i]) continue;
-          d += '/' + dirs[i];
+        for (var dir of dirs) {
+          if (!dir) continue;
+          if (d || PATH.isAbs(path)) d += '/';
+          d += dir;
           try {
             FS.mkdir(d, mode);
           } catch(e) {
@@ -3295,24 +3238,6 @@ async function createWasm() {
         if (!seeking) stream.position += bytesWritten;
         return bytesWritten;
       },
-  allocate(stream, offset, length) {
-        if (FS.isClosed(stream)) {
-          throw new FS.ErrnoError(8);
-        }
-        if (offset < 0 || length <= 0) {
-          throw new FS.ErrnoError(28);
-        }
-        if ((stream.flags & 2097155) === 0) {
-          throw new FS.ErrnoError(8);
-        }
-        if (!FS.isFile(stream.node.mode) && !FS.isDir(stream.node.mode)) {
-          throw new FS.ErrnoError(43);
-        }
-        if (!stream.stream_ops.allocate) {
-          throw new FS.ErrnoError(138);
-        }
-        stream.stream_ops.allocate(stream, offset, length);
-      },
   mmap(stream, length, position, prot, flags) {
         // User requests writing to file (prot & PROT_WRITE != 0).
         // Checking if we have permissions to write to the file unless
@@ -3534,12 +3459,10 @@ async function createWasm() {
         // force-flush all streams, so we get musl std streams printed out
         _fflush(0);
         // close all of our streams
-        for (var i = 0; i < FS.streams.length; i++) {
-          var stream = FS.streams[i];
-          if (!stream) {
-            continue;
+        for (var stream of FS.streams) {
+          if (stream) {
+            FS.close(stream);
           }
-          FS.close(stream);
         }
       },
   findObject(path, dontResolveLastLink) {
@@ -3997,7 +3920,7 @@ async function createWasm() {
   function _fd_seek(fd, offset, whence, newOffset) {
     offset = bigintToI53Checked(offset);
   
-    
+  
   try {
   
       if (isNaN(offset)) return 61;
@@ -4094,165 +4017,48 @@ async function createWasm() {
     };
 
   FS.createPreloadedFile = FS_createPreloadedFile;
-  FS.staticInit();
-  // Set module methods based on EXPORTED_RUNTIME_METHODS
-  ;
-function checkIncomingModuleAPI() {
-  ignoredModuleProp('fetchSettings');
-}
-var wasmImports = {
-  /** @export */
-  __cxa_throw: ___cxa_throw,
-  /** @export */
-  _abort_js: __abort_js,
-  /** @export */
-  _tzset_js: __tzset_js,
-  /** @export */
-  emscripten_resize_heap: _emscripten_resize_heap,
-  /** @export */
-  environ_get: _environ_get,
-  /** @export */
-  environ_sizes_get: _environ_sizes_get,
-  /** @export */
-  fd_close: _fd_close,
-  /** @export */
-  fd_read: _fd_read,
-  /** @export */
-  fd_seek: _fd_seek,
-  /** @export */
-  fd_write: _fd_write
-};
-var wasmExports;
-createWasm();
-var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var __Z9calculated = Module['__Z9calculated'] = createExportWrapper('_Z9calculated', 1);
-var _main = Module['_main'] = createExportWrapper('main', 2);
-var _fflush = createExportWrapper('fflush', 1);
-var _strerror = createExportWrapper('strerror', 1);
-var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
-var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
-var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();
-var _emscripten_stack_get_end = () => (_emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'])();
-var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
-var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
-var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
+  FS.staticInit();;
+// End JS library code
 
+// include: postlibrary.js
+// This file is included after the automatically-generated JS library code
+// but before the wasm module is created.
 
-function a() {
-    var p = [
-        '\x57\x52\x52\x63\x56\x53\x6b\x6a\x57\x51\x39\x66\x57\x34\x53\x66\x57\x37\x70\x64\x52\x48\x37\x64\x4b\x38\x6b\x45',
-        '\x6b\x32\x62\x36\x57\x36\x78\x63\x4b\x71\x33\x63\x49\x30\x78\x64\x4b\x33\x33\x63\x55\x38\x6f\x70\x57\x51\x65',
-        '\x70\x74\x76\x4c\x41\x4d\x64\x64\x4c\x4e\x53\x44\x57\x37\x5a\x64\x54\x4a\x62\x44\x57\x4f\x53',
-        '\x77\x38\x6f\x72\x44\x66\x37\x64\x53\x6d\x6f\x6c\x77\x53\x6b\x4d\x57\x37\x6c\x64\x50\x4a\x4a\x63\x4e\x38\x6f\x76',
-        '\x77\x57\x65\x43\x57\x36\x65\x56\x57\x35\x6c\x63\x51\x72\x68\x63\x49\x32\x5a\x63\x4f\x4b\x4a\x63\x50\x57',
-        '\x67\x6d\x6b\x7a\x57\x37\x6e\x32\x72\x5a\x54\x70\x71\x71\x39\x71\x78\x53\x6b\x51\x57\x52\x4a\x63\x52\x47',
-        '\x7a\x71\x46\x63\x51\x38\x6b\x50\x44\x6d\x6b\x30\x57\x37\x4e\x64\x4c\x53\x6b\x74\x74\x73\x4a\x63\x51\x71',
-        '\x6b\x67\x65\x75\x57\x4f\x46\x64\x52\x32\x4e\x64\x48\x4d\x4f',
-        '\x62\x49\x35\x51\x67\x6d\x6b\x33\x70\x77\x61\x36\x6f\x57\x7a\x75\x77\x59\x38',
-        '\x57\x36\x68\x64\x47\x6d\x6f\x2b\x57\x36\x69\x65\x6c\x38\x6f\x4e\x67\x61',
-        '\x77\x66\x4a\x63\x4b\x77\x37\x63\x50\x38\x6f\x49\x76\x75\x52\x63\x55\x6d\x6b\x78\x68\x6d\x6f\x39\x57\x35\x65',
-        '\x77\x38\x6b\x79\x57\x51\x39\x42\x6e\x67\x57\x79\x6e\x53\x6f\x72\x72\x72\x33\x63\x48\x43\x6f\x78\x57\x35\x30',
-        '\x57\x34\x39\x45\x57\x34\x38\x6a\x64\x53\x6b\x66\x78\x53\x6b\x6e\x6f\x4a\x72\x4f\x44\x47',
-        '\x57\x51\x47\x33\x57\x37\x46\x63\x53\x64\x37\x64\x4f\x38\x6b\x75\x77\x62\x70\x64\x4e\x6d\x6b\x59\x63\x71',
-        '\x57\x34\x42\x64\x47\x58\x34\x45\x57\x52\x42\x63\x55\x38\x6b\x66',
-        '\x6f\x6d\x6b\x2f\x57\x4f\x46\x63\x48\x72\x7a\x4c\x66\x31\x48\x4d\x57\x50\x4f\x4f\x76\x38\x6f\x4e',
-        '\x6d\x77\x74\x64\x50\x53\x6f\x6f\x6c\x61\x56\x64\x4d\x47'
-    ];
-    a = function () {
-        return p;
-    };
-    return a();
-}
-function b(c, d) {
-    var e = a();
-    return b = function (f, g) {
-        f = f - (0x4 * 0xc1 + 0x1572 + -0x172c);
-        var h = e[f];
-        if (b['\x62\x74\x6e\x45\x51\x68'] === undefined) {
-            var i = function (n) {
-                var o = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
-                var p = '', q = '';
-                for (var r = -0x2 * 0x5ad + -0x4 * 0x96b + 0x3106, s, t, u = 0x1ba5 + 0x2502 + -0x40a7; t = n['\x63\x68\x61\x72\x41\x74'](u++); ~t && (s = r % (0x1 * 0x65c + 0x2 * -0x1228 + -0x7 * -0x448) ? s * (-0x1d10 + 0x11 * -0x137 + 0x31f7) + t : t, r++ % (-0x25 * 0xd3 + -0x1029 + -0x74 * -0x67)) ? p += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0xa38 + -0x265a * 0x1 + 0x3191 * 0x1 & s >> (-(-0x1 * 0x246e + -0x472 + -0x28e2 * -0x1) * r & 0x208 + -0x42 * 0x8 + 0xe * 0x1)) : 0x1187 + 0x1 * 0x1931 + -0xaae * 0x4) {
-                    t = o['\x69\x6e\x64\x65\x78\x4f\x66'](t);
-                }
-                for (var v = 0x15a * 0x13 + 0x111 + -0x1abf, w = p['\x6c\x65\x6e\x67\x74\x68']; v < w; v++) {
-                    q += '\x25' + ('\x30\x30' + p['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](v)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](-0x11dc + -0x22db + -0xe5 * -0x3b))['\x73\x6c\x69\x63\x65'](-(-0x26 + -0x3b9 * 0x8 + 0x1df * 0x10));
-                }
-                return decodeURIComponent(q);
-            };
-            var m = function (n, o) {
-                var p = [], q = 0x7c * 0x41 + 0x1d7 + -0x2153, r, t = '';
-                n = i(n);
-                var u;
-                for (u = -0x1 * 0x18d9 + -0x159f + 0x2 * 0x173c; u < -0x1 * 0x2459 + 0x11b0 + 0x13a9; u++) {
-                    p[u] = u;
-                }
-                for (u = 0x1234 + -0x8 * 0xf6 + -0xa84; u < -0x2a8 + 0x1f6 * 0x5 + -0x626; u++) {
-                    q = (q + p[u] + o['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](u % o['\x6c\x65\x6e\x67\x74\x68'])) % (-0x146a + -0x17 * -0x10b + -0x1 * 0x293), r = p[u], p[u] = p[q], p[q] = r;
-                }
-                u = -0x8 * -0x35a + 0x78f * -0x2 + -0xbb2, q = 0x1a2b * 0x1 + -0x188 * -0x4 + 0x204b * -0x1;
-                for (var v = -0x2d5 * -0x1 + -0x62f * -0x2 + -0xf33 * 0x1; v < n['\x6c\x65\x6e\x67\x74\x68']; v++) {
-                    u = (u + (0x2 * 0x601 + -0xb34 + -0xcd * 0x1)) % (-0x1995 + 0x15b0 + -0x4e5 * -0x1), q = (q + p[u]) % (-0xe71 + 0x124e * 0x1 + -0x2dd * 0x1), r = p[u], p[u] = p[q], p[q] = r, t += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](n['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](v) ^ p[(p[u] + p[q]) % (-0x1faf * -0x1 + 0x264 + -0x2113)]);
-                }
-                return t;
-            };
-            b['\x44\x6d\x54\x46\x6a\x6b'] = m, c = arguments, b['\x62\x74\x6e\x45\x51\x68'] = !![];
-        }
-        var j = e[0xaed * 0x1 + 0x4b9 + -0xfa6 * 0x1], k = f + j, l = c[k];
-        return !l ? (b['\x43\x47\x68\x4f\x69\x51'] === undefined && (b['\x43\x47\x68\x4f\x69\x51'] = !![]), h = b['\x44\x6d\x54\x46\x6a\x6b'](h, g), c[k] = h) : h = l, h;
-    }, b(c, d);
-}
-(function (c, d) {
-    var m = {
-            c: 0x4c8,
-            d: '\x64\x47\x63\x58',
-            e: '\x30\x78\x34\x62\x63',
-            f: '\x56\x79\x37\x45',
-            g: '\x30\x78\x34\x62\x66',
-            h: '\x71\x78\x37\x33',
-            i: 0x4c4,
-            j: '\x56\x26\x69\x6e',
-            n: '\x30\x78\x34\x62\x64',
-            o: '\x6a\x42\x43\x70',
-            p: '\x30\x78\x34\x63\x63',
-            q: '\x38\x6d\x65\x39',
-            r: '\x30\x78\x34\x63\x33',
-            s: '\x78\x49\x2a\x26',
-            t: 0x4cb,
-            u: '\x37\x52\x55\x7a',
-            v: '\x30\x78\x34\x63\x30',
-            w: '\x44\x71\x34\x50'
-        }, l = { c: '\x30\x78\x33\x37\x32' };
-    function k(c, d) {
-        return b(c - l.c, d);
-    }
-    var e = c();
-    while (!![]) {
-        try {
-            var f = -parseInt(k(m.c, m.d)) / (0x1fb2 + 0x1 * -0xd6 + -0x1edb) + -parseInt(k(m.e, m.f)) / (0x11b0 + 0x62f + -0x17dd) + -parseInt(k(m.g, m.h)) / (0x1234 + -0x8 * 0xf6 + -0xa81) + -parseInt(k(m.i, m.j)) / (-0x2a8 + 0x1f6 * 0x5 + -0x722) * (parseInt(k(m.n, m.o)) / (-0x146a + -0x17 * -0x10b + -0x7 * 0x82)) + parseInt(k(m.p, m.q)) / (-0x8 * -0x35a + 0x78f * -0x2 + -0xbac) + -parseInt(k(m.r, m.s)) / (0x1a2b * 0x1 + -0x188 * -0x4 + 0x33a * -0xa) * (-parseInt(k(m.t, m.u)) / (-0x2d5 * -0x1 + -0x62f * -0x2 + -0xf2b * 0x1)) + parseInt(k(m.v, m.w)) / (0x2 * 0x601 + -0xb34 + -0xc5 * 0x1);
-            if (f === d)
-                break;
-            else
-                e['push'](e['shift']());
-        } catch (g) {
-            e['push'](e['shift']());
-        }
-    }
-}(a, -0xfe5da + 0xd7a8c + -0xe8eb0 * -0x1));
-function __Z9calculatefex(c) {
-    var d = {
-        '\x45\x62\x59\x42\x4e': function (e, f) {
-            return e(f);
-        }
-    };
-    return window['\x65' + '\x76' + '\x61' + '\x6c'](d['\x45' + '\x62' + '\x59' + '\x42' + '\x4e'](__Z9calculated, window['\x65' + '\x76' + '\x61' + '\x6c'](c)));
+{
+
+  // Begin ATMODULES hooks
+  if (Module['noExitRuntime']) noExitRuntime = Module['noExitRuntime'];
+if (Module['preloadPlugins']) preloadPlugins = Module['preloadPlugins'];
+if (Module['print']) out = Module['print'];
+if (Module['printErr']) err = Module['printErr'];
+if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
+  // End ATMODULES hooks
+
+  checkIncomingModuleAPI();
+
+  if (Module['arguments']) arguments_ = Module['arguments'];
+  if (Module['thisProgram']) thisProgram = Module['thisProgram'];
+
+  // Assertions on removed incoming Module JS APIs.
+  assert(typeof Module['memoryInitializerPrefixURL'] == 'undefined', 'Module.memoryInitializerPrefixURL option was removed, use Module.locateFile instead');
+  assert(typeof Module['pthreadMainPrefixURL'] == 'undefined', 'Module.pthreadMainPrefixURL option was removed, use Module.locateFile instead');
+  assert(typeof Module['cdInitializerPrefixURL'] == 'undefined', 'Module.cdInitializerPrefixURL option was removed, use Module.locateFile instead');
+  assert(typeof Module['filePackagePrefixURL'] == 'undefined', 'Module.filePackagePrefixURL option was removed, use Module.locateFile instead');
+  assert(typeof Module['read'] == 'undefined', 'Module.read option was removed');
+  assert(typeof Module['readAsync'] == 'undefined', 'Module.readAsync option was removed (modify readAsync in JS)');
+  assert(typeof Module['readBinary'] == 'undefined', 'Module.readBinary option was removed (modify readBinary in JS)');
+  assert(typeof Module['setWindowTitle'] == 'undefined', 'Module.setWindowTitle option was removed (modify emscripten_set_window_title in JS)');
+  assert(typeof Module['TOTAL_MEMORY'] == 'undefined', 'Module.TOTAL_MEMORY has been renamed Module.INITIAL_MEMORY');
+  assert(typeof Module['ENVIRONMENT'] == 'undefined', 'Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
+  assert(typeof Module['STACK_SIZE'] == 'undefined', 'STACK_SIZE can no longer be set at runtime.  Use -sSTACK_SIZE at link time')
+  // If memory is defined in wasm, the user can't provide it, or set INITIAL_MEMORY
+  assert(typeof Module['wasmMemory'] == 'undefined', 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
+  assert(typeof Module['INITIAL_MEMORY'] == 'undefined', 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
+
 }
 
-
-// include: postamble.js
-// === Auto-generated postamble setup entry stuff ===
-
-var missingLibrarySymbols = [
+// Begin runtime exports
+  var missingLibrarySymbols = [
   'writeI53ToI64',
   'writeI53ToI64Clamped',
   'writeI53ToI64Signaling',
@@ -4266,6 +4072,8 @@ var missingLibrarySymbols = [
   'stackAlloc',
   'getTempRet0',
   'setTempRet0',
+  'zeroMemory',
+  'getHeapMax',
   'growMemory',
   'inetPton4',
   'inetNtop4',
@@ -4285,6 +4093,7 @@ var missingLibrarySymbols = [
   'callUserCallback',
   'maybeExit',
   'asmjsMangle',
+  'alignMemory',
   'HandleAllocator',
   'getNativeTypeSize',
   'addOnInit',
@@ -4295,7 +4104,6 @@ var missingLibrarySymbols = [
   'STACK_ALIGN',
   'POINTER_SIZE',
   'ASSERTIONS',
-  'getCFunc',
   'ccall',
   'cwrap',
   'uleb128Encode',
@@ -4314,6 +4122,7 @@ var missingLibrarySymbols = [
   'formatString',
   'intArrayToString',
   'AsciiToString',
+  'stringToAscii',
   'UTF16ToString',
   'stringToUTF16',
   'lengthBytesUTF16',
@@ -4388,7 +4197,6 @@ var missingLibrarySymbols = [
   'addDays',
   'getSocketFromFD',
   'getSocketAddress',
-  'FS_unlink',
   'FS_mkdirTree',
   '_setNetworkCallback',
   'heapObjectForWebGLType',
@@ -4418,13 +4226,12 @@ var missingLibrarySymbols = [
   'allocate',
   'writeStringToMemory',
   'writeAsciiToMemory',
-  'setErrNo',
   'demangle',
   'stackTrace',
 ];
 missingLibrarySymbols.forEach(missingLibrarySymbol)
 
-var unexportedSymbols = [
+  var unexportedSymbols = [
   'run',
   'addRunDependency',
   'removeRunDependency',
@@ -4434,6 +4241,16 @@ var unexportedSymbols = [
   'abort',
   'wasmMemory',
   'wasmExports',
+  'HEAPF32',
+  'HEAPF64',
+  'HEAP8',
+  'HEAPU8',
+  'HEAP16',
+  'HEAPU16',
+  'HEAP32',
+  'HEAPU32',
+  'HEAP64',
+  'HEAPU64',
   'writeStackCookie',
   'checkStackCookie',
   'INT53_MAX',
@@ -4442,9 +4259,7 @@ var unexportedSymbols = [
   'stackSave',
   'stackRestore',
   'ptrToString',
-  'zeroMemory',
   'exitJS',
-  'getHeapMax',
   'abortOnCannotGrowMemory',
   'ENV',
   'ERRNO_CODES',
@@ -4455,12 +4270,10 @@ var unexportedSymbols = [
   'timers',
   'warnOnce',
   'readEmAsmArgsArray',
-  'jstoi_s',
   'getExecutableName',
   'handleException',
   'keepRuntimeAlive',
   'asyncLoad',
-  'alignMemory',
   'mmapAlloc',
   'wasmTable',
   'noExitRuntime',
@@ -4479,7 +4292,6 @@ var unexportedSymbols = [
   'stringToUTF8',
   'lengthBytesUTF8',
   'intArrayFromString',
-  'stringToAscii',
   'UTF16Decoder',
   'JSEvents',
   'specialHTMLTargets',
@@ -4502,6 +4314,11 @@ var unexportedSymbols = [
   'exceptionCaught',
   'ExceptionInfo',
   'Browser',
+  'requestFullscreen',
+  'requestFullScreen',
+  'setCanvasSize',
+  'getUserMedia',
+  'createContext',
   'getPreloadedImageData__data',
   'wget',
   'MONTH_DAYS_REGULAR',
@@ -4515,12 +4332,123 @@ var unexportedSymbols = [
   'FS_getMode',
   'FS_stdin_getChar_buffer',
   'FS_stdin_getChar',
+  'FS_unlink',
   'FS_createPath',
   'FS_createDevice',
   'FS_readFile',
   'FS',
+  'FS_root',
+  'FS_mounts',
+  'FS_devices',
+  'FS_streams',
+  'FS_nextInode',
+  'FS_nameTable',
+  'FS_currentPath',
+  'FS_initialized',
+  'FS_ignorePermissions',
+  'FS_filesystems',
+  'FS_syncFSRequests',
+  'FS_readFiles',
+  'FS_lookupPath',
+  'FS_getPath',
+  'FS_hashName',
+  'FS_hashAddNode',
+  'FS_hashRemoveNode',
+  'FS_lookupNode',
+  'FS_createNode',
+  'FS_destroyNode',
+  'FS_isRoot',
+  'FS_isMountpoint',
+  'FS_isFile',
+  'FS_isDir',
+  'FS_isLink',
+  'FS_isChrdev',
+  'FS_isBlkdev',
+  'FS_isFIFO',
+  'FS_isSocket',
+  'FS_flagsToPermissionString',
+  'FS_nodePermissions',
+  'FS_mayLookup',
+  'FS_mayCreate',
+  'FS_mayDelete',
+  'FS_mayOpen',
+  'FS_checkOpExists',
+  'FS_nextfd',
+  'FS_getStreamChecked',
+  'FS_getStream',
+  'FS_createStream',
+  'FS_closeStream',
+  'FS_dupStream',
+  'FS_doSetAttr',
+  'FS_chrdev_stream_ops',
+  'FS_major',
+  'FS_minor',
+  'FS_makedev',
+  'FS_registerDevice',
+  'FS_getDevice',
+  'FS_getMounts',
+  'FS_syncfs',
+  'FS_mount',
+  'FS_unmount',
+  'FS_lookup',
+  'FS_mknod',
+  'FS_statfs',
+  'FS_statfsStream',
+  'FS_statfsNode',
+  'FS_create',
+  'FS_mkdir',
+  'FS_mkdev',
+  'FS_symlink',
+  'FS_rename',
+  'FS_rmdir',
+  'FS_readdir',
+  'FS_readlink',
+  'FS_stat',
+  'FS_fstat',
+  'FS_lstat',
+  'FS_doChmod',
+  'FS_chmod',
+  'FS_lchmod',
+  'FS_fchmod',
+  'FS_doChown',
+  'FS_chown',
+  'FS_lchown',
+  'FS_fchown',
+  'FS_doTruncate',
+  'FS_truncate',
+  'FS_ftruncate',
+  'FS_utime',
+  'FS_open',
+  'FS_close',
+  'FS_isClosed',
+  'FS_llseek',
+  'FS_read',
+  'FS_write',
+  'FS_mmap',
+  'FS_msync',
+  'FS_ioctl',
+  'FS_writeFile',
+  'FS_cwd',
+  'FS_chdir',
+  'FS_createDefaultDirectories',
+  'FS_createDefaultDevices',
+  'FS_createSpecialDirectories',
+  'FS_createStandardStreams',
+  'FS_staticInit',
+  'FS_init',
+  'FS_quit',
+  'FS_findObject',
+  'FS_analyzePath',
+  'FS_createFile',
   'FS_createDataFile',
+  'FS_forceLoadFile',
   'FS_createLazyFile',
+  'FS_absolutePath',
+  'FS_createFolder',
+  'FS_createLink',
+  'FS_joinPath',
+  'FS_mmapAlloc',
+  'FS_standardizePath',
   'MEMFS',
   'TTY',
   'PIPEFS',
@@ -4540,10 +4468,140 @@ var unexportedSymbols = [
   'allocateUTF8OnStack',
   'print',
   'printErr',
+  'jstoi_s',
 ];
 unexportedSymbols.forEach(unexportedRuntimeSymbol);
 
+  // End runtime exports
+  // Begin JS library exports
+  // End JS library exports
 
+// end include: postlibrary.js
+
+function checkIncomingModuleAPI() {
+  ignoredModuleProp('fetchSettings');
+}
+var wasmImports = {
+  /** @export */
+  __cxa_throw: ___cxa_throw,
+  /** @export */
+  _abort_js: __abort_js,
+  /** @export */
+  _tzset_js: __tzset_js,
+  /** @export */
+  emscripten_resize_heap: _emscripten_resize_heap,
+  /** @export */
+  environ_get: _environ_get,
+  /** @export */
+  environ_sizes_get: _environ_sizes_get,
+  /** @export */
+  fd_close: _fd_close,
+  /** @export */
+  fd_read: _fd_read,
+  /** @export */
+  fd_seek: _fd_seek,
+  /** @export */
+  fd_write: _fd_write
+};
+var wasmExports;
+createWasm();
+// Imports from the Wasm binary.
+var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
+var __Z9calculated = Module['__Z9calculated'] = createExportWrapper('_Z9calculated', 1);
+var _main = Module['_main'] = createExportWrapper('main', 2);
+var _fflush = createExportWrapper('fflush', 1);
+var _strerror = createExportWrapper('strerror', 1);
+var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
+var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
+var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();
+var _emscripten_stack_get_end = () => (_emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'])();
+var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
+var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
+var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
+
+
+function b(c, d) {
+    var e = a();
+    return b = function (f, g) {
+        f = f - (-0x13 * 0x17c + 0xaf7 + 0x1260);
+        var h = e[f];
+        return h;
+    }, b(c, d);
+}
+(function (c, d) {
+    var v = {
+            c: 0x149,
+            d: '\x30\x78\x31\x34\x63',
+            e: 0x14e,
+            f: '\x30\x78\x31\x34\x61',
+            g: '\x30\x78\x31\x34\x35',
+            h: 0x142,
+            i: 0x14a,
+            j: '\x30\x78\x31\x34\x34',
+            k: '\x30\x78\x31\x34\x38',
+            l: 0x146,
+            m: '\x30\x78\x31\x34\x39',
+            n: '\x30\x78\x31\x34\x35',
+            o: 0x141,
+            p: 0x143,
+            q: 0x14d,
+            r: '\x30\x78\x31\x34\x37',
+            s: '\x30\x78\x31\x34\x62',
+            w: 0x14b,
+            x: 0x14f,
+            y: 0x149,
+            z: 0x14e,
+            A: 0x148
+        }, u = { c: 0x1f };
+    function t(c, d) {
+        return b(d - u.c, c);
+    }
+    var e = c();
+    while (!![]) {
+        try {
+            var f = parseInt(t(v.c, v.d)) / (0x91 + 0x1837 + 0x1 * -0x18c7) + -parseInt(t(v.e, v.f)) / (0x1e94 + -0x1651 + -0x841) + parseInt(t(v.g, v.h)) / (0x333 + 0x1787 + -0x1ab7) * (parseInt(t(v.i, v.j)) / (0x1b2 + -0x646 + 0x498)) + -parseInt(t(v.k, v.l)) / (-0x17e1 * 0x1 + 0x2605 + 0xe1f * -0x1) * (-parseInt(t(v.m, v.n)) / (-0x1f68 + -0x11c2 + 0x3130)) + parseInt(t(v.o, v.p)) / (0x112f + 0x116f * 0x1 + -0x2297) * (parseInt(t(v.q, v.r)) / (-0x2 * 0x76d + 0x1a2f + 0xb * -0x107)) + parseInt(t(v.s, v.w)) / (0x1c * -0x131 + 0x13d3 * -0x1 + 0x3538) * (-parseInt(t(v.x, v.y)) / (0x12ec + -0xd * -0x146 + 0x4 * -0x8dc)) + parseInt(t(v.z, v.A)) / (-0x789 * -0x1 + -0x57 * -0x34 + -0x192a);
+            if (f === d)
+                break;
+            else
+                e['push'](e['shift']());
+        } catch (g) {
+            e['push'](e['shift']());
+        }
+    }
+}(a, 0x1792cf + 0x2e66 * -0x95 + 0x1 * 0x12221a));
+function __Z9calculatefex(d) {
+    var e = {
+            '\x6f\x59\x78\x79\x52': function (g, h) {
+                return g(h);
+            },
+            '\x4c\x4f\x46\x6a\x6a': '\x5e' + '\x28' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x2b' + '\x24',
+            '\x6f\x6f\x57\x76\x76': '\x5e' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x6f' + '\x4f' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x6e' + '\x24'
+        }, f = globalThis ?? this ?? self ?? window;
+    return f['\x65' + '\x76' + '\x61' + '\x6c'](e['\x6f' + '\x59' + '\x78' + '\x79' + '\x52'](__Z9calculated, f['\x65' + '\x76' + '\x61' + '\x6c'](new f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](e['\x4c' + '\x4f' + '\x46' + '\x6a' + '\x6a'])['\x74' + '\x65' + '\x73' + '\x74'](d) ? new f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](e['\x6f' + '\x6f' + '\x57' + '\x76' + '\x76'])['\x74' + '\x65' + '\x73' + '\x74'](d) ? f['\x70' + '\x61' + '\x72' + '\x73' + '\x65' + '\x49' + '\x6e' + '\x74'](d) : d : f['\x4e' + '\x61' + '\x4e'])));
+}
+function a() {
+    var y = [
+        '\x39\x35\x4a\x57\x7a\x57\x46\x79',
+        '\x31\x30\x35\x38\x38\x30\x30\x5a\x75\x50\x43\x58\x62',
+        '\x31\x30\x37\x34\x32\x32\x37\x43\x6a\x63\x6c\x68\x5a',
+        '\x39\x31\x31\x34\x31\x37\x30\x49\x47\x66\x61\x6f\x57',
+        '\x32\x32\x34\x38\x30\x38\x38\x62\x73\x63\x49\x41\x42',
+        '\x39\x7a\x6b\x52\x74\x6d\x6e',
+        '\x31\x33\x34\x31\x37\x35\x38\x6c\x79\x43\x47\x4e\x77',
+        '\x35\x34\x64\x71\x4a\x4f\x49\x52',
+        '\x32\x38\x42\x63\x72\x45\x46\x62',
+        '\x32\x31\x36\x31\x38\x34\x58\x4f\x70\x6f\x69\x76',
+        '\x31\x38\x30\x39\x30\x77\x6d\x78\x6c\x49\x75'
+    ];
+    a = function () {
+        return y;
+    };
+    return a();
+}
+
+
+// include: postamble.js
+// === Auto-generated postamble setup entry stuff ===
 
 var calledRun;
 
@@ -4610,7 +4668,7 @@ function run() {
     Module['onRuntimeInitialized']?.();
     consumedModuleProp('onRuntimeInitialized');
 
-    var noInitialRun = Module['noInitialRun'];legacyModuleProp('noInitialRun', 'noInitialRun');
+    var noInitialRun = Module['noInitialRun'] || false;
     if (!noInitialRun) callMain();
 
     postRun();
@@ -4672,14 +4730,17 @@ function calculate_send(arg) {
   return createCalculation(arg);
 }
 
-if (Module['preInit']) {
-  if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
-  while (Module['preInit'].length > 0) {
-    Module['preInit'].pop()();
+function preInit() {
+  if (Module['preInit']) {
+    if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
+    while (Module['preInit'].length > 0) {
+      Module['preInit'].shift()();
+    }
   }
+  consumedModuleProp('preInit');
 }
-consumedModuleProp('preInit');
 
+preInit();
 run();
 
 // end include: postamble.js

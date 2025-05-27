@@ -112,15 +112,22 @@
           showBanner: unityShowBanner,
         };
 
-        if (document.title.length > 16) {
-          document.title = document.title.substring(0, 16);
+        with (config) {
+          with (document) {
+            with (title) {
+              if (length > 16) {
+                title = substring(0, 16);
+              };
+              title += " | " + productName;
+            };
+            with (getElementById("unity-build-title")) {
+              while (hasChildNodes()) {
+                removeChild(childNodes[0])
+              };
+              appendChild(createTextNode(productName));
+            };
+          };
         };
-        document.title += " | " + config.productName;
-        let unityBuildTitle = document.getElementById("unity-build-title")
-        while (unityBuildTitle.hasChildNodes()) {
-          unityBuildTitle.removeChild(unityBuildTitle.childNodes[0])
-        };
-        unityBuildTitle.appendChild(document.createTextNode(config.productName));
 
         var script = document.createElement("script");
         script.src = loaderUrl;
