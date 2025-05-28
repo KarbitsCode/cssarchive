@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="../main/common.js"></script>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <title>Flash Games Collection</title>
 </head>
@@ -10,6 +11,8 @@
     <div id="frame"></div><br>
     <div id="status">Playing Quiz Parampaa <span id="state"></span></div>
     <div id="choose">Choose a flash game to play</div>
+    <div id="loaderr">Error loading flash game</div>
+    <div id="load">Loading...</div>
     <a href="javascript:void(0)" onclick="run('1')">Quiz Parampaa 1</a><br>
     <a href="javascript:void(0)" onclick="run('2')">Quiz Parampaa 2</a><br>
     <a href="javascript:void(0)" onclick="run('X')">Quiz Parampaa Kita Semua</a><br>
@@ -20,6 +23,8 @@
         const status = document.getElementById("status")
         const state = document.getElementById("state")
         const choose = document.getElementById("choose")
+        const load = document.getElementById("load")
+        const loaderr = document.getElementById("loaderr")
         const ruffle = window.RufflePlayer.newest()
         const container = ruffle.createPlayer()
         const player = container.ruffle(1)
@@ -29,19 +34,32 @@
         frame.style.setProperty("width", "550px", "")
         frame.style.setProperty("border-style", "solid", "")
         status.setAttribute("hidden", "")
+        load.setAttribute("hidden", "")
+        loaderr.setAttribute("hidden", "")
         const run = async (to) => {
-            state.textContent = to !== "X" ? to : "Kita Semua"
-            status.removeAttribute("hidden")
             choose.setAttribute("hidden", "")
-            let executable = "./QP" + to + ".swf"
-            if (await exists(executable)) {
-                player.load(executable)
-            } else if (await exists(executable.replace("swf", "bin"))) {
-                player.load(executable.replace("swf", "bin"))
-            } else if (await exists(executable.replace("./", "https://karbitscode.github.io/cssarchive/1/flash/"))) {
-               player.load(executable.replace("./", "https://karbitscode.github.io/cssarchive/1/flash/"))
-            } else if (await exists(executable.replace("./", "https://parampaa.net/"))) {
-               player.load(executable.replace("./", "https://parampaa.net/"))
+            state.textContent = to !== "X" ? to : "Kita Semua"
+            let executable = to.length < 2 ? "./QP" + to + ".swf" : !to.endsWith(".swf") ? to + ".swf" : to
+            const trials = [
+              executable,
+              executable.replace(/\.swf$/, '.bin'),
+              ...getMirrors().map(base => executable.replace('./', base + '1/flash/')),
+              ...getMirrors().map(base => executable.replace('./', base + '1/flash/').replace(/\.swf$/, '.bin')),
+              executable.replace('./', 'https://parampaa.net/'),
+            ]
+            for (const url of trials) {
+              status.setAttribute("hidden", "")
+              load.removeAttribute("hidden")
+              loaderr.setAttribute("hidden", "")
+              if (await exists(url)) {
+                player.load(url)
+                status.removeAttribute("hidden")
+                load.setAttribute("hidden", "")
+                break
+              } else {
+                loaderr.removeAttribute("hidden")
+                load.setAttribute("hidden", "")
+              }
             }
             clearInterval(interval)
             interval = setInterval(() => {

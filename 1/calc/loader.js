@@ -689,12 +689,17 @@ var wasmBinaryFile;
 
 function findWasmBinary() {
   var f = 'engine.wasm';
-  if (isFileExists(f)) {
-    f = f;
-  } else if (isFileExists(f.replace('wasm', 'bin'))) {
-    f = f.replace('wasm', 'bin');
-  } else if (isFileExists(f.prepend('https://karbitscode.github.io/cssarchive/1/calc/'))) {
-    f = f.prepend('https://karbitscode.github.io/cssarchive/1/calc/');
+  var t = [
+    f,
+    f.replace(/\.wasm$/, '.bin'),
+    ...getMirrors().map(i => f.prepend(i.append('1/calc/'))),
+    ...getMirrors().map(i => f.prepend(i.append('1/calc/')).replace(/\.wasm$/, '.bin')),
+  ];
+  for (var a of t) {
+    if (isFileExists(a)) {
+      f = a;
+      break;
+    }
   }
   return locateFile(f);
 }

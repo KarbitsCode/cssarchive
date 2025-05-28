@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="../main/common.js"></script>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <title>Unity Web Player</title>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -91,7 +92,10 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
-      var buildUrls = ["Build", "https://karbitscode.github.io/cssarchive/1/unity/Build"];
+      var buildUrls = [
+        "Build",
+        ...getMirrors().map(base => base + "1/unity/Build"),
+      ];
       function tryLoadUnity(index = 0) {
         if (index >= buildUrls.length) {
           alert("Failed to load Unity WebGL content from all fallback sources.");
