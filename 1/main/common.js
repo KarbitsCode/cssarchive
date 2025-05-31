@@ -64,7 +64,7 @@ function detectIE() {
   if (document.documentMode) {
     console.log("IE detected");
     let url = location.pathname.replace(/\.html$/, "").split("/");
-    if (url.some(function(_, i) {return (url[i] === "1" && url[i + 1] === "main")}) && url.slice(-1)[0] !== "main-min") {
+    if (url.some((_, i) => (url[i] === "1" && url[i + 1] === "main")) && url.slice(-1)[0] !== "main-min") {
       location.replace("main-min.html?on=ie");
     } else {
       document.getElementById("displaymiddle").textContent = "IE detected";
