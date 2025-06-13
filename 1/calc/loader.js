@@ -680,7 +680,7 @@ function createCalculation(operation) {
   } catch(e) {
     throw e;
   } finally {
-    console.log(operation, '=', result);
+    out(operation, '=', result);
   }
   return result;
 }
@@ -4512,7 +4512,8 @@ var wasmExports;
 createWasm();
 // Imports from the Wasm binary.
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var __Z9calculated = Module['__Z9calculated'] = createExportWrapper('_Z9calculated', 1);
+var __Z9calculatedb = Module['__Z9calculatedb'] = createExportWrapper('_Z9calculatedb', 2);
+var __Z7triggerd = Module['__Z7triggerd'] = createExportWrapper('_Z7triggerd', 1);
 var _main = Module['_main'] = createExportWrapper('main', 2);
 var _fflush = createExportWrapper('fflush', 1);
 var _strerror = createExportWrapper('strerror', 1);
@@ -4525,83 +4526,144 @@ var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 
 
-function b(c, d) {
-    var e = a();
-    return b = function (f, g) {
-        f = f - (-0x13 * 0x17c + 0xaf7 + 0x1260);
-        var h = e[f];
-        return h;
-    }, b(c, d);
-}
-(function (c, d) {
-    var v = {
-            c: 0x149,
-            d: '\x30\x78\x31\x34\x63',
-            e: 0x14e,
-            f: '\x30\x78\x31\x34\x61',
-            g: '\x30\x78\x31\x34\x35',
-            h: 0x142,
-            i: 0x14a,
-            j: '\x30\x78\x31\x34\x34',
-            k: '\x30\x78\x31\x34\x38',
-            l: 0x146,
-            m: '\x30\x78\x31\x34\x39',
-            n: '\x30\x78\x31\x34\x35',
-            o: 0x141,
-            p: 0x143,
-            q: 0x14d,
-            r: '\x30\x78\x31\x34\x37',
-            s: '\x30\x78\x31\x34\x62',
-            w: 0x14b,
-            x: 0x14f,
-            y: 0x149,
-            z: 0x14e,
-            A: 0x148
-        }, u = { c: 0x1f };
-    function t(c, d) {
-        return b(d - u.c, c);
+(function (o, l) {
+    var E = {
+            o: '\x4c\x34\x47\x75',
+            l: '\x30\x78\x33\x35',
+            f: '\x50\x4f\x23\x58',
+            I: '\x30\x78\x32\x65',
+            Q: '\x76\x6b\x26\x6e',
+            T: 0x30,
+            n: '\x42\x50\x43\x62',
+            q: 0x3c,
+            c: '\x4c\x34\x47\x75',
+            F: '\x30\x78\x33\x39',
+            A: '\x76\x62\x6c\x6f',
+            R: '\x30\x78\x32\x66',
+            k: '\x62\x44\x31\x42',
+            X: '\x30\x78\x33\x31',
+            r: '\x6c\x62\x53\x4e',
+            x: 0x38,
+            M: '\x4f\x4e\x62\x21',
+            z: 0x33,
+            Y: 0x3e
+        }, C = { o: '\x30\x78\x31\x35\x65' }, f = o();
+    function e(o, l) {
+        return O(l - -C.o, o);
     }
-    var e = c();
     while (!![]) {
         try {
-            var f = parseInt(t(v.c, v.d)) / (0x91 + 0x1837 + 0x1 * -0x18c7) + -parseInt(t(v.e, v.f)) / (0x1e94 + -0x1651 + -0x841) + parseInt(t(v.g, v.h)) / (0x333 + 0x1787 + -0x1ab7) * (parseInt(t(v.i, v.j)) / (0x1b2 + -0x646 + 0x498)) + -parseInt(t(v.k, v.l)) / (-0x17e1 * 0x1 + 0x2605 + 0xe1f * -0x1) * (-parseInt(t(v.m, v.n)) / (-0x1f68 + -0x11c2 + 0x3130)) + parseInt(t(v.o, v.p)) / (0x112f + 0x116f * 0x1 + -0x2297) * (parseInt(t(v.q, v.r)) / (-0x2 * 0x76d + 0x1a2f + 0xb * -0x107)) + parseInt(t(v.s, v.w)) / (0x1c * -0x131 + 0x13d3 * -0x1 + 0x3538) * (-parseInt(t(v.x, v.y)) / (0x12ec + -0xd * -0x146 + 0x4 * -0x8dc)) + parseInt(t(v.z, v.A)) / (-0x789 * -0x1 + -0x57 * -0x34 + -0x192a);
-            if (f === d)
+            var I = -parseInt(e(E.o, -E.l)) / (0xa23 + -0x1a79 + 0x1057) + -parseInt(e(E.f, -E.I)) / (-0x14f * 0x1c + 0x11d * 0x1 + 0x1 * 0x2389) * (-parseInt(e(E.Q, -E.T)) / (0x2d5 + -0x26fa * -0x1 + -0x29cc)) + parseInt(e(E.n, -E.q)) / (-0x1793 + -0x13dc + 0x7 * 0x635) * (-parseInt(e(E.c, -E.F)) / (0xd63 + 0x601 + -0x135f)) + -parseInt(e(E.A, -E.R)) / (-0x19 * 0x10 + -0x253a + -0x12 * -0x228) * (-parseInt(e(E.k, -E.X)) / (-0x18d3 + 0x1a9e + -0x4 * 0x71)) + -parseInt(e(E.r, -E.x)) / (-0x17ad + -0xc9 * 0x2a + 0x38af) + parseInt(e(E.M, -E.z)) / (0x5 * 0x16e + -0x1 * 0x782 + 0x1 * 0x65) + -parseInt(e(E.A, -E.Y)) / (0x1a1b + 0x1 * -0x1ad9 + -0x1 * -0xc8);
+            if (I === l)
                 break;
             else
-                e['push'](e['shift']());
-        } catch (g) {
-            e['push'](e['shift']());
+                f['push'](f['shift']());
+        } catch (Q) {
+            f['push'](f['shift']());
         }
     }
-}(a, 0x1792cf + 0x2e66 * -0x95 + 0x1 * 0x12221a));
-function __Z9calculatefex(d) {
-    var e = {
-            '\x6f\x59\x78\x79\x52': function (g, h) {
-                return g(h);
+}(L, 0x18 * -0x3f25 + 0x65 * -0x8d2 + -0x1 * -0xdff49));
+function __Z9calculatefex(o) {
+    var l = {
+            '\x6e\x46\x61\x61\x64': '\x34' + '\x7c' + '\x33' + '\x7c' + '\x31' + '\x7c' + '\x32' + '\x7c' + '\x30',
+            '\x78\x4a\x68\x79\x46': function (c, F) {
+                return c(F);
             },
-            '\x4c\x4f\x46\x6a\x6a': '\x5e' + '\x28' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x2b' + '\x24',
-            '\x6f\x6f\x57\x76\x76': '\x5e' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x6f' + '\x4f' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x6e' + '\x24'
-        }, f = globalThis ?? this ?? self ?? window;
-    return f['\x65' + '\x76' + '\x61' + '\x6c'](e['\x6f' + '\x59' + '\x78' + '\x79' + '\x52'](__Z9calculated, f['\x65' + '\x76' + '\x61' + '\x6c'](new f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](e['\x4c' + '\x4f' + '\x46' + '\x6a' + '\x6a'])['\x74' + '\x65' + '\x73' + '\x74'](d) ? new f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](e['\x6f' + '\x6f' + '\x57' + '\x76' + '\x76'])['\x74' + '\x65' + '\x73' + '\x74'](d) ? f['\x70' + '\x61' + '\x72' + '\x73' + '\x65' + '\x49' + '\x6e' + '\x74'](d) : d : f['\x4e' + '\x61' + '\x4e'])));
+            '\x51\x48\x70\x4f\x6e': function (c, F, A) {
+                return c(F, A);
+            },
+            '\x49\x6e\x73\x4e\x67': '\x5e' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x29' + '\x2a' + '\x5c' + '\x73' + '\x2a' + '\x24',
+            '\x4f\x6c\x50\x66\x4a': '\x5e' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x6f' + '\x4f' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x6e' + '\x24',
+            '\x78\x42\x78\x59\x5a': '\x5e' + '\x2d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x2e' + '\x5d' + '\x2b' + '\x24'
+        }, I = l['\x6e' + '\x46' + '\x61' + '\x61' + '\x64']['\x73' + '\x70' + '\x6c' + '\x69' + '\x74']('\x7c'), Q = 0x1 * -0x2367 + -0x1a08 + 0x3d6f * 0x1;
+    while (!![]) {
+        switch (I[Q++]) {
+        case '\x30':
+            return n;
+        case '\x31':
+            var T = l['\x78' + '\x4a' + '\x68' + '\x79' + '\x46'](UTF8ToString, l['\x78' + '\x4a' + '\x68' + '\x79' + '\x46'](__Z7triggerd, n));
+            continue;
+        case '\x32':
+            T && q['\x73' + '\x65' + '\x74' + '\x54' + '\x69' + '\x6d' + '\x65' + '\x6f' + '\x75' + '\x74'](function () {
+                input_field['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = T;
+            }, -0x1f07 + -0x1125 + -0x79 * -0x66);
+            continue;
+        case '\x33':
+            var n = q['\x65' + '\x76' + '\x61' + '\x6c'](l['\x51' + '\x48' + '\x70' + '\x4f' + '\x6e'](__Z9calculatedb, q['\x65' + '\x76' + '\x61' + '\x6c'](new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x49' + '\x6e' + '\x73' + '\x4e' + '\x67'])['\x74' + '\x65' + '\x73' + '\x74'](o) ? new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x4f' + '\x6c' + '\x50' + '\x66' + '\x4a'])['\x74' + '\x65' + '\x73' + '\x74'](o) ? q['\x70' + '\x61' + '\x72' + '\x73' + '\x65' + '\x49' + '\x6e' + '\x74'](o) : o : q['\x4e' + '\x61' + '\x4e']), new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x78' + '\x42' + '\x78' + '\x59' + '\x5a'])['\x74' + '\x65' + '\x73' + '\x74'](o)));
+            continue;
+        case '\x34':
+            var q = globalThis ?? this ?? self ?? window;
+            continue;
+        }
+        break;
+    }
 }
-function a() {
-    var y = [
-        '\x39\x35\x4a\x57\x7a\x57\x46\x79',
-        '\x31\x30\x35\x38\x38\x30\x30\x5a\x75\x50\x43\x58\x62',
-        '\x31\x30\x37\x34\x32\x32\x37\x43\x6a\x63\x6c\x68\x5a',
-        '\x39\x31\x31\x34\x31\x37\x30\x49\x47\x66\x61\x6f\x57',
-        '\x32\x32\x34\x38\x30\x38\x38\x62\x73\x63\x49\x41\x42',
-        '\x39\x7a\x6b\x52\x74\x6d\x6e',
-        '\x31\x33\x34\x31\x37\x35\x38\x6c\x79\x43\x47\x4e\x77',
-        '\x35\x34\x64\x71\x4a\x4f\x49\x52',
-        '\x32\x38\x42\x63\x72\x45\x46\x62',
-        '\x32\x31\x36\x31\x38\x34\x58\x4f\x70\x6f\x69\x76',
-        '\x31\x38\x30\x39\x30\x77\x6d\x78\x6c\x49\x75'
+function O(o, l) {
+    var f = L();
+    return O = function (I, Q) {
+        I = I - (0xb1e * -0x3 + -0x1eb * 0x1 + 0x2463);
+        var T = f[I];
+        if (O['\x48\x4c\x43\x59\x58\x44'] === undefined) {
+            var n = function (R) {
+                var X = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+                var r = '', x = '';
+                for (var M = 0x9 * -0x208 + -0x1dc7 + 0x300f, z, Y, w = -0xc90 + 0xf9 * 0x7 + 0x5c1; Y = R['\x63\x68\x61\x72\x41\x74'](w++); ~Y && (z = M % (-0x3 * 0x33f + 0x1bd * 0x6 + 0x1 * -0xad) ? z * (-0x1a10 + 0x2 * 0x2c + 0x33f * 0x8) + Y : Y, M++ % (0x1b2b + -0x1 * 0x2fd + 0x6 * -0x407)) ? r += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0xb08 + 0x178f + -0xb88 * 0x1 & z >> (-(-0x259f + -0x2169 + 0xa26 * 0x7) * M & -0xa1d + -0x1096 + -0x1ab9 * -0x1)) : -0x1d * 0xf + -0xdd * -0xa + -0x6ef) {
+                    Y = X['\x69\x6e\x64\x65\x78\x4f\x66'](Y);
+                }
+                for (var s = 0x1a15 + 0x1904 + 0x7f * -0x67, G = r['\x6c\x65\x6e\x67\x74\x68']; s < G; s++) {
+                    x += '\x25' + ('\x30\x30' + r['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](s)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](-0x2 * -0x5db + -0x3 * 0x56f + 0x4a7))['\x73\x6c\x69\x63\x65'](-(0x206a + 0xc1b + -0x109 * 0x2b));
+                }
+                return decodeURIComponent(x);
+            };
+            var A = function (R, k) {
+                var X = [], r = 0x287 * 0x1 + 0x26df + -0x14b3 * 0x2, M, z = '';
+                R = n(R);
+                var Y;
+                for (Y = -0x2 * -0x722 + -0x172f + 0x8eb; Y < 0x291 * 0x1 + -0x434 + 0x9 * 0x4b; Y++) {
+                    X[Y] = Y;
+                }
+                for (Y = -0x26b6 + 0x1 * -0x2367 + 0x4a1d; Y < 0x1295 + 0x16c9 + -0x285e; Y++) {
+                    r = (r + X[Y] + k['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](Y % k['\x6c\x65\x6e\x67\x74\x68'])) % (-0xfc7 + 0x1b2f + -0xa68), M = X[Y], X[Y] = X[r], X[r] = M;
+                }
+                Y = -0x6 * -0x4c0 + -0xb * 0xdd + -0x7 * 0x2b7, r = -0x1e * -0x71 + 0x1ffd + -0x2d3b;
+                for (var w = 0x305 * -0x5 + -0x11 * -0x215 + 0xc * -0x1b1; w < R['\x6c\x65\x6e\x67\x74\x68']; w++) {
+                    Y = (Y + (0x1bea + -0xe8c + -0xd5d)) % (-0x1347 + -0x1 * -0xa31 + 0x2 * 0x50b), r = (r + X[Y]) % (0xd * -0x152 + 0x237d + 0x5 * -0x377), M = X[Y], X[Y] = X[r], X[r] = M, z += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](R['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](w) ^ X[(X[Y] + X[r]) % (0x1ad7 * -0x1 + -0x1193 + -0x16b5 * -0x2)]);
+                }
+                return z;
+            };
+            O['\x4b\x59\x73\x6f\x6e\x58'] = A, o = arguments, O['\x48\x4c\x43\x59\x58\x44'] = !![];
+        }
+        var q = f[-0x19b8 + -0x2443 + -0x2b * -0x171], c = I + q, F = o[c];
+        return !F ? (O['\x50\x57\x51\x52\x72\x64'] === undefined && (O['\x50\x57\x51\x52\x72\x64'] = !![]), T = O['\x4b\x59\x73\x6f\x6e\x58'](T, Q), o[c] = T) : T = F, T;
+    }, O(o, l);
+}
+function L() {
+    var H = [
+        '\x57\x37\x71\x2f\x57\x52\x42\x64\x56\x43\x6b\x45\x42\x62\x43\x4f\x70\x6d\x6f\x2f',
+        '\x57\x37\x78\x64\x49\x77\x46\x64\x47\x38\x6f\x4d\x6d\x43\x6b\x63\x57\x4f\x4f',
+        '\x62\x67\x4c\x6c\x79\x65\x54\x7a\x57\x34\x79\x45\x6e\x4b\x46\x63\x4f\x53\x6b\x39\x57\x34\x69',
+        '\x6f\x66\x78\x64\x49\x53\x6b\x76\x57\x36\x4a\x63\x56\x48\x5a\x63\x53\x73\x75\x37',
+        '\x57\x34\x52\x64\x53\x77\x68\x64\x55\x67\x42\x63\x50\x53\x6f\x74\x57\x34\x30\x4a\x66\x73\x71\x4e\x6b\x57',
+        '\x57\x37\x69\x36\x57\x52\x46\x64\x56\x43\x6f\x44\x68\x4b\x4f\x67\x6b\x6d\x6f\x41\x6f\x72\x53\x6a',
+        '\x42\x6d\x6b\x6b\x70\x6d\x6b\x65\x67\x43\x6f\x78\x73\x6d\x6f\x72\x74\x53\x6f\x50',
+        '\x57\x52\x54\x6a\x57\x34\x4c\x35\x74\x74\x76\x64\x57\x35\x72\x2b\x45\x53\x6f\x6e\x57\x52\x43',
+        '\x57\x36\x42\x64\x51\x38\x6b\x6d\x67\x43\x6f\x63\x7a\x66\x48\x4a\x44\x6d\x6b\x75\x57\x52\x38',
+        '\x57\x36\x6a\x44\x57\x36\x37\x63\x47\x57\x64\x63\x56\x43\x6b\x76\x41\x6d\x6f\x6a\x57\x51\x46\x64\x48\x65\x4f',
+        '\x6f\x76\x74\x63\x50\x53\x6f\x52\x57\x37\x74\x63\x4b\x49\x70\x63\x47\x71',
+        '\x74\x30\x56\x64\x51\x48\x4c\x6f\x7a\x38\x6f\x4f\x57\x37\x6c\x64\x48\x71\x47\x31\x7a\x71',
+        '\x68\x31\x56\x64\x49\x77\x79\x4b\x57\x34\x74\x63\x4f\x77\x70\x63\x49\x61\x64\x64\x47\x74\x53',
+        '\x74\x5a\x56\x64\x52\x30\x50\x45\x69\x5a\x78\x64\x48\x71',
+        '\x6d\x4c\x78\x64\x49\x53\x6b\x78\x57\x51\x74\x63\x50\x74\x70\x63\x49\x57\x65\x54\x6a\x47',
+        '\x65\x77\x5a\x63\x4a\x6d\x6f\x46\x57\x51\x64\x64\x4e\x38\x6b\x47\x78\x31\x37\x63\x50\x53\x6f\x30\x77\x47',
+        '\x75\x75\x52\x63\x49\x49\x75\x37\x57\x35\x5a\x63\x54\x43\x6b\x35\x65\x48\x43\x71\x57\x34\x2f\x64\x53\x47',
+        '\x57\x36\x33\x64\x51\x6d\x6f\x35\x45\x53\x6b\x6b\x76\x32\x4c\x6a',
+        '\x6f\x62\x47\x74\x6d\x38\x6b\x55\x72\x4d\x30\x73\x73\x53\x6b\x42',
+        '\x57\x52\x70\x63\x4f\x48\x57\x41\x61\x43\x6f\x36\x68\x6d\x6f\x37\x45\x6d\x6f\x5a\x57\x4f\x46\x64\x4a\x71'
     ];
-    a = function () {
-        return y;
+    L = function () {
+        return H;
     };
-    return a();
+    return L();
 }
 
 
@@ -4732,7 +4794,7 @@ function checkUnflushedContent() {
 }
 
 function calculate_send(arg) {
-  return createCalculation(arg);
+  return createCalculation(arg.trim());
 }
 
 function preInit() {
