@@ -25,10 +25,6 @@ var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != 'undefined';
 var ENVIRONMENT_IS_NODE = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
-if (ENVIRONMENT_IS_NODE) {
-
-}
-
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
 
@@ -78,7 +74,6 @@ if (ENVIRONMENT_IS_NODE) {
   var nodeVersion = process.versions.node;
   var numericVersion = nodeVersion.split('.').slice(0, 3);
   numericVersion = (numericVersion[0] * 10000) + (numericVersion[1] * 100) + (numericVersion[2].split('-')[0] * 1);
-  var minVersion = 160000;
   if (numericVersion < 160000) {
     throw new Error('This emscripten-generated code requires node v16.0.0 (detected v' + nodeVersion + ')');
   }
@@ -86,7 +81,6 @@ if (ENVIRONMENT_IS_NODE) {
   // These modules will usually be used on Node.js. Load them eagerly to avoid
   // the complexity of lazy-loading.
   var fs = require('fs');
-  var nodePath = require('path');
 
   scriptDirectory = __dirname + '/';
 
@@ -229,8 +223,6 @@ if (typeof WebAssembly != 'object') {
 
 // Wasm globals
 
-var wasmMemory;
-
 //========================================
 // Runtime essentials
 //========================================
@@ -265,41 +257,13 @@ function _free() {
   abort('free() called but not included in the build - add `_free` to EXPORTED_FUNCTIONS');
 }
 
-// Memory management
-
-var HEAP,
-/** @type {!Int8Array} */
-  HEAP8,
-/** @type {!Uint8Array} */
-  HEAPU8,
-/** @type {!Int16Array} */
-  HEAP16,
-/** @type {!Uint16Array} */
-  HEAPU16,
-/** @type {!Int32Array} */
-  HEAP32,
-/** @type {!Uint32Array} */
-  HEAPU32,
-/** @type {!Float32Array} */
-  HEAPF32,
-/* BigInt64Array type is not correctly defined in closure
-/** not-@type {!BigInt64Array} */
-  HEAP64,
-/* BigUint64Array type is not correctly defined in closure
-/** not-t@type {!BigUint64Array} */
-  HEAPU64,
-/** @type {!Float64Array} */
-  HEAPF64;
-
-var runtimeInitialized = false;
-
 /**
  * Indicates whether filename is delivered via file protocol (as opposed to http/https)
  * @noinline
  */
 var isFileURI = (filename) => filename.startsWith('file://');
 
-// include: runtime_shared.js
+// include: runtime_common.js
 // include: runtime_stack_check.js
 // Initializes the stack cookie. Called at the startup of main and at the startup of each thread in pthreads mode.
 function writeStackCookie() {
@@ -314,10 +278,10 @@ function writeStackCookie() {
   // The stack grow downwards towards _emscripten_stack_get_end.
   // We write cookies to the final two words in the stack and detect if they are
   // ever overwritten.
-  HEAPU32[((max)>>2)] = 0x02135467;
-  HEAPU32[(((max)+(4))>>2)] = 0x89BACDFE;
+  HEAPU32[((max)>>2)] = 0x02135467;checkInt32(0x02135467);
+  HEAPU32[(((max)+(4))>>2)] = 0x89BACDFE;checkInt32(0x89BACDFE);
   // Also test the global address 0 for integrity.
-  HEAPU32[((0)>>2)] = 1668509029;
+  HEAPU32[((0)>>2)] = 1668509029;checkInt32(1668509029);
 }
 
 function checkStackCookie() {
@@ -369,6 +333,11 @@ function consumedModuleProp(prop) {
       }
     });
   }
+}
+
+function makeInvalidEarlyAccess(name) {
+  return () => assert(false, `call to '${name}' via reference taken before Wasm module initialization`);
+
 }
 
 function ignoredModuleProp(prop) {
@@ -455,9 +424,64 @@ function unexportedRuntimeSymbol(sym) {
   }
 }
 
+var MAX_UINT8  = (2 **  8) - 1;
+var MAX_UINT16 = (2 ** 16) - 1;
+var MAX_UINT32 = (2 ** 32) - 1;
+var MAX_UINT53 = (2 ** 53) - 1;
+var MAX_UINT64 = (2 ** 64) - 1;
+
+var MIN_INT8  = - (2 ** ( 8 - 1));
+var MIN_INT16 = - (2 ** (16 - 1));
+var MIN_INT32 = - (2 ** (32 - 1));
+var MIN_INT53 = - (2 ** (53 - 1));
+var MIN_INT64 = - (2 ** (64 - 1));
+
+function checkInt(value, bits, min, max) {
+  assert(Number.isInteger(Number(value)), `attempt to write non-integer (${value}) into integer heap`);
+  assert(value <= max, `value (${value}) too large to write as ${bits}-bit value`);
+  assert(value >= min, `value (${value}) too small to write as ${bits}-bit value`);
+}
+
+var checkInt1 = (value) => checkInt(value, 1, 1);
+var checkInt8 = (value) => checkInt(value, 8, MIN_INT8, MAX_UINT8);
+var checkInt16 = (value) => checkInt(value, 16, MIN_INT16, MAX_UINT16);
+var checkInt32 = (value) => checkInt(value, 32, MIN_INT32, MAX_UINT32);
+var checkInt53 = (value) => checkInt(value, 53, MIN_INT53, MAX_UINT53);
+var checkInt64 = (value) => checkInt(value, 64, MIN_INT64, MAX_UINT64);
+
 // end include: runtime_debug.js
-// include: memoryprofiler.js
-// end include: memoryprofiler.js
+// Memory management
+
+var wasmMemory;
+
+var
+/** @type {!Int8Array} */
+  HEAP8,
+/** @type {!Uint8Array} */
+  HEAPU8,
+/** @type {!Int16Array} */
+  HEAP16,
+/** @type {!Uint16Array} */
+  HEAPU16,
+/** @type {!Int32Array} */
+  HEAP32,
+/** @type {!Uint32Array} */
+  HEAPU32,
+/** @type {!Float32Array} */
+  HEAPF32,
+/** @type {!Float64Array} */
+  HEAPF64;
+
+// BigInt64Array type is not correctly defined in closure
+var
+/** not-@type {!BigInt64Array} */
+  HEAP64,
+/* BigUint64Array type is not correctly defined in closure
+/** not-@type {!BigUint64Array} */
+  HEAPU64;
+
+var runtimeInitialized = false;
+
 
 
 function updateMemoryViews() {
@@ -474,7 +498,9 @@ function updateMemoryViews() {
   HEAPU64 = new BigUint64Array(b);
 }
 
-// end include: runtime_shared.js
+// include: memoryprofiler.js
+// end include: memoryprofiler.js
+// end include: runtime_common.js
 assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' && Int32Array.prototype.subarray != undefined && Int32Array.prototype.set != undefined,
        'JS engine does not provide full typed array support');
 
@@ -494,6 +520,8 @@ function preRun() {
 function initRuntime() {
   assert(!runtimeInitialized);
   runtimeInitialized = true;
+
+  setStackLimits();
 
   checkStackCookie();
 
@@ -542,14 +570,6 @@ var runDependencies = 0;
 var dependenciesFulfilled = null; // overridden to take different actions when all run dependencies are fulfilled
 var runDependencyTracking = {};
 var runDependencyWatcher = null;
-
-function getUniqueRunDependency(id) {
-  var orig = id;
-  while (1) {
-    if (!runDependencyTracking[id]) return id;
-    id = orig + Math.random();
-  }
-}
 
 function addRunDependency(id) {
   runDependencies++;
@@ -689,11 +709,12 @@ var wasmBinaryFile;
 
 function findWasmBinary() {
   var f = 'engine.wasm';
+  var m = getMirrors();
   var t = [
     f,
     f.replace(/\.wasm$/, '.bin'),
-    ...getMirrors().map(i => f.prepend(i.append('1/calc/'))),
-    ...getMirrors().map(i => f.prepend(i.append('1/calc/')).replace(/\.wasm$/, '.bin')),
+    ...m.map(i => f.prepend(i.append('1/calc/'))),
+    ...m.map(i => f.prepend(i.append('1/calc/')).replace(/\.wasm$/, '.bin')),
   ];
   for (var a of t) {
     if (isFileExists(a)) {
@@ -798,6 +819,7 @@ async function createWasm() {
     assert(wasmMemory, 'memory not found in wasm exports');
     updateMemoryViews();
 
+    assignWasmExports(wasmExports);
     removeRunDependency('wasm-instantiate');
     return wasmExports;
   }
@@ -841,9 +863,9 @@ async function createWasm() {
   }
 
   wasmBinaryFile ??= findWasmBinary();
-    var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
-    var exports = receiveInstantiationResult(result);
-    return exports;
+  var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
+  var exports = receiveInstantiationResult(result);
+  return exports;
 }
 
 // end include: preamble.js
@@ -901,6 +923,12 @@ async function createWasm() {
       return '0x' + ptr.toString(16).padStart(8, '0');
     };
 
+  var setStackLimits = () => {
+      var stackLow = _emscripten_stack_get_base();
+      var stackHigh = _emscripten_stack_get_end();
+      ___set_stack_limits(stackLow, stackHigh);
+    };
+
   
     /**
      * @param {number} ptr
@@ -910,11 +938,11 @@ async function createWasm() {
   function setValue(ptr, value, type = 'i8') {
     if (type.endsWith('*')) type = '*';
     switch (type) {
-      case 'i1': HEAP8[ptr] = value; break;
-      case 'i8': HEAP8[ptr] = value; break;
-      case 'i16': HEAP16[((ptr)>>1)] = value; break;
-      case 'i32': HEAP32[((ptr)>>2)] = value; break;
-      case 'i64': HEAP64[((ptr)>>3)] = BigInt(value); break;
+      case 'i1': HEAP8[ptr] = value;checkInt8(value); break;
+      case 'i8': HEAP8[ptr] = value;checkInt8(value); break;
+      case 'i16': HEAP16[((ptr)>>1)] = value;checkInt16(value); break;
+      case 'i32': HEAP32[((ptr)>>2)] = value;checkInt32(value); break;
+      case 'i64': HEAP64[((ptr)>>3)] = BigInt(value);checkInt64(value); break;
       case 'float': HEAPF32[((ptr)>>2)] = value; break;
       case 'double': HEAPF64[((ptr)>>3)] = value; break;
       case '*': HEAPU32[((ptr)>>2)] = value; break;
@@ -960,7 +988,7 @@ async function createWasm() {
   
       set_caught(caught) {
         caught = caught ? 1 : 0;
-        HEAP8[(this.ptr)+(12)] = caught;
+        HEAP8[(this.ptr)+(12)] = caught;checkInt8(caught);
       }
   
       get_caught() {
@@ -969,7 +997,7 @@ async function createWasm() {
   
       set_rethrown(rethrown) {
         rethrown = rethrown ? 1 : 0;
-        HEAP8[(this.ptr)+(13)] = rethrown;
+        HEAP8[(this.ptr)+(13)] = rethrown;checkInt8(rethrown);
       }
   
       get_rethrown() {
@@ -1004,6 +1032,16 @@ async function createWasm() {
       assert(false, 'Exception thrown, but exception catching is not enabled. Compile with -sNO_DISABLE_EXCEPTION_CATCHING or -sEXCEPTION_CATCHING_ALLOWED=[..] to catch.');
     };
 
+  
+  
+  var ___handle_stack_overflow = (requested) => {
+      var base = _emscripten_stack_get_base();
+      var end = _emscripten_stack_get_end();
+      abort(`stack overflow (Attempt to set SP to ${ptrToString(requested)}` +
+            `, with stack limits [${ptrToString(end)} - ${ptrToString(base)}` +
+            ']). If you require more stack space build with -sSTACK_SIZE=<bytes>');
+    };
+
   var __abort_js = () =>
       abort('native code called abort()');
 
@@ -1017,18 +1055,10 @@ async function createWasm() {
       var startIdx = outIdx;
       var endIdx = outIdx + maxBytesToWrite - 1; // -1 for string null terminator.
       for (var i = 0; i < str.length; ++i) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
-        // unit, not a Unicode code point of the character! So decode
-        // UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
         // For UTF8 byte structure, see http://en.wikipedia.org/wiki/UTF-8#Description
         // and https://www.ietf.org/rfc/rfc2279.txt
         // and https://tools.ietf.org/html/rfc3629
-        var u = str.charCodeAt(i); // possibly a lead surrogate
-        if (u >= 0xD800 && u <= 0xDFFF) {
-          var u1 = str.charCodeAt(++i);
-          u = 0x10000 + ((u & 0x3FF) << 10) | (u1 & 0x3FF);
-        }
+        var u = str.codePointAt(i);
         if (u <= 0x7F) {
           if (outIdx >= endIdx) break;
           heap[outIdx++] = u;
@@ -1048,6 +1078,9 @@ async function createWasm() {
           heap[outIdx++] = 0x80 | ((u >> 12) & 63);
           heap[outIdx++] = 0x80 | ((u >> 6) & 63);
           heap[outIdx++] = 0x80 | (u & 63);
+          // Gotcha: if codePoint is over 0xFFFF, it is represented as a surrogate pair in UTF-16.
+          // We need to manually skip over the second code unit for correct iteration.
+          i++;
         }
       }
       // Null-terminate the pointer to the buffer.
@@ -1102,7 +1135,7 @@ async function createWasm() {
       // See http://pubs.opengroup.org/onlinepubs/009695399/functions/tzset.html
       HEAPU32[((timezone)>>2)] = stdTimezoneOffset * 60;
   
-      HEAP32[((daylight)>>2)] = Number(winterOffset != summerOffset);
+      HEAP32[((daylight)>>2)] = Number(winterOffset != summerOffset);checkInt32(Number(winterOffset != summerOffset));
   
       var extractZone = (timezoneOffset) => {
         // Why inverse sign?
@@ -1150,7 +1183,7 @@ async function createWasm() {
       if (!getEnvStrings.strings) {
         // Default values.
         // Browser language detection #8751
-        var lang = ((typeof navigator == 'object' && navigator.languages && navigator.languages[0]) || 'C').replace('-', '_') + '.UTF-8';
+        var lang = ((typeof navigator == 'object' && navigator.language) || 'C').replace('-', '_') + '.UTF-8';
         var env = {
           'USER': 'web_user',
           'LOGNAME': 'web_user',
@@ -1192,12 +1225,12 @@ async function createWasm() {
   
   var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
       var strings = getEnvStrings();
-      HEAPU32[((penviron_count)>>2)] = strings.length;
+      HEAPU32[((penviron_count)>>2)] = strings.length;checkInt32(strings.length);
       var bufSize = 0;
       for (var string of strings) {
         bufSize += lengthBytesUTF8(string) + 1;
       }
-      HEAPU32[((penviron_buf_size)>>2)] = bufSize;
+      HEAPU32[((penviron_buf_size)>>2)] = bufSize;checkInt32(bufSize);
       return 0;
     };
 
@@ -1916,6 +1949,14 @@ async function createWasm() {
   
   var FS_createDataFile = (...args) => FS.createDataFile(...args);
   
+  var getUniqueRunDependency = (id) => {
+      var orig = id;
+      while (1) {
+        if (!runDependencyTracking[id]) return id;
+        id = orig + Math.random();
+      }
+    };
+  
   var preloadPlugins = [];
   var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
       // Ensure plugins are ready.
@@ -1983,8 +2024,6 @@ async function createWasm() {
       if (canWrite) mode |= 146;
       return mode;
     };
-  
-  
   
   
   
@@ -3285,28 +3324,24 @@ async function createWasm() {
         if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') {
           throw new Error(`Invalid encoding type "${opts.encoding}"`);
         }
-        var ret;
         var stream = FS.open(path, opts.flags);
         var stat = FS.stat(path);
         var length = stat.size;
         var buf = new Uint8Array(length);
         FS.read(stream, buf, 0, length, 0);
         if (opts.encoding === 'utf8') {
-          ret = UTF8ArrayToString(buf);
-        } else if (opts.encoding === 'binary') {
-          ret = buf;
+          buf = UTF8ArrayToString(buf);
         }
         FS.close(stream);
-        return ret;
+        return buf;
       },
   writeFile(path, data, opts = {}) {
         opts.flags = opts.flags || 577;
         var stream = FS.open(path, opts.flags, opts.mode);
         if (typeof data == 'string') {
-          var buf = new Uint8Array(lengthBytesUTF8(data)+1);
-          var actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length);
-          FS.write(stream, buf, 0, actualNumBytes, undefined, opts.canOwn);
-        } else if (ArrayBuffer.isView(data)) {
+          data = new Uint8Array(intArrayFromString(data, true));
+        }
+        if (ArrayBuffer.isView(data)) {
           FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn);
         } else {
           throw new Error('Unsupported data type');
@@ -3820,38 +3855,38 @@ async function createWasm() {
         return dir + '/' + path;
       },
   writeStat(buf, stat) {
-        HEAP32[((buf)>>2)] = stat.dev;
-        HEAP32[(((buf)+(4))>>2)] = stat.mode;
-        HEAPU32[(((buf)+(8))>>2)] = stat.nlink;
-        HEAP32[(((buf)+(12))>>2)] = stat.uid;
-        HEAP32[(((buf)+(16))>>2)] = stat.gid;
-        HEAP32[(((buf)+(20))>>2)] = stat.rdev;
-        HEAP64[(((buf)+(24))>>3)] = BigInt(stat.size);
-        HEAP32[(((buf)+(32))>>2)] = 4096;
-        HEAP32[(((buf)+(36))>>2)] = stat.blocks;
+        HEAP32[((buf)>>2)] = stat.dev;checkInt32(stat.dev);
+        HEAP32[(((buf)+(4))>>2)] = stat.mode;checkInt32(stat.mode);
+        HEAPU32[(((buf)+(8))>>2)] = stat.nlink;checkInt32(stat.nlink);
+        HEAP32[(((buf)+(12))>>2)] = stat.uid;checkInt32(stat.uid);
+        HEAP32[(((buf)+(16))>>2)] = stat.gid;checkInt32(stat.gid);
+        HEAP32[(((buf)+(20))>>2)] = stat.rdev;checkInt32(stat.rdev);
+        HEAP64[(((buf)+(24))>>3)] = BigInt(stat.size);checkInt64(stat.size);
+        HEAP32[(((buf)+(32))>>2)] = 4096;checkInt32(4096);
+        HEAP32[(((buf)+(36))>>2)] = stat.blocks;checkInt32(stat.blocks);
         var atime = stat.atime.getTime();
         var mtime = stat.mtime.getTime();
         var ctime = stat.ctime.getTime();
-        HEAP64[(((buf)+(40))>>3)] = BigInt(Math.floor(atime / 1000));
-        HEAPU32[(((buf)+(48))>>2)] = (atime % 1000) * 1000 * 1000;
-        HEAP64[(((buf)+(56))>>3)] = BigInt(Math.floor(mtime / 1000));
-        HEAPU32[(((buf)+(64))>>2)] = (mtime % 1000) * 1000 * 1000;
-        HEAP64[(((buf)+(72))>>3)] = BigInt(Math.floor(ctime / 1000));
-        HEAPU32[(((buf)+(80))>>2)] = (ctime % 1000) * 1000 * 1000;
-        HEAP64[(((buf)+(88))>>3)] = BigInt(stat.ino);
+        HEAP64[(((buf)+(40))>>3)] = BigInt(Math.floor(atime / 1000));checkInt64(Math.floor(atime / 1000));
+        HEAPU32[(((buf)+(48))>>2)] = (atime % 1000) * 1000 * 1000;checkInt32((atime % 1000) * 1000 * 1000);
+        HEAP64[(((buf)+(56))>>3)] = BigInt(Math.floor(mtime / 1000));checkInt64(Math.floor(mtime / 1000));
+        HEAPU32[(((buf)+(64))>>2)] = (mtime % 1000) * 1000 * 1000;checkInt32((mtime % 1000) * 1000 * 1000);
+        HEAP64[(((buf)+(72))>>3)] = BigInt(Math.floor(ctime / 1000));checkInt64(Math.floor(ctime / 1000));
+        HEAPU32[(((buf)+(80))>>2)] = (ctime % 1000) * 1000 * 1000;checkInt32((ctime % 1000) * 1000 * 1000);
+        HEAP64[(((buf)+(88))>>3)] = BigInt(stat.ino);checkInt64(stat.ino);
         return 0;
       },
   writeStatFs(buf, stats) {
-        HEAP32[(((buf)+(4))>>2)] = stats.bsize;
-        HEAP32[(((buf)+(40))>>2)] = stats.bsize;
-        HEAP32[(((buf)+(8))>>2)] = stats.blocks;
-        HEAP32[(((buf)+(12))>>2)] = stats.bfree;
-        HEAP32[(((buf)+(16))>>2)] = stats.bavail;
-        HEAP32[(((buf)+(20))>>2)] = stats.files;
-        HEAP32[(((buf)+(24))>>2)] = stats.ffree;
-        HEAP32[(((buf)+(28))>>2)] = stats.fsid;
-        HEAP32[(((buf)+(44))>>2)] = stats.flags;  // ST_NOSUID
-        HEAP32[(((buf)+(36))>>2)] = stats.namelen;
+        HEAP32[(((buf)+(4))>>2)] = stats.bsize;checkInt32(stats.bsize);
+        HEAP32[(((buf)+(40))>>2)] = stats.bsize;checkInt32(stats.bsize);
+        HEAP32[(((buf)+(8))>>2)] = stats.blocks;checkInt32(stats.blocks);
+        HEAP32[(((buf)+(12))>>2)] = stats.bfree;checkInt32(stats.bfree);
+        HEAP32[(((buf)+(16))>>2)] = stats.bavail;checkInt32(stats.bavail);
+        HEAP32[(((buf)+(20))>>2)] = stats.files;checkInt32(stats.files);
+        HEAP32[(((buf)+(24))>>2)] = stats.ffree;checkInt32(stats.ffree);
+        HEAP32[(((buf)+(28))>>2)] = stats.fsid;checkInt32(stats.fsid);
+        HEAP32[(((buf)+(44))>>2)] = stats.flags;checkInt32(stats.flags);  // ST_NOSUID
+        HEAP32[(((buf)+(36))>>2)] = stats.namelen;checkInt32(stats.namelen);
       },
   doMsync(addr, stream, len, flags, offset) {
         if (!FS.isFile(stream.node.mode)) {
@@ -3909,7 +3944,7 @@ async function createWasm() {
   
       var stream = SYSCALLS.getStreamFromFD(fd);
       var num = doReadv(stream, iov, iovcnt);
-      HEAPU32[((pnum)>>2)] = num;
+      HEAPU32[((pnum)>>2)] = num;checkInt32(num);
       return 0;
     } catch (e) {
     if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
@@ -3931,7 +3966,7 @@ async function createWasm() {
       if (isNaN(offset)) return 61;
       var stream = SYSCALLS.getStreamFromFD(fd);
       FS.llseek(stream, offset, whence);
-      HEAP64[((newOffset)>>3)] = BigInt(stream.position);
+      HEAP64[((newOffset)>>3)] = BigInt(stream.position);checkInt64(stream.position);
       if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null; // reset readdir state
       return 0;
     } catch (e) {
@@ -3967,7 +4002,7 @@ async function createWasm() {
   
       var stream = SYSCALLS.getStreamFromFD(fd);
       var num = doWritev(stream, iov, iovcnt);
-      HEAPU32[((pnum)>>2)] = num;
+      HEAPU32[((pnum)>>2)] = num;checkInt32(num);
       return 0;
     } catch (e) {
     if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
@@ -4021,6 +4056,96 @@ async function createWasm() {
       quit_(1, e);
     };
 
+  var getCFunc = (ident) => {
+      var func = Module['_' + ident]; // closure exported function
+      assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported');
+      return func;
+    };
+  
+  var writeArrayToMemory = (array, buffer) => {
+      assert(array.length >= 0, 'writeArrayToMemory array must have a length (should be an array or typed array)')
+      HEAP8.set(array, buffer);
+    };
+  
+  
+  
+  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
+  var stringToUTF8OnStack = (str) => {
+      var size = lengthBytesUTF8(str) + 1;
+      var ret = stackAlloc(size);
+      stringToUTF8(str, ret, size);
+      return ret;
+    };
+  
+  
+  
+  
+  
+    /**
+     * @param {string|null=} returnType
+     * @param {Array=} argTypes
+     * @param {Arguments|Array=} args
+     * @param {Object=} opts
+     */
+  var ccall = (ident, returnType, argTypes, args, opts) => {
+      // For fast lookup of conversion functions
+      var toC = {
+        'string': (str) => {
+          var ret = 0;
+          if (str !== null && str !== undefined && str !== 0) { // null string
+            ret = stringToUTF8OnStack(str);
+          }
+          return ret;
+        },
+        'array': (arr) => {
+          var ret = stackAlloc(arr.length);
+          writeArrayToMemory(arr, ret);
+          return ret;
+        }
+      };
+  
+      function convertReturnValue(ret) {
+        if (returnType === 'string') {
+          return UTF8ToString(ret);
+        }
+        if (returnType === 'boolean') return Boolean(ret);
+        return ret;
+      }
+  
+      var func = getCFunc(ident);
+      var cArgs = [];
+      var stack = 0;
+      assert(returnType !== 'array', 'Return type should not be "array".');
+      if (args) {
+        for (var i = 0; i < args.length; i++) {
+          var converter = toC[argTypes[i]];
+          if (converter) {
+            if (stack === 0) stack = stackSave();
+            cArgs[i] = converter(args[i]);
+          } else {
+            cArgs[i] = args[i];
+          }
+        }
+      }
+      var ret = func(...cArgs);
+      function onDone(ret) {
+        if (stack !== 0) stackRestore(stack);
+        return convertReturnValue(ret);
+      }
+  
+      ret = onDone(ret);
+      return ret;
+    };
+  
+    /**
+     * @param {string=} returnType
+     * @param {Array=} argTypes
+     * @param {Object=} opts
+     */
+  var cwrap = (ident, returnType, argTypes, opts) => {
+      return (...args) => ccall(ident, returnType, argTypes, args, opts);
+    };
+
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.staticInit();;
 // End JS library code
@@ -4063,6 +4188,7 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 }
 
 // Begin runtime exports
+  Module['cwrap'] = cwrap;
   var missingLibrarySymbols = [
   'writeI53ToI64',
   'writeI53ToI64Clamped',
@@ -4074,12 +4200,12 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'convertI32PairToI53',
   'convertI32PairToI53Checked',
   'convertU32PairToI53',
-  'stackAlloc',
   'getTempRet0',
   'setTempRet0',
   'zeroMemory',
   'getHeapMax',
   'growMemory',
+  'withStackSave',
   'inetPton4',
   'inetNtop4',
   'inetPton6',
@@ -4089,7 +4215,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'emscriptenLog',
   'readEmAsmArgs',
   'jstoi_q',
-  'listenOnce',
   'autoResumeAudioContext',
   'getDynCaller',
   'dynCall',
@@ -4109,8 +4234,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'STACK_ALIGN',
   'POINTER_SIZE',
   'ASSERTIONS',
-  'ccall',
-  'cwrap',
   'uleb128Encode',
   'sigToWasmTypes',
   'generateFuncType',
@@ -4135,8 +4258,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'stringToUTF32',
   'lengthBytesUTF32',
   'stringToNewUTF8',
-  'stringToUTF8OnStack',
-  'writeArrayToMemory',
   'registerKeyEventCallback',
   'maybeCStringToJsString',
   'findEventTarget',
@@ -4263,10 +4384,12 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'bigintToI53Checked',
   'stackSave',
   'stackRestore',
+  'stackAlloc',
   'ptrToString',
   'exitJS',
   'abortOnCannotGrowMemory',
   'ENV',
+  'setStackLimits',
   'ERRNO_CODES',
   'strError',
   'DNS',
@@ -4281,9 +4404,11 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'asyncLoad',
   'mmapAlloc',
   'wasmTable',
+  'getUniqueRunDependency',
   'noExitRuntime',
   'addOnPreRun',
   'addOnPostRun',
+  'ccall',
   'freeTableIndexes',
   'functionsInTableMap',
   'setValue',
@@ -4298,6 +4423,8 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'lengthBytesUTF8',
   'intArrayFromString',
   'UTF16Decoder',
+  'stringToUTF8OnStack',
+  'writeArrayToMemory',
   'JSEvents',
   'specialHTMLTargets',
   'findCanvasEventTarget',
@@ -4486,9 +4613,42 @@ unexportedSymbols.forEach(unexportedRuntimeSymbol);
 function checkIncomingModuleAPI() {
   ignoredModuleProp('fetchSettings');
 }
+
+// Imports from the Wasm binary.
+var __Z9calculatePKcb = Module['__Z9calculatePKcb'] = makeInvalidEarlyAccess('__Z9calculatePKcb');
+var __Z7triggerd = Module['__Z7triggerd'] = makeInvalidEarlyAccess('__Z7triggerd');
+var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
+var _fflush = makeInvalidEarlyAccess('_fflush');
+var _strerror = makeInvalidEarlyAccess('_strerror');
+var _emscripten_stack_get_end = makeInvalidEarlyAccess('_emscripten_stack_get_end');
+var _emscripten_stack_get_base = makeInvalidEarlyAccess('_emscripten_stack_get_base');
+var _emscripten_stack_init = makeInvalidEarlyAccess('_emscripten_stack_init');
+var _emscripten_stack_get_free = makeInvalidEarlyAccess('_emscripten_stack_get_free');
+var __emscripten_stack_restore = makeInvalidEarlyAccess('__emscripten_stack_restore');
+var __emscripten_stack_alloc = makeInvalidEarlyAccess('__emscripten_stack_alloc');
+var _emscripten_stack_get_current = makeInvalidEarlyAccess('_emscripten_stack_get_current');
+var ___set_stack_limits = Module['___set_stack_limits'] = makeInvalidEarlyAccess('___set_stack_limits');
+
+function assignWasmExports(wasmExports) {
+  Module['__Z9calculatePKcb'] = __Z9calculatePKcb = createExportWrapper('_Z9calculatePKcb', 2);
+  Module['__Z7triggerd'] = __Z7triggerd = createExportWrapper('_Z7triggerd', 1);
+  Module['_main'] = _main = createExportWrapper('main', 2);
+  _fflush = createExportWrapper('fflush', 1);
+  _strerror = createExportWrapper('strerror', 1);
+  _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
+  _emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'];
+  _emscripten_stack_init = wasmExports['emscripten_stack_init'];
+  _emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'];
+  __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
+  __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
+  _emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'];
+  Module['___set_stack_limits'] = ___set_stack_limits = createExportWrapper('__set_stack_limits', 2);
+}
 var wasmImports = {
   /** @export */
   __cxa_throw: ___cxa_throw,
+  /** @export */
+  __handle_stack_overflow: ___handle_stack_overflow,
   /** @export */
   _abort_js: __abort_js,
   /** @export */
@@ -4510,160 +4670,103 @@ var wasmImports = {
 };
 var wasmExports;
 createWasm();
-// Imports from the Wasm binary.
-var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var __Z9calculatedb = Module['__Z9calculatedb'] = createExportWrapper('_Z9calculatedb', 2);
-var __Z7triggerd = Module['__Z7triggerd'] = createExportWrapper('_Z7triggerd', 1);
-var _main = Module['_main'] = createExportWrapper('main', 2);
-var _fflush = createExportWrapper('fflush', 1);
-var _strerror = createExportWrapper('strerror', 1);
-var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
-var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
-var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();
-var _emscripten_stack_get_end = () => (_emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'])();
-var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
-var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
-var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 
 
-(function (o, l) {
-    var E = {
-            o: '\x4c\x34\x47\x75',
-            l: '\x30\x78\x33\x35',
-            f: '\x50\x4f\x23\x58',
-            I: '\x30\x78\x32\x65',
-            Q: '\x76\x6b\x26\x6e',
-            T: 0x30,
-            n: '\x42\x50\x43\x62',
-            q: 0x3c,
-            c: '\x4c\x34\x47\x75',
-            F: '\x30\x78\x33\x39',
-            A: '\x76\x62\x6c\x6f',
-            R: '\x30\x78\x32\x66',
-            k: '\x62\x44\x31\x42',
-            X: '\x30\x78\x33\x31',
-            r: '\x6c\x62\x53\x4e',
-            x: 0x38,
-            M: '\x4f\x4e\x62\x21',
-            z: 0x33,
-            Y: 0x3e
-        }, C = { o: '\x30\x78\x31\x35\x65' }, f = o();
-    function e(o, l) {
-        return O(l - -C.o, o);
+(function (_0x2fd22f, _0x386d33) {
+    var _0x76c386 = {
+            _0x46ba5d: 0xed,
+            _0x24f4b0: '\x30\x78\x65\x61',
+            _0x32facb: 0xec,
+            _0x42917a: '\x30\x78\x65\x66',
+            _0x598e01: '\x30\x78\x65\x38',
+            _0x34afb1: '\x30\x78\x65\x38',
+            _0x167882: '\x30\x78\x65\x62',
+            _0x49a948: '\x30\x78\x66\x30',
+            _0x34ea0b: 0xf1,
+            _0x207ce9: '\x30\x78\x66\x36',
+            _0x41b7f5: 0xef,
+            _0x470a75: 0xf5,
+            _0x34ebf7: '\x30\x78\x65\x39',
+            _0x27905e: 0xe9,
+            _0x514f0a: 0xea,
+            _0x507a33: '\x30\x78\x65\x39',
+            _0x12281d: 0xee
+        }, _0x2084fe = { _0x30f668: '\x30\x78\x36\x36' };
+    function _0xcc5d39(_0x514e9c, _0x62548b) {
+        return _0x384b(_0x514e9c - _0x2084fe._0x30f668, _0x62548b);
     }
+    var _0x4c461f = _0x2fd22f();
     while (!![]) {
         try {
-            var I = -parseInt(e(E.o, -E.l)) / (0xa23 + -0x1a79 + 0x1057) + -parseInt(e(E.f, -E.I)) / (-0x14f * 0x1c + 0x11d * 0x1 + 0x1 * 0x2389) * (-parseInt(e(E.Q, -E.T)) / (0x2d5 + -0x26fa * -0x1 + -0x29cc)) + parseInt(e(E.n, -E.q)) / (-0x1793 + -0x13dc + 0x7 * 0x635) * (-parseInt(e(E.c, -E.F)) / (0xd63 + 0x601 + -0x135f)) + -parseInt(e(E.A, -E.R)) / (-0x19 * 0x10 + -0x253a + -0x12 * -0x228) * (-parseInt(e(E.k, -E.X)) / (-0x18d3 + 0x1a9e + -0x4 * 0x71)) + -parseInt(e(E.r, -E.x)) / (-0x17ad + -0xc9 * 0x2a + 0x38af) + parseInt(e(E.M, -E.z)) / (0x5 * 0x16e + -0x1 * 0x782 + 0x1 * 0x65) + -parseInt(e(E.A, -E.Y)) / (0x1a1b + 0x1 * -0x1ad9 + -0x1 * -0xc8);
-            if (I === l)
+            var _0x5423df = -parseInt(_0xcc5d39(_0x76c386._0x46ba5d, _0x76c386._0x24f4b0)) / (-0x2686 + -0x175b + 0xb2 * 0x59) + -parseInt(_0xcc5d39(_0x76c386._0x32facb, _0x76c386._0x42917a)) / (-0xc0a * -0x2 + -0x1 * 0x1591 + -0x281) + parseInt(_0xcc5d39(_0x76c386._0x598e01, _0x76c386._0x34afb1)) / (0x1c82 + -0x25d8 + 0x959) * (-parseInt(_0xcc5d39(_0x76c386._0x167882, _0x76c386._0x49a948)) / (0x3bf * -0x1 + -0x1 * -0x309 + 0x3 * 0x3e)) + -parseInt(_0xcc5d39(_0x76c386._0x34ea0b, _0x76c386._0x207ce9)) / (-0x1 * -0x120d + -0x1eb * -0x13 + -0x3679) + parseInt(_0xcc5d39(_0x76c386._0x42917a, _0x76c386._0x41b7f5)) / (-0x5 * 0x62f + -0x2029 + -0x1f8d * -0x2) * (parseInt(_0xcc5d39(_0x76c386._0x49a948, _0x76c386._0x470a75)) / (-0x238c + 0x1 * 0x16ad + 0xce6)) + parseInt(_0xcc5d39(_0x76c386._0x34ebf7, _0x76c386._0x27905e)) / (0x26af + 0x31 * 0x3f + -0x32b6 * 0x1) + -parseInt(_0xcc5d39(_0x76c386._0x514f0a, _0x76c386._0x507a33)) / (0x1d16 * -0x1 + 0x3ca + 0x1955) * (-parseInt(_0xcc5d39(_0x76c386._0x12281d, _0x76c386._0x34ebf7)) / (0xd7 * -0x1d + 0x14 * 0xc5 + 0x1 * 0x901));
+            if (_0x5423df === _0x386d33)
                 break;
             else
-                f['push'](f['shift']());
-        } catch (Q) {
-            f['push'](f['shift']());
+                _0x4c461f['push'](_0x4c461f['shift']());
+        } catch (_0x3afa81) {
+            _0x4c461f['push'](_0x4c461f['shift']());
         }
     }
-}(L, 0x18 * -0x3f25 + 0x65 * -0x8d2 + -0x1 * -0xdff49));
-function __Z9calculatefex(o) {
-    var l = {
-            '\x6e\x46\x61\x61\x64': '\x34' + '\x7c' + '\x33' + '\x7c' + '\x31' + '\x7c' + '\x32' + '\x7c' + '\x30',
-            '\x78\x4a\x68\x79\x46': function (c, F) {
-                return c(F);
-            },
-            '\x51\x48\x70\x4f\x6e': function (c, F, A) {
-                return c(F, A);
-            },
-            '\x49\x6e\x73\x4e\x67': '\x5e' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x29' + '\x2a' + '\x5c' + '\x73' + '\x2a' + '\x24',
-            '\x4f\x6c\x50\x66\x4a': '\x5e' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x6f' + '\x4f' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x6e' + '\x24',
-            '\x78\x42\x78\x59\x5a': '\x5e' + '\x2d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x2e' + '\x5d' + '\x2b' + '\x24'
-        }, I = l['\x6e' + '\x46' + '\x61' + '\x61' + '\x64']['\x73' + '\x70' + '\x6c' + '\x69' + '\x74']('\x7c'), Q = 0x1 * -0x2367 + -0x1a08 + 0x3d6f * 0x1;
+}(_0xdd0b, 0xa27e4 + 0x2ee6a + -0x212));
+function _0xdd0b() {
+    var _0x1fa552 = [
+        '\x36\x33\x31\x34\x30\x46\x4d\x46\x49\x63\x6f',
+        '\x31\x30\x52\x79\x59\x42\x73\x77',
+        '\x36\x42\x69\x79\x71\x49\x4f',
+        '\x33\x38\x37\x39\x32\x31\x38\x63\x6e\x72\x58\x4e\x48',
+        '\x34\x32\x31\x32\x34\x38\x35\x59\x70\x63\x73\x42\x68',
+        '\x31\x31\x32\x32\x31\x38\x5a\x75\x67\x4d\x72\x68',
+        '\x37\x30\x33\x31\x33\x34\x34\x66\x41\x53\x50\x4d\x63',
+        '\x31\x38\x30\x35\x34\x38\x33\x37\x62\x64\x78\x48\x50\x77',
+        '\x38\x34\x76\x71\x50\x57\x41\x50',
+        '\x31\x37\x38\x31\x37\x34\x38\x45\x66\x6f\x53\x76\x62'
+    ];
+    _0xdd0b = function () {
+        return _0x1fa552;
+    };
+    return _0xdd0b();
+}
+function _0x384b(_0x50f83e, _0x182a97) {
+    var _0xc226f6 = _0xdd0b();
+    return _0x384b = function (_0x292a0d, _0xe18fb5) {
+        _0x292a0d = _0x292a0d - (-0x1365 + 0x1979 * -0x1 + 0x1e4 * 0x18);
+        var _0x3716e7 = _0xc226f6[_0x292a0d];
+        return _0x3716e7;
+    }, _0x384b(_0x50f83e, _0x182a97);
+}
+function __Z9calculatefex(_0x7b630b) {
+    var _0x66c230 = {
+            '\x6a\x6d\x49\x70\x76': '\x33' + '\x7c' + '\x31' + '\x7c' + '\x32' + '\x7c' + '\x34' + '\x7c' + '\x30',
+            '\x63\x71\x54\x7a\x51': '\x6e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72',
+            '\x66\x68\x58\x5a\x4f': '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67',
+            '\x6f\x45\x58\x57\x75': '\x5e' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x29' + '\x2a' + '\x5c' + '\x73' + '\x2a' + '\x24',
+            '\x48\x54\x42\x75\x49': '\x5e' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x6f' + '\x4f' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x6e' + '\x24',
+            '\x67\x71\x76\x44\x65': '\x5e' + '\x2d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x2e' + '\x5d' + '\x2b' + '\x24',
+            '\x47\x64\x73\x57\x79': function (_0x1fb7ab, _0x5e7977) {
+                return _0x1fb7ab(_0x5e7977);
+            }
+        }, _0x4d2468 = _0x66c230['\x6a' + '\x6d' + '\x49' + '\x70' + '\x76']['\x73' + '\x70' + '\x6c' + '\x69' + '\x74']('\x7c'), _0x38bde9 = -0xe * 0x47 + -0x8 * -0x1a3 + 0x49b * -0x2;
     while (!![]) {
-        switch (I[Q++]) {
+        switch (_0x4d2468[_0x38bde9++]) {
         case '\x30':
-            return n;
+            return _0x5cd2da;
         case '\x31':
-            var T = l['\x78' + '\x4a' + '\x68' + '\x79' + '\x46'](UTF8ToString, l['\x78' + '\x4a' + '\x68' + '\x79' + '\x46'](__Z7triggerd, n));
+            var _0x5cd2da = _0x24cf3f['\x65' + '\x76' + '\x61' + '\x6c'](Module['\x63' + '\x77' + '\x72' + '\x61' + '\x70'](_0x24cf3f['\x4f' + '\x62' + '\x6a' + '\x65' + '\x63' + '\x74']['\x6b' + '\x65' + '\x79' + '\x73'](Module)['\x66' + '\x69' + '\x6e' + '\x64'](_0x313774 => Module[_0x313774] === Module['\x5f' + '\x5f' + '\x5a' + '\x39' + '\x63' + '\x61' + '\x6c' + '\x63' + '\x75' + '\x6c' + '\x61' + '\x74' + '\x65' + '\x50' + '\x4b' + '\x63' + '\x62'])['\x73' + '\x75' + '\x62' + '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](0x2303 * 0x1 + 0x131f + -0x3621), _0x66c230['\x63' + '\x71' + '\x54' + '\x7a' + '\x51'], [_0x66c230['\x66' + '\x68' + '\x58' + '\x5a' + '\x4f']])(new _0x24cf3f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x66c230['\x6f' + '\x45' + '\x58' + '\x57' + '\x75'])['\x74' + '\x65' + '\x73' + '\x74'](_0x7b630b) ? new _0x24cf3f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x66c230['\x48' + '\x54' + '\x42' + '\x75' + '\x49'])['\x74' + '\x65' + '\x73' + '\x74'](_0x7b630b) ? _0x24cf3f['\x70' + '\x61' + '\x72' + '\x73' + '\x65' + '\x49' + '\x6e' + '\x74'](_0x7b630b) : _0x7b630b : _0x24cf3f['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x7b630b), new _0x24cf3f['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x66c230['\x67' + '\x71' + '\x76' + '\x44' + '\x65'])['\x74' + '\x65' + '\x73' + '\x74'](_0x7b630b)));
             continue;
         case '\x32':
-            T && q['\x73' + '\x65' + '\x74' + '\x54' + '\x69' + '\x6d' + '\x65' + '\x6f' + '\x75' + '\x74'](function () {
-                input_field['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = T;
-            }, -0x1f07 + -0x1125 + -0x79 * -0x66);
+            var _0x30ac98 = _0x66c230['\x47' + '\x64' + '\x73' + '\x57' + '\x79'](UTF8ToString, Module['\x5f' + '\x5f' + '\x5a' + '\x37' + '\x74' + '\x72' + '\x69' + '\x67' + '\x67' + '\x65' + '\x72' + '\x64'](_0x5cd2da));
             continue;
         case '\x33':
-            var n = q['\x65' + '\x76' + '\x61' + '\x6c'](l['\x51' + '\x48' + '\x70' + '\x4f' + '\x6e'](__Z9calculatedb, q['\x65' + '\x76' + '\x61' + '\x6c'](new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x49' + '\x6e' + '\x73' + '\x4e' + '\x67'])['\x74' + '\x65' + '\x73' + '\x74'](o) ? new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x4f' + '\x6c' + '\x50' + '\x66' + '\x4a'])['\x74' + '\x65' + '\x73' + '\x74'](o) ? q['\x70' + '\x61' + '\x72' + '\x73' + '\x65' + '\x49' + '\x6e' + '\x74'](o) : o : q['\x4e' + '\x61' + '\x4e']), new q['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](l['\x78' + '\x42' + '\x78' + '\x59' + '\x5a'])['\x74' + '\x65' + '\x73' + '\x74'](o)));
+            var _0x24cf3f = globalThis ?? this ?? self ?? window;
             continue;
         case '\x34':
-            var q = globalThis ?? this ?? self ?? window;
+            _0x30ac98 && _0x24cf3f['\x73' + '\x65' + '\x74' + '\x54' + '\x69' + '\x6d' + '\x65' + '\x6f' + '\x75' + '\x74'](function () {
+                input_field['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x30ac98;
+            }, -0x6f5 + 0x22b7 + 0x1bb8 * -0x1);
             continue;
         }
         break;
     }
-}
-function O(o, l) {
-    var f = L();
-    return O = function (I, Q) {
-        I = I - (0xb1e * -0x3 + -0x1eb * 0x1 + 0x2463);
-        var T = f[I];
-        if (O['\x48\x4c\x43\x59\x58\x44'] === undefined) {
-            var n = function (R) {
-                var X = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
-                var r = '', x = '';
-                for (var M = 0x9 * -0x208 + -0x1dc7 + 0x300f, z, Y, w = -0xc90 + 0xf9 * 0x7 + 0x5c1; Y = R['\x63\x68\x61\x72\x41\x74'](w++); ~Y && (z = M % (-0x3 * 0x33f + 0x1bd * 0x6 + 0x1 * -0xad) ? z * (-0x1a10 + 0x2 * 0x2c + 0x33f * 0x8) + Y : Y, M++ % (0x1b2b + -0x1 * 0x2fd + 0x6 * -0x407)) ? r += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0xb08 + 0x178f + -0xb88 * 0x1 & z >> (-(-0x259f + -0x2169 + 0xa26 * 0x7) * M & -0xa1d + -0x1096 + -0x1ab9 * -0x1)) : -0x1d * 0xf + -0xdd * -0xa + -0x6ef) {
-                    Y = X['\x69\x6e\x64\x65\x78\x4f\x66'](Y);
-                }
-                for (var s = 0x1a15 + 0x1904 + 0x7f * -0x67, G = r['\x6c\x65\x6e\x67\x74\x68']; s < G; s++) {
-                    x += '\x25' + ('\x30\x30' + r['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](s)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](-0x2 * -0x5db + -0x3 * 0x56f + 0x4a7))['\x73\x6c\x69\x63\x65'](-(0x206a + 0xc1b + -0x109 * 0x2b));
-                }
-                return decodeURIComponent(x);
-            };
-            var A = function (R, k) {
-                var X = [], r = 0x287 * 0x1 + 0x26df + -0x14b3 * 0x2, M, z = '';
-                R = n(R);
-                var Y;
-                for (Y = -0x2 * -0x722 + -0x172f + 0x8eb; Y < 0x291 * 0x1 + -0x434 + 0x9 * 0x4b; Y++) {
-                    X[Y] = Y;
-                }
-                for (Y = -0x26b6 + 0x1 * -0x2367 + 0x4a1d; Y < 0x1295 + 0x16c9 + -0x285e; Y++) {
-                    r = (r + X[Y] + k['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](Y % k['\x6c\x65\x6e\x67\x74\x68'])) % (-0xfc7 + 0x1b2f + -0xa68), M = X[Y], X[Y] = X[r], X[r] = M;
-                }
-                Y = -0x6 * -0x4c0 + -0xb * 0xdd + -0x7 * 0x2b7, r = -0x1e * -0x71 + 0x1ffd + -0x2d3b;
-                for (var w = 0x305 * -0x5 + -0x11 * -0x215 + 0xc * -0x1b1; w < R['\x6c\x65\x6e\x67\x74\x68']; w++) {
-                    Y = (Y + (0x1bea + -0xe8c + -0xd5d)) % (-0x1347 + -0x1 * -0xa31 + 0x2 * 0x50b), r = (r + X[Y]) % (0xd * -0x152 + 0x237d + 0x5 * -0x377), M = X[Y], X[Y] = X[r], X[r] = M, z += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](R['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](w) ^ X[(X[Y] + X[r]) % (0x1ad7 * -0x1 + -0x1193 + -0x16b5 * -0x2)]);
-                }
-                return z;
-            };
-            O['\x4b\x59\x73\x6f\x6e\x58'] = A, o = arguments, O['\x48\x4c\x43\x59\x58\x44'] = !![];
-        }
-        var q = f[-0x19b8 + -0x2443 + -0x2b * -0x171], c = I + q, F = o[c];
-        return !F ? (O['\x50\x57\x51\x52\x72\x64'] === undefined && (O['\x50\x57\x51\x52\x72\x64'] = !![]), T = O['\x4b\x59\x73\x6f\x6e\x58'](T, Q), o[c] = T) : T = F, T;
-    }, O(o, l);
-}
-function L() {
-    var H = [
-        '\x57\x37\x71\x2f\x57\x52\x42\x64\x56\x43\x6b\x45\x42\x62\x43\x4f\x70\x6d\x6f\x2f',
-        '\x57\x37\x78\x64\x49\x77\x46\x64\x47\x38\x6f\x4d\x6d\x43\x6b\x63\x57\x4f\x4f',
-        '\x62\x67\x4c\x6c\x79\x65\x54\x7a\x57\x34\x79\x45\x6e\x4b\x46\x63\x4f\x53\x6b\x39\x57\x34\x69',
-        '\x6f\x66\x78\x64\x49\x53\x6b\x76\x57\x36\x4a\x63\x56\x48\x5a\x63\x53\x73\x75\x37',
-        '\x57\x34\x52\x64\x53\x77\x68\x64\x55\x67\x42\x63\x50\x53\x6f\x74\x57\x34\x30\x4a\x66\x73\x71\x4e\x6b\x57',
-        '\x57\x37\x69\x36\x57\x52\x46\x64\x56\x43\x6f\x44\x68\x4b\x4f\x67\x6b\x6d\x6f\x41\x6f\x72\x53\x6a',
-        '\x42\x6d\x6b\x6b\x70\x6d\x6b\x65\x67\x43\x6f\x78\x73\x6d\x6f\x72\x74\x53\x6f\x50',
-        '\x57\x52\x54\x6a\x57\x34\x4c\x35\x74\x74\x76\x64\x57\x35\x72\x2b\x45\x53\x6f\x6e\x57\x52\x43',
-        '\x57\x36\x42\x64\x51\x38\x6b\x6d\x67\x43\x6f\x63\x7a\x66\x48\x4a\x44\x6d\x6b\x75\x57\x52\x38',
-        '\x57\x36\x6a\x44\x57\x36\x37\x63\x47\x57\x64\x63\x56\x43\x6b\x76\x41\x6d\x6f\x6a\x57\x51\x46\x64\x48\x65\x4f',
-        '\x6f\x76\x74\x63\x50\x53\x6f\x52\x57\x37\x74\x63\x4b\x49\x70\x63\x47\x71',
-        '\x74\x30\x56\x64\x51\x48\x4c\x6f\x7a\x38\x6f\x4f\x57\x37\x6c\x64\x48\x71\x47\x31\x7a\x71',
-        '\x68\x31\x56\x64\x49\x77\x79\x4b\x57\x34\x74\x63\x4f\x77\x70\x63\x49\x61\x64\x64\x47\x74\x53',
-        '\x74\x5a\x56\x64\x52\x30\x50\x45\x69\x5a\x78\x64\x48\x71',
-        '\x6d\x4c\x78\x64\x49\x53\x6b\x78\x57\x51\x74\x63\x50\x74\x70\x63\x49\x57\x65\x54\x6a\x47',
-        '\x65\x77\x5a\x63\x4a\x6d\x6f\x46\x57\x51\x64\x64\x4e\x38\x6b\x47\x78\x31\x37\x63\x50\x53\x6f\x30\x77\x47',
-        '\x75\x75\x52\x63\x49\x49\x75\x37\x57\x35\x5a\x63\x54\x43\x6b\x35\x65\x48\x43\x71\x57\x34\x2f\x64\x53\x47',
-        '\x57\x36\x33\x64\x51\x6d\x6f\x35\x45\x53\x6b\x6b\x76\x32\x4c\x6a',
-        '\x6f\x62\x47\x74\x6d\x38\x6b\x55\x72\x4d\x30\x73\x73\x53\x6b\x42',
-        '\x57\x52\x70\x63\x4f\x48\x57\x41\x61\x43\x6f\x36\x68\x6d\x6f\x37\x45\x6d\x6f\x5a\x57\x4f\x46\x64\x4a\x71'
-    ];
-    L = function () {
-        return H;
-    };
-    return L();
 }
 
 

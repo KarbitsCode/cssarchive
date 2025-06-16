@@ -1,23 +1,23 @@
 button {
-    width: 100%;
+  width: 100%;
 }
 
 .red {
-    background-color: red;
-    color: white;
+  background-color: red;
+  color: white;
 }
 
 .green {
-    background-color: green;
-    color: white;
+  background-color: green;
+  color: white;
 }
 
 .blue {
-    background-color: blue;
-    color: white;
+  background-color: blue;
+  color: white;
 }
 
 .orange {
-    background-color: orange;
-    color: black;
+  background-color: orange;
+  color: black;
 }
