@@ -28,6 +28,7 @@
         const ruffle = window.RufflePlayer.newest()
         const container = ruffle.createPlayer()
         const player = container.ruffle(1)
+        const mirrors = getMirrors()
         let interval = 0;
         frame.appendChild(container)
         frame.style.setProperty("height", "400px", "")
@@ -43,8 +44,8 @@
             const trials = [
               executable,
               executable.replace(/\.swf$/, '.bin'),
-              ...getMirrors().map(base => executable.replace('./', base + '1/flash/')),
-              ...getMirrors().map(base => executable.replace('./', base + '1/flash/').replace(/\.swf$/, '.bin')),
+              ...mirrors.map(base => executable.replace('./', base + '1/flash/')),
+              ...mirrors.map(base => executable.replace('./', base + '1/flash/').replace(/\.swf$/, '.bin')),
               executable.replace('./', 'https://parampaa.net/'),
             ]
             for (const url of trials) {
@@ -78,12 +79,12 @@
                     if (r.ok && r.status >= 200 && r.status < 300) {
                         return r.status
                     } else {
-                        return false
+                        return r.ok
                     }
                 }
             } catch(e) {
                 console.error(e)
-                return false
+                return !!!e
             }
         }
     </script>
