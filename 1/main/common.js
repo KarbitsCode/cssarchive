@@ -116,13 +116,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if (!element.hasAttribute("onclick") && element.getAttribute("href") !== "javascript:void(0)") {
       element.addEventListener("click", function(event) {
         event.preventDefault();
+        event.stopPropagation();
         gotoPage(event.target.href.replace(/\.*$/, ""));
       });
-    }
+    };
   });
-  document.querySelectorAll("iframe").forEach(function(element) {
+  document.querySelectorAll("iframe[title]").forEach(function(element) {
     element.addEventListener("load", function(event) {
       element.contentWindow.document.body.style.setProperty("zoom", "50%");
+      element.parentElement.addEventListener("click", function(event) {
+        if (!event.target.closest("a")) { 
+          event.srcElement.children[1].click(); 
+        };
+      });
     });
   });
 });
