@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       element.contentWindow.document.body.style.setProperty("zoom", "50%");
       element.parentElement.addEventListener("click", function(event) {
         if (!event.target.closest("a")) { 
-          event.srcElement.children[1].click(); 
+          event.srcElement.querySelector("a").click(); 
         };
       });
     });
