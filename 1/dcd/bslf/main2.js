@@ -6,7 +6,6 @@ const statusBuku = 'STATUS_BUKU';
 const maxBuku = 100;
 
 function simpanBuku(dataBuku, editBuku) {
-
 	if (!editBuku) {
 		for (let i = 0; i < maxBuku; i++) {
 			let storageBuku = JSON.parse(localStorage.getItem(idBuku + i))
@@ -27,19 +26,15 @@ function simpanBuku(dataBuku, editBuku) {
 function displayBuku(filterJudul = /.*/) { 
 	let rakDibaca = document.getElementById('completeBookList');
 	let rakBelumDibaca = document.getElementById('incompleteBookList');
-
 	rakDibaca.innerHTML = '';
 	rakBelumDibaca.innerHTML = '';
 	for (let i = 0; i < maxBuku; i++) {
 		let storageBuku = JSON.parse(localStorage.getItem(idBuku + i));
-
 		try {
-
 			storageBuku[judulBuku];
 		} catch (e) {
 			continue;
 		};
-
 		if (storageBuku[statusBuku] === true && filterJudul.test(storageBuku[judulBuku])) {
 			let htmlBukuDibaca = `
 			  <div data-bookid="${i}" data-testid="bookItem">
@@ -54,7 +49,6 @@ function displayBuku(filterJudul = /.*/) {
 			  </div>
 			`;
 			rakDibaca.innerHTML += htmlBukuDibaca;
-
 		} else if (storageBuku[statusBuku] === false && filterJudul.test(storageBuku[judulBuku])) {
 			let htmlBukuBelumDibaca = `
 			  <div data-bookid="${i}" data-testid="bookItem">
@@ -71,7 +65,6 @@ function displayBuku(filterJudul = /.*/) {
 			rakBelumDibaca.innerHTML += htmlBukuBelumDibaca;
 		};
 	};
-
 	if (rakDibaca.innerText === '') { 
 		rakDibaca.innerHTML = '<i>Kosong</i>';
 	}; 
@@ -83,28 +76,21 @@ function displayBuku(filterJudul = /.*/) {
 
 function assignButton() {
 	document.querySelectorAll('button[data-testid="bookItemIsCompleteButton"]').forEach((element) => {
-
 		element.addEventListener('click', (event) => {
-
 			let i = element.parentElement.parentElement.dataset.bookid;
 			let storageBuku = JSON.parse(localStorage.getItem(idBuku + i));
 			if (storageBuku !== null) {
-
 				let dataBuku = {...storageBuku, [statusBuku]: !storageBuku[statusBuku]}; 
 				simpanBuku(dataBuku, idBuku + i);
 				displayBuku(); 
 			};
 		});
 	});
-
 	document.querySelectorAll('button[data-testid="bookItemDeleteButton"]').forEach((element) => {
-
 		element.addEventListener('click', (event) => {
-
 			let i = element.parentElement.parentElement.dataset.bookid;
 			let storageBuku = JSON.parse(localStorage.getItem(idBuku + i));
 			if (storageBuku !== null) {
-
 				if (confirm('Yakin?')) {
 					localStorage.removeItem(idBuku + i);
 				};
@@ -112,15 +98,11 @@ function assignButton() {
 			};
 		});
 	});
-
 	document.querySelectorAll('button[data-testid="bookItemEditButton"]').forEach((element) => {
-
 		element.addEventListener('click', (event) => {
-
 			let i = element.parentElement.parentElement.dataset.bookid;
 			let storageBuku = JSON.parse(localStorage.getItem(idBuku + i));
 			if (storageBuku !== null) {
-
 				element.parentElement.parentElement.innerHTML = `
 					<form id="bookItemEdit">
 						<label>Judul: </label><input type="text" required value="${storageBuku[judulBuku]}"></input>
@@ -133,15 +115,12 @@ function assignButton() {
 					</form>
 				`;
 				document.getElementById('bookItemEdit').addEventListener('submit', (event) => {
-
 					event.preventDefault();
-
 					let tampungBuku = {};
 					tampungBuku[judulBuku] = event.target[0].value;
 					tampungBuku[penulisBuku] = event.target[1].value;
 					tampungBuku[tahunBuku] = event.target[2].value;
 					tampungBuku[statusBuku] = storageBuku[statusBuku];
-
 					simpanBuku(tampungBuku, idBuku + i);
 					displayBuku(); 
 				});
@@ -155,15 +134,12 @@ function assignButton() {
 
 document.getElementById('bookForm').addEventListener('submit', (event) => {
 	event.preventDefault();
-
 	let tampungBuku = {}; 
 	tampungBuku[judulBuku] = event.target[0].value;
 	tampungBuku[penulisBuku] = event.target[1].value;
 	tampungBuku[tahunBuku] = event.target[2].value;
 	tampungBuku[statusBuku] = event.target[3].checked;
-
 	simpanBuku(tampungBuku, false);
-
 	displayBuku();
 });
 
@@ -176,19 +152,15 @@ document.getElementById('bookFormIsComplete').addEventListener('click', (event) 
 });
 
 document.getElementById('searchBookTitle').addEventListener('input', (event) => {
-
 	displayBuku(new RegExp(event.target.value, "i"));
 });
 
 document.getElementById('searchBook').addEventListener('submit', (event) => {
-
 	event.preventDefault();
-
 	document.getElementById('searchBookTitle').dispatchEvent(new Event('input'));
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-
 	document.getElementById('searchSubmit').setAttribute('hidden', '');
 	displayBuku();
 });
