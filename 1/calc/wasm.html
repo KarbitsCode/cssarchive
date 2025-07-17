@@ -88,6 +88,7 @@
         const input_history = new Array();
         let history_viewstate = -1;
         let results_shown = false;
+        let input_temp = "";
         
         function inputready() {
             input_field.value = "Ready";
@@ -165,6 +166,10 @@
         }
         
         input_field.onkeydown = input_field.oninput = function(event) {
+            if (results_shown) {
+                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
+                results_shown = false;
+            }
             if (event.key === "Backspace") {
                 event.preventDefault();
                 backspace();
@@ -180,8 +185,11 @@
             } else if (event.key === "ArrowUp") {
                 event.preventDefault();
                 if (input_history.length === 0) return;
-                if (history_viewstate > 0) history_viewstate--;
-                input_field.value = input_history[history_viewstate];
+                if (history_viewstate === input_history.length) input_temp = input_field.value;
+                if (history_viewstate > 0) {
+                    history_viewstate--;
+                    input_field.value = input_history[history_viewstate];
+                }
             } else if (event.key === "ArrowDown") {
                 event.preventDefault();
                 if (input_history.length === 0) return;
@@ -190,15 +198,11 @@
                     input_field.value = input_history[history_viewstate];
                 } else {
                     history_viewstate = input_history.length;
-                    input_field.value = "";
+                    input_field.value = input_temp;
                 }
-            } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\]$/.test(event.key)) {
+            } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\` ]$/.test(event.key)) { //`
                 if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) event.preventDefault();
                 if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
-                if (results_shown) {
-                    if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
-                    results_shown = false;
-                }
             }
         }
     </script>
