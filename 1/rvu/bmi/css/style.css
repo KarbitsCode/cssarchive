@@ -1,0 +1,122 @@
+body {
+    background: #f6f6f6;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+
+.main-field {
+    position: relative;
+    background: #fff;
+    max-width: 680px;
+    margin: 40px auto 24px auto;
+    padding: 32px 36px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    border-radius: 0;
+}
+
+.title-text {
+    font-size: 2.1rem;
+    font-weight: 700;
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 0.7em;
+    color: #1a237e;
+    letter-spacing: 0.5px;
+}
+
+.instruction-text {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    color: #333;
+}
+
+.explanation-text {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    color: #444;
+}
+
+.copyright-text {
+    position: absolute;
+    font-size: 0.8rem;
+    max-width: none;
+    bottom: 12px;
+    right: 24px;
+    color: #aaa;
+}
+
+.normal-text, .small-text {
+    font-size: 1rem;
+    color: #222;
+}
+
+.small-text {
+    font-size: 0.95rem;
+    color: #222;
+}
+
+#calc-button, #reset-button {
+    font-size: 1rem;
+    padding: 7px 22px;
+    border: none;
+    border-radius: 3px;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#calc-button {
+    background: #1976d2;
+    color: #fff;
+}
+
+#reset-button {
+    background: #e53935;
+    color: #fff;
+}
+
+#calc-button:hover {
+    background: #1565c0;
+}
+
+#reset-button:hover {
+    background: #c62828;
+}
+
+#calc-button:active {
+    background: #0d47a1;
+    color: #eee;
+}
+
+#reset-button:active {
+    background: #b71c1c;
+    color: #eee;
+}
+
+#number-input {
+    font-family: monospace;
+    font-size: 1rem;
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    margin-bottom: 8px;
+}
+
+#result-output, #formula-output {
+    display: none;
+    font-family: monospace;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 340px;
+    resize: none;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    background: #fafafa;
+    margin-bottom: 10px;
+}

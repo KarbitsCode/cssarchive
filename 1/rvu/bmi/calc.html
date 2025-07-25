@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/imb.png">
+    <title>BMI Calculator (RevoU)</title>
+</head>
+<body bgcolor="#FFFFFF">
+    <div class="main-field">
+        <div>
+            <div class="title-text">BMI Kalkulator</div>
+        </div>
+        <div>
+            <div class="instruction-text">Masukan jenis kelamin, berat badan (kg), umur (tahun), dan tinggi badan (cm) lalu klik tombol Hitung BMI untuk mendapatkan hasil Index Massa Tubuh (<i>Body Mass Index</i>) untuk standar orang <b>dewasa</b> (kecuali ibu hamil)</div>
+        </div>
+        <br>
+        <div>
+            <div class="small-text">Jenis kelamin</div>
+            <input type="radio" id="laki" name="jenis-kelamin" value="Laki-laki">
+            <label for="laki" class="small-text">Laki-laki</label>
+            <input type="radio" id="perempuan" name="jenis-kelamin" value="Perempuan">
+            <label for="perempuan" class="small-text">Perempuan</label>
+            <br>
+            <div class="small-text">Berat badan (kg)</div>
+            <input type="text" id="bb-input" placeholder="Input disini">
+            <br>
+            <div class="small-text">Umur (tahun)</div>
+            <input type="text" id="um-input" placeholder="Input disini">
+            <br>
+            <div class="small-text">Tinggi badan (cm)</div>
+            <input type="text" id="tb-input" placeholder="Input disini">
+            <br>
+            <br>
+            <button type="button" id="calc-button">Hitung BMI</button>
+            <button type="button" id="reset-button">Reset</button>
+            <br>
+            <div class="small-text" id="warn-label"></div>
+        </div>
+        <br>
+        <div>
+            <div class="small-text"></div>
+            <div id="formula-output"></div>
+        </div>
+        <div>
+            <div class="small-text"></div>
+            <div id="result-output"></div>
+        </div>
+        <div>
+            <div id="explanation-text"></div>
+        </div>
+    </div>
+    <div>
+        <div class="copyright-text">&#169; KarbitsCode</div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>

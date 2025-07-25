@@ -15,7 +15,7 @@ const doConvert = () => {
         let celcius = inputText.value
         if (celcius !== "" && !(isNaN(celcius))) {
             celcius = parseFloat(celcius)
-            let result = ((celcius * (9/5)) + 32).toFixed(1)
+            const result = ((celcius * (9/5)) + 32).toFixed(1)
             let resultFormula
             if (isFinite(result)) {
                 resultFormula = `(${celcius}°C * (9/5)) + 32 = ${result}°F`
@@ -41,7 +41,7 @@ const doConvert = () => {
         let fahrenheit = inputText.value
         if (fahrenheit !== "" && !(isNaN(fahrenheit))) {
             fahrenheit = parseFloat(fahrenheit)
-            let result = ((fahrenheit - 32) * (5/9)).toFixed(1)
+            const result = ((fahrenheit - 32) * (5/9)).toFixed(1)
             let resultFormula
             if (isFinite(result)) {
                 resultFormula = `(${fahrenheit}°F - 32) * (5/9) = ${result}°C`
