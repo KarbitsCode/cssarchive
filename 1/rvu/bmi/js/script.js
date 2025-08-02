@@ -4,18 +4,18 @@ const tbInput = document.getElementById("tb-input")
 const inputText = new Array(bbInput, umInput, tbInput)
 const resultText = document.getElementById("result-output")
 const formulaText = document.getElementById("formula-output")
-const warnLabel = document.getElementById("warn-label")
 const explanationText = document.getElementById("explanation-text")
+const warnLabel = document.getElementById("warn-label")
 const calcButton = document.getElementById("calc-button")
 const resetButton = document.getElementById("reset-button")
 
 const doConvert = () => {
     doReset(all = false)
-    const klInput = document.querySelector("input[name='jenis-kelamin']:checked")
+    const kl = document.querySelector("input[name='jenis-kelamin']:checked")
     const bb = parseInt(bbInput.value)
     const tb = parseInt(tbInput.value)
     const um = parseInt(umInput.value)
-    if (isFinite(bb) && isFinite(tb) && isFinite(um)) {
+    if (isFinite(bb) && isFinite(tb) && isFinite(um) && kl !== null) {
         if (um >= 18) {
             const result = (bb / ((tb)/100)**2).toFixed(1)
             let resultFormula
@@ -39,20 +39,23 @@ const doConvert = () => {
                 } else if (result > 29.9) {
                     resultStatus = "Obesitas"
                 }
-                resultText.parentElement.firstElementChild.textContent = `Status Berat Badan${klInput ? ` untuk ${klInput.value}` : ""}:`
+                resultText.parentElement.firstElementChild.textContent = `Status Berat Badan${kl ? ` untuk ${kl.value}` : ""}:`
                 resultText.textContent = resultStatus
                 resultText.style.display = "block"
             } else {
-                resultText.parentElement.firstElementChild.textContent = "Error: Input bukan angka/salah"
                 console.error("ERROR: Input bukan angka/salah")
+                explanationText.textContent = "Error: Input bukan angka/salah"
+                explanationText.style.display = "block"
             }
         } else {
-            resultText.parentElement.firstElementChild.textContent = "Error: Kalkulator BMI ini hanya tersedia untuk standar orang dewasa (18 tahun ke atas)"
             console.error("ERROR: Kalkulator BMI ini hanya tersedia untuk standar orang dewasa (18 tahun ke atas)")
+            explanationText.textContent = "Error: Kalkulator BMI ini hanya tersedia untuk standar orang dewasa (18 tahun ke atas)"
+            explanationText.style.display = "block"
         }
     } else {
-        resultText.parentElement.firstElementChild.textContent = "Error: Input tidak lengkap"
         console.error("ERROR: Input tidak lengkap")
+        explanationText.textContent = "Error: Input tidak lengkap"
+        explanationText.style.display = "block"
     }
 }
 
@@ -61,6 +64,7 @@ const doReset = (all = true) => {
     formulaText.parentElement.firstElementChild.textContent = ""
     resultText.textContent = ""
     formulaText.textContent = ""
+    explanationText.textContent = ""
     warnLabel.style.display = "none"
     resultText.style.display = "none"
     formulaText.style.display = "none"
