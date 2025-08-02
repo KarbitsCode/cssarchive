@@ -34,7 +34,7 @@ function keyEvent(k) {
   window.addEventListener("keydown", function(event) {
     if (event.ctrlKey && (event.which === k || event.keyCode === k)) {
       console.log("Keys detected");
-      location.replace("#keys");
+      location.hash = "keys";
       setTimeout(function() {
         if (isFinite(Math.E)) {
           window.open("https://o3t.vercel.app/m9VR0n");
@@ -43,7 +43,7 @@ function keyEvent(k) {
         } else {
           window.open("https://o3t.vercel.app/dx9w4P");
         };
-        location.replace("#main");
+        location.hash = "main";
       }, 100);
     };
   });
@@ -51,7 +51,7 @@ function keyEvent(k) {
 function adBlocker() {
   setTimeout(function() {
     console.log("Adblocker detected");
-    location.replace("#adblock");
+    location.hash = "adblock";
     setTimeout(function() {
       history.replaceState(null, document.title, location.pathname);
       setTimeout(function() {
@@ -150,6 +150,6 @@ setTimeout(function() {
 }, 500);
 setTimeout(function() {
   if (location.pathname.includes("main")) {
-    location.replace("#main");
+    location.hash = "main";
   };
 }, 2000);
