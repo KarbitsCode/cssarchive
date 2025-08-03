@@ -7,16 +7,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/vnd.microsoft.icon" href="TemplateData/favicon.ico">
 <script type="text/javascript" src="../main/common.js"></script>
-<script type="text/javascript">
-let list = ["T3A"];
-</script>
 <style type="text/css">
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  border: none;
+}
 section {
   display: flex;
+  gap: 10px;
 }
 a {
   display: flex;
   justify-content: center;
+}
+img:hover {
+  cursor: pointer;
 }
 </style>
 </head>
@@ -25,27 +40,78 @@ a {
 <input type="text" size="3" id="url_time" hidden="true">
 <section>
 <div>
-<img src="TemplateData/T3A.png" height="400" title="unity/t3a"></img>
+<img src="T3A/TemplateData/thumb.png" height="300" title="unity/t3a"></img>
 <a href="T3A.html" title="unity/t3a" onclick="return false">Tic Tac Toe</a>
 </div>
 </section>
+</main>
 <script>
+const list = Array.from(document.querySelectorAll('a[href$=".html"]')).map(a => a.getAttribute('href').replace(/\.html$/, ''));
+let currentTarget = 'none';
+let ignoreNextHash;
 document.querySelectorAll('a[title]').forEach(function(element) {
   element.addEventListener('click', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
     replacePage(event.target.attributes.getNamedItem('href').value.replace(/\.html$/, ''));
   });
 });
+document.querySelectorAll('img[title]').forEach(function(element) {
+  element.addEventListener('click', function(event) {
+    event.target.parentElement.querySelector('a').click();
+  });
+});
+window.addEventListener('popstate', function(event) {
+  const state = event.state;
+  if (state && state.type === 'display') {
+    createPage(state.display);
+  } else {
+    if (ignoreNextHash) {
+      ignoreNextHash = false;
+      if (currentTarget !== 'none') {
+        return;
+      };
+    };
+    if (location.hash.substring(1) === currentTarget) {
+      return;
+    };
+    restorePage();
+  };
+});
+function restorePage() {
+  document.querySelectorAll('iframe').forEach(element => element.remove());
+  document.getElementById('main').removeAttribute('hidden');
+  currentTarget = 'none';
+};
+function createPage(target) {
+  document.body.appendChild(Object.assign(document.createElement('iframe'), { src: target + '.html' }));
+  document.getElementById('main').setAttribute('hidden', '');
+  currentTarget = target;
+}
 async function replacePage(target) {
-  window.location.replace('#' + target);
+  if (typeof ignoreNextHash === 'undefined') {
+    ignoreNextHash = true;
+  };
+  history.pushState({ type: 'display', display: target }, '', '#' + target);
   setTimeout(function() {
-    window.location.replace('#' + target);
+    if (currentTarget !== 'none') {
+      location.hash = target;
+    };
+    ignoreNextHash = false;
   }, 2500);
-  document.write(await((await fetch(target + '.html')).text()));
+  createPage(target);
 };
 if (list.length === 1) {
   (async function() {
-    await replacePage(list[0])
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await replacePage(list[0]);
   })();
+};
+if (location.hash !== '') {
+  const target = location.hash.toUpperCase().substring(1);
+  if (list.includes(target)) {
+    replacePage(target);
+  };
 };
 </script>
 </body>
