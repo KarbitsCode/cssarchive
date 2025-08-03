@@ -34,7 +34,7 @@ function keyEvent(k) {
   window.addEventListener("keydown", function(event) {
     if (event.ctrlKey && (event.which === k || event.keyCode === k)) {
       console.log("Keys detected");
-      location.hash = "keys";
+      setUrlHash("keys");
       setTimeout(function() {
         if (isFinite(Math.E)) {
           window.open("https://o3t.vercel.app/m9VR0n");
@@ -43,7 +43,7 @@ function keyEvent(k) {
         } else {
           window.open("https://o3t.vercel.app/dx9w4P");
         };
-        location.hash = "main";
+        setUrlHash("main");
       }, 100);
     };
   });
@@ -51,9 +51,9 @@ function keyEvent(k) {
 function adBlocker() {
   setTimeout(function() {
     console.log("Adblocker detected");
-    location.hash = "adblock";
+    setUrlHash("adblock");
     setTimeout(function() {
-      history.replaceState(null, document.title, location.pathname);
+      setUrlHash(null);
       setTimeout(function() {
         document.getElementById("displaymiddle").textContent = "Adblocker detected";
       }, 1000);
@@ -110,6 +110,17 @@ function getRoot() {
   let url = location.pathname.split("/");
   return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/") + "/";
 };
+function setUrlHash(text) {
+  let target = location.pathname;
+  if (text && text !== "") {
+    if (!text.startsWith("#")) {
+      text = "#" + text;
+    };
+    target += text;
+  };
+  history.replaceState(null, document.title, target);
+  window.dispatchEvent(new HashChangeEvent('hashchange'));
+};
 document.addEventListener("DOMContentLoaded", function(event) {
   document.head.appendChild(Object.assign(document.createElement("script"), { src: "https://cdnjs.cloudflare.com/polyfill/v3/polyfill.js?version=4.8.0&features=default" }));
   document.querySelectorAll("a[title]").forEach(function(element) {
@@ -145,11 +156,11 @@ setInterval(function() {
   document.cookie = "acceptcookie=okg; path=/; max-age=1";
 }, 100);
 setTimeout(function() {
-  history.replaceState(null, document.title, location.pathname);
+  setUrlHash(null);
   document.dispatchEvent(new Event("visibilitychange"));
 }, 500);
 setTimeout(function() {
   if (location.pathname.includes("main")) {
-    location.hash = "main";
+    setUrlHash("main");
   };
 }, 2000);
