@@ -45,7 +45,7 @@ img:hover {
 </div>
 </section>
 </main>
-<script>
+<script type="text/javascript">
 const list = Array.from(document.querySelectorAll('a[href$=".html"]')).map(a => a.getAttribute('href').replace(/\.html$/, ''));
 let currentTarget = 'none';
 let ignoreNextHash;
@@ -87,8 +87,8 @@ function createPage(target) {
   document.body.appendChild(Object.assign(document.createElement('iframe'), { src: target + '.html' }));
   document.getElementById('main').setAttribute('hidden', '');
   currentTarget = target;
-}
-async function replacePage(target) {
+};
+function replacePage(target) {
   if (typeof ignoreNextHash === 'undefined') {
     ignoreNextHash = true;
   };
@@ -102,15 +102,16 @@ async function replacePage(target) {
   createPage(target);
 };
 if (list.length === 1) {
-  (async function() {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    await replacePage(list[0]);
-  })();
+  setTimeout(function() {
+    replacePage(list[0]);
+  }, 100);
 };
 if (location.hash !== '') {
   const target = location.hash.toUpperCase().substring(1);
   if (list.includes(target)) {
-    replacePage(target);
+    setTimeout(function() {
+      replacePage(target);
+    }, 100);
   };
 };
 </script>

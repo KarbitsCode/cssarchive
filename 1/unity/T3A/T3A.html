@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="../../main/common.js"></script>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="shortcut icon" href="../TemplateData/favicon.ico">
+    <link rel="stylesheet" href="../TemplateData/style.css">
     <title>Unity Web Player</title>
   </head>
   <body>
@@ -94,7 +94,7 @@
 
       var buildUrls = [
         "Build",
-        ...getMirrors().map(base => base + "1/unity/Build"),
+        ...getMirrors().map(base => base + "1/unity/T3A/Build"),
       ];
       function tryLoadUnity(index = 0) {
         if (index >= buildUrls.length) {
