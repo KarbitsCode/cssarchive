@@ -28,10 +28,10 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
 
-String.prototype.prepend = function (prefix) {
+String.prototype.prepend = function(prefix) {
   return prefix ? `${prefix}${this}` : `${this}`;
 };
-String.prototype.append = function (suffix) {
+String.prototype.append = function(suffix) {
   return suffix ? `${this}${suffix}` : `${this}`;
 };
 
@@ -250,13 +250,6 @@ function assert(condition, text) {
 
 // We used to include malloc/free by default in the past. Show a helpful error in
 // builds with assertions.
-function _malloc() {
-  abort('malloc() called but not included in the build - add `_malloc` to EXPORTED_FUNCTIONS');
-}
-function _free() {
-  // Show a helpful error since we used to include free by default in the past.
-  abort('free() called but not included in the build - add `_free` to EXPORTED_FUNCTIONS');
-}
 
 /**
  * Indicates whether filename is delivered via file protocol (as opposed to http/https)
@@ -1377,6 +1370,55 @@ async function createWasm() {
       }
     };
 
+  var _emscripten_get_now = () => performance.now();
+  
+  var _emscripten_date_now = () => Date.now();
+  
+  var nowIsMonotonic = 1;
+  
+  var checkWasiClock = (clock_id) => clock_id >= 0 && clock_id <= 3;
+  
+  var INT53_MAX = 9007199254740992;
+  
+  var INT53_MIN = -9007199254740992;
+  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
+  function _clock_time_get(clk_id, ignored_precision, ptime) {
+    ignored_precision = bigintToI53Checked(ignored_precision);
+  
+  
+      if (!checkWasiClock(clk_id)) {
+        return 28;
+      }
+      var now;
+      // all wasi clocks but realtime are monotonic
+      if (clk_id === 0) {
+        now = _emscripten_date_now();
+      } else if (nowIsMonotonic) {
+        now = _emscripten_get_now();
+      } else {
+        return 52;
+      }
+      // "now" is in ms, and wasi times are in ns.
+      var nsec = Math.round(now * 1000 * 1000);
+      HEAP64[((ptime)>>3)] = BigInt(nsec);checkInt64(nsec);
+      return 0;
+    ;
+  }
+
+  function _emscripten_fetch_free(id) {
+    if (Fetch.xhrs.has(id)) {
+      var xhr = Fetch.xhrs.get(id);
+      Fetch.xhrs.free(id);
+      // check if fetch is still in progress and should be aborted
+      if (xhr.readyState > 0 && xhr.readyState < 4) {
+        xhr.abort();
+      }
+    }
+  }
+
+  var _emscripten_is_main_browser_thread = () =>
+      !ENVIRONMENT_IS_WORKER;
+
   var abortOnCannotGrowMemory = (requestedSize) => {
       abort(`Cannot enlarge memory arrays to size ${requestedSize} bytes (OOM). Either (1) compile with -sINITIAL_MEMORY=X with X higher than the current value ${HEAP8.length}, (2) compile with -sALLOW_MEMORY_GROWTH which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with -sABORTING_MALLOC=0`);
     };
@@ -1386,6 +1428,572 @@ async function createWasm() {
       requestedSize >>>= 0;
       abortOnCannotGrowMemory(requestedSize);
     };
+
+  
+  
+  class HandleAllocator {
+      allocated = [undefined];
+      freelist = [];
+      get(id) {
+        assert(this.allocated[id] !== undefined, `invalid handle: ${id}`);
+        return this.allocated[id];
+      }
+      has(id) {
+        return this.allocated[id] !== undefined;
+      }
+      allocate(handle) {
+        var id = this.freelist.pop() || this.allocated.length;
+        this.allocated[id] = handle;
+        return id;
+      }
+      free(id) {
+        assert(this.allocated[id] !== undefined);
+        // Set the slot to `undefined` rather than using `delete` here since
+        // apparently arrays with holes in them can be less efficient.
+        this.allocated[id] = undefined;
+        this.freelist.push(id);
+      }
+    }
+  var Fetch = {
+  openDatabase(dbname, dbversion, onsuccess, onerror) {
+      try {
+        var openRequest = indexedDB.open(dbname, dbversion);
+      } catch (e) {
+        return onerror(e);
+      }
+  
+      openRequest.onupgradeneeded = (event) => {
+        var db = /** @type {IDBDatabase} */ (event.target.result);
+        if (db.objectStoreNames.contains('FILES')) {
+          db.deleteObjectStore('FILES');
+        }
+        db.createObjectStore('FILES');
+      };
+      openRequest.onsuccess = (event) => onsuccess(event.target.result);
+      openRequest.onerror = onerror;
+    },
+  init() {
+      Fetch.xhrs = new HandleAllocator();
+      var onsuccess = (db) => {
+        Fetch.dbInstance = db;
+        removeRunDependency('library_fetch_init');
+      };
+  
+      var onerror = () => {
+        Fetch.dbInstance = false;
+        removeRunDependency('library_fetch_init');
+      };
+  
+      addRunDependency('library_fetch_init');
+      Fetch.openDatabase('emscripten_filesystem', 1, onsuccess, onerror);
+    },
+  };
+  
+  function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
+    var url = HEAPU32[(((fetch)+(8))>>2)];
+    if (!url) {
+      onerror(fetch, 0, 'no url specified!');
+      return;
+    }
+    var url_ = UTF8ToString(url);
+  
+    var fetch_attr = fetch + 108;
+    var requestMethod = UTF8ToString(fetch_attr + 0);
+    requestMethod ||= 'GET';
+    var timeoutMsecs = HEAPU32[(((fetch_attr)+(56))>>2)];
+    var userName = HEAPU32[(((fetch_attr)+(68))>>2)];
+    var password = HEAPU32[(((fetch_attr)+(72))>>2)];
+    var requestHeaders = HEAPU32[(((fetch_attr)+(76))>>2)];
+    var overriddenMimeType = HEAPU32[(((fetch_attr)+(80))>>2)];
+    var dataPtr = HEAPU32[(((fetch_attr)+(84))>>2)];
+    var dataLength = HEAPU32[(((fetch_attr)+(88))>>2)];
+  
+    var fetchAttributes = HEAPU32[(((fetch_attr)+(52))>>2)];
+    var fetchAttrLoadToMemory = !!(fetchAttributes & 1);
+    var fetchAttrStreamData = !!(fetchAttributes & 2);
+    var fetchAttrSynchronous = !!(fetchAttributes & 64);
+  
+    var userNameStr = userName ? UTF8ToString(userName) : undefined;
+    var passwordStr = password ? UTF8ToString(password) : undefined;
+  
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = !!HEAPU8[(fetch_attr)+(60)];;
+    xhr.open(requestMethod, url_, !fetchAttrSynchronous, userNameStr, passwordStr);
+    if (!fetchAttrSynchronous) xhr.timeout = timeoutMsecs; // XHR timeout field is only accessible in async XHRs, and must be set after .open() but before .send().
+    xhr.url_ = url_; // Save the url for debugging purposes (and for comparing to the responseURL that server side advertised)
+    assert(!fetchAttrStreamData, 'streaming uses moz-chunked-arraybuffer which is no longer supported; TODO: rewrite using fetch()');
+    xhr.responseType = 'arraybuffer';
+  
+    if (overriddenMimeType) {
+      var overriddenMimeTypeStr = UTF8ToString(overriddenMimeType);
+      xhr.overrideMimeType(overriddenMimeTypeStr);
+    }
+    if (requestHeaders) {
+      for (;;) {
+        var key = HEAPU32[((requestHeaders)>>2)];
+        if (!key) break;
+        var value = HEAPU32[(((requestHeaders)+(4))>>2)];
+        if (!value) break;
+        requestHeaders += 8;
+        var keyStr = UTF8ToString(key);
+        var valueStr = UTF8ToString(value);
+        xhr.setRequestHeader(keyStr, valueStr);
+      }
+    }
+  
+    var id = Fetch.xhrs.allocate(xhr);
+    HEAPU32[((fetch)>>2)] = id;checkInt32(id);
+    var data = (dataPtr && dataLength) ? HEAPU8.slice(dataPtr, dataPtr + dataLength) : null;
+    // TODO: Support specifying custom headers to the request.
+  
+    // Share the code to save the response, as we need to do so both on success
+    // and on error (despite an error, there may be a response, like a 404 page).
+    // This receives a condition, which determines whether to save the xhr's
+    // response, or just 0.
+    function saveResponseAndStatus() {
+      var ptr = 0;
+      var ptrLen = 0;
+      if (xhr.response && fetchAttrLoadToMemory && HEAPU32[(((fetch)+(12))>>2)] === 0) {
+        ptrLen = xhr.response.byteLength;
+      }
+      if (ptrLen > 0) {
+        // The data pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
+        // freed when emscripten_fetch_close() is called.
+        ptr = _malloc(ptrLen);
+        HEAPU8.set(new Uint8Array(/** @type{Array<number>} */(xhr.response)), ptr);
+      }
+      HEAPU32[(((fetch)+(12))>>2)] = ptr
+      writeI53ToI64(fetch + 16, ptrLen);
+      writeI53ToI64(fetch + 24, 0);
+      var len = xhr.response ? xhr.response.byteLength : 0;
+      if (len) {
+        // If the final XHR.onload handler receives the bytedata to compute total length, report that,
+        // otherwise don't write anything out here, which will retain the latest byte size reported in
+        // the most recent XHR.onprogress handler.
+        writeI53ToI64(fetch + 32, len);
+      }
+      HEAP16[(((fetch)+(40))>>1)] = xhr.readyState;checkInt16(xhr.readyState)
+      HEAP16[(((fetch)+(42))>>1)] = xhr.status;checkInt16(xhr.status)
+      if (xhr.statusText) stringToUTF8(xhr.statusText, fetch + 44, 64);
+      if (fetchAttrSynchronous) {
+        // The response url pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
+        // freed when emscripten_fetch_close() is called.
+        var ruPtr = stringToNewUTF8(xhr.responseURL);
+        HEAPU32[(((fetch)+(200))>>2)] = ruPtr
+      }
+    }
+  
+    xhr.onload = (e) => {
+      // check if xhr was aborted by user and don't try to call back
+      if (!Fetch.xhrs.has(id)) {
+        return;
+      }
+      saveResponseAndStatus();
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onsuccess?.(fetch, xhr, e);
+      } else {
+        onerror?.(fetch, xhr, e);
+      }
+    };
+    xhr.onerror = (e) => {
+      // check if xhr was aborted by user and don't try to call back
+      if (!Fetch.xhrs.has(id)) {
+        return;
+      }
+      saveResponseAndStatus();
+      onerror?.(fetch, xhr, e);
+    };
+    xhr.ontimeout = (e) => {
+      // check if xhr was aborted by user and don't try to call back
+      if (!Fetch.xhrs.has(id)) {
+        return;
+      }
+      onerror?.(fetch, xhr, e);
+    };
+    xhr.onprogress = (e) => {
+      // check if xhr was aborted by user and don't try to call back
+      if (!Fetch.xhrs.has(id)) {
+        return;
+      }
+      var ptrLen = (fetchAttrLoadToMemory && fetchAttrStreamData && xhr.response) ? xhr.response.byteLength : 0;
+      var ptr = 0;
+      if (ptrLen > 0 && fetchAttrLoadToMemory && fetchAttrStreamData) {
+        assert(onprogress, 'When doing a streaming fetch, you should have an onprogress handler registered to receive the chunks!');
+        // Allocate byte data in Emscripten heap for the streamed memory block (freed immediately after onprogress call)
+        ptr = _malloc(ptrLen);
+        HEAPU8.set(new Uint8Array(/** @type{Array<number>} */(xhr.response)), ptr);
+      }
+      HEAPU32[(((fetch)+(12))>>2)] = ptr
+      writeI53ToI64(fetch + 16, ptrLen);
+      writeI53ToI64(fetch + 24, e.loaded - ptrLen);
+      writeI53ToI64(fetch + 32, e.total);
+      HEAP16[(((fetch)+(40))>>1)] = xhr.readyState;checkInt16(xhr.readyState)
+      // If loading files from a source that does not give HTTP status code, assume success if we get data bytes
+      if (xhr.readyState >= 3 && xhr.status === 0 && e.loaded > 0) xhr.status = 200;
+      HEAP16[(((fetch)+(42))>>1)] = xhr.status;checkInt16(xhr.status)
+      if (xhr.statusText) stringToUTF8(xhr.statusText, fetch + 44, 64);
+      onprogress?.(fetch, xhr, e);
+      _free(ptr);
+    };
+    xhr.onreadystatechange = (e) => {
+      // check if xhr was aborted by user and don't try to call back
+      if (!Fetch.xhrs.has(id)) {
+        
+        return;
+      }
+      HEAP16[(((fetch)+(40))>>1)] = xhr.readyState;checkInt16(xhr.readyState)
+      if (xhr.readyState >= 2) {
+        HEAP16[(((fetch)+(42))>>1)] = xhr.status;checkInt16(xhr.status)
+      }
+      if (!fetchAttrSynchronous && (xhr.readyState === 2 && xhr.responseURL.length > 0)) {
+        // The response url pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
+        // freed when emscripten_fetch_close() is called.
+        var ruPtr = stringToNewUTF8(xhr.responseURL);
+        HEAPU32[(((fetch)+(200))>>2)] = ruPtr
+      }
+      onreadystatechange?.(fetch, xhr, e);
+    };
+    try {
+      xhr.send(data);
+    } catch(e) {
+      onerror?.(fetch, xhr, e);
+    }
+  }
+  
+  var handleException = (e) => {
+      // Certain exception types we do not treat as errors since they are used for
+      // internal control flow.
+      // 1. ExitStatus, which is thrown by exit()
+      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
+      //    that wish to return to JS event loop.
+      if (e instanceof ExitStatus || e == 'unwind') {
+        return EXITSTATUS;
+      }
+      checkStackCookie();
+      if (e instanceof WebAssembly.RuntimeError) {
+        if (_emscripten_stack_get_current() <= 0) {
+          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)');
+        }
+      }
+      quit_(1, e);
+    };
+  
+  
+  var runtimeKeepaliveCounter = 0;
+  var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
+  var _proc_exit = (code) => {
+      EXITSTATUS = code;
+      if (!keepRuntimeAlive()) {
+        Module['onExit']?.(code);
+        ABORT = true;
+      }
+      quit_(code, new ExitStatus(code));
+    };
+  
+  
+  /** @suppress {duplicate } */
+  /** @param {boolean|number=} implicit */
+  var exitJS = (status, implicit) => {
+      EXITSTATUS = status;
+  
+      checkUnflushedContent();
+  
+      // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
+      if (keepRuntimeAlive() && !implicit) {
+        var msg = `program exited (with status: ${status}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
+        err(msg);
+      }
+  
+      _proc_exit(status);
+    };
+  var _exit = exitJS;
+  
+  
+  var maybeExit = () => {
+      if (!keepRuntimeAlive()) {
+        try {
+          _exit(EXITSTATUS);
+        } catch (e) {
+          handleException(e);
+        }
+      }
+    };
+  var callUserCallback = (func) => {
+      if (ABORT) {
+        err('user callback triggered after runtime exited or application aborted.  Ignoring.');
+        return;
+      }
+      try {
+        func();
+        maybeExit();
+      } catch (e) {
+        handleException(e);
+      }
+    };
+  
+  var readI53FromI64 = (ptr) => {
+      return HEAPU32[((ptr)>>2)] + HEAP32[(((ptr)+(4))>>2)] * 4294967296;
+    };
+  
+  var readI53FromU64 = (ptr) => {
+      return HEAPU32[((ptr)>>2)] + HEAPU32[(((ptr)+(4))>>2)] * 4294967296;
+    };
+  var writeI53ToI64 = (ptr, num) => {
+      HEAPU32[((ptr)>>2)] = num;checkInt32(num);
+      var lower = HEAPU32[((ptr)>>2)];
+      HEAPU32[(((ptr)+(4))>>2)] = (num - lower)/4294967296;checkInt32((num - lower)/4294967296);
+      var deserialized = (num >= 0) ? readI53FromU64(ptr) : readI53FromI64(ptr);
+      var offset = ((ptr)>>2);
+      if (deserialized != num) warnOnce(`writeI53ToI64() out of range: serialized JS Number ${num} to Wasm heap as bytes lo=${ptrToString(HEAPU32[offset])}, hi=${ptrToString(HEAPU32[offset+1])}, which deserializes back to ${deserialized} instead!`);
+    };
+  
+  
+  
+  
+  var stringToNewUTF8 = (str) => {
+      var size = lengthBytesUTF8(str) + 1;
+      var ret = _malloc(size);
+      if (ret) stringToUTF8(str, ret, size);
+      return ret;
+    };
+  
+  function fetchCacheData(/** @type {IDBDatabase} */ db, fetch, data, onsuccess, onerror) {
+    if (!db) {
+      onerror(fetch, 0, 'IndexedDB not available!');
+      return;
+    }
+  
+    var fetch_attr = fetch + 108;
+    var destinationPath = HEAPU32[(((fetch_attr)+(64))>>2)];
+    destinationPath ||= HEAPU32[(((fetch)+(8))>>2)];
+    var destinationPathStr = UTF8ToString(destinationPath);
+  
+    try {
+      var transaction = db.transaction(['FILES'], 'readwrite');
+      var packages = transaction.objectStore('FILES');
+      var putRequest = packages.put(data, destinationPathStr);
+      putRequest.onsuccess = (event) => {
+        HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+        HEAP16[(((fetch)+(42))>>1)] = 200;checkInt16(200) // Mimic XHR HTTP status code 200 "OK"
+        stringToUTF8("OK", fetch + 44, 64);
+        onsuccess(fetch, 0, destinationPathStr);
+      };
+      putRequest.onerror = (error) => {
+        // Most likely we got an error if IndexedDB is unwilling to store any more data for this page.
+        // TODO: Can we identify and break down different IndexedDB-provided errors and convert those
+        // to more HTTP status codes for more information?
+        HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+        HEAP16[(((fetch)+(42))>>1)] = 413;checkInt16(413) // Mimic XHR HTTP status code 413 "Payload Too Large"
+        stringToUTF8("Payload Too Large", fetch + 44, 64);
+        onerror(fetch, 0, error);
+      };
+    } catch(e) {
+      onerror(fetch, 0, e);
+    }
+  }
+  
+  function fetchLoadCachedData(db, fetch, onsuccess, onerror) {
+    if (!db) {
+      onerror(fetch, 0, 'IndexedDB not available!');
+      return;
+    }
+  
+    var fetch_attr = fetch + 108;
+    var path = HEAPU32[(((fetch_attr)+(64))>>2)];
+    path ||= HEAPU32[(((fetch)+(8))>>2)];
+    var pathStr = UTF8ToString(path);
+  
+    try {
+      var transaction = db.transaction(['FILES'], 'readonly');
+      var packages = transaction.objectStore('FILES');
+      var getRequest = packages.get(pathStr);
+      getRequest.onsuccess = (event) => {
+        if (event.target.result) {
+          var value = event.target.result;
+          var len = value.byteLength || value.length;
+          // The data pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
+          // freed when emscripten_fetch_close() is called.
+          var ptr = _malloc(len);
+          HEAPU8.set(new Uint8Array(value), ptr);
+          HEAPU32[(((fetch)+(12))>>2)] = ptr;
+          writeI53ToI64(fetch + 16, len);
+          writeI53ToI64(fetch + 24, 0);
+          writeI53ToI64(fetch + 32, len);
+          HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+          HEAP16[(((fetch)+(42))>>1)] = 200;checkInt16(200) // Mimic XHR HTTP status code 200 "OK"
+          stringToUTF8("OK", fetch + 44, 64);
+          onsuccess(fetch, 0, value);
+        } else {
+          // Succeeded to load, but the load came back with the value of undefined, treat that as an error since we never store undefined in db.
+          HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+          HEAP16[(((fetch)+(42))>>1)] = 404;checkInt16(404) // Mimic XHR HTTP status code 404 "Not Found"
+          stringToUTF8("Not Found", fetch + 44, 64);
+          onerror(fetch, 0, 'no data');
+        }
+      };
+      getRequest.onerror = (error) => {
+        HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+        HEAP16[(((fetch)+(42))>>1)] = 404;checkInt16(404) // Mimic XHR HTTP status code 404 "Not Found"
+        stringToUTF8("Not Found", fetch + 44, 64);
+        onerror(fetch, 0, error);
+      };
+    } catch(e) {
+      onerror(fetch, 0, e);
+    }
+  }
+  
+  function fetchDeleteCachedData(db, fetch, onsuccess, onerror) {
+    if (!db) {
+      onerror(fetch, 0, 'IndexedDB not available!');
+      return;
+    }
+  
+    var fetch_attr = fetch + 108;
+    var path = HEAPU32[(((fetch_attr)+(64))>>2)];
+    path ||= HEAPU32[(((fetch)+(8))>>2)];
+  
+    var pathStr = UTF8ToString(path);
+  
+    try {
+      var transaction = db.transaction(['FILES'], 'readwrite');
+      var packages = transaction.objectStore('FILES');
+      var request = packages.delete(pathStr);
+      request.onsuccess = (event) => {
+        var value = event.target.result;
+        HEAPU32[(((fetch)+(12))>>2)] = 0;
+        writeI53ToI64(fetch + 16, 0);
+        writeI53ToI64(fetch + 24, 0);
+        writeI53ToI64(fetch + 32, 0);
+        // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+        HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4);
+        // Mimic XHR HTTP status code 200 "OK"
+        HEAP16[(((fetch)+(42))>>1)] = 200;checkInt16(200);
+        stringToUTF8("OK", fetch + 44, 64);
+        onsuccess(fetch, 0, value);
+      };
+      request.onerror = (error) => {
+        HEAP16[(((fetch)+(40))>>1)] = 4;checkInt16(4) // Mimic XHR readyState 4 === 'DONE: The operation is complete'
+        HEAP16[(((fetch)+(42))>>1)] = 404;checkInt16(404) // Mimic XHR HTTP status code 404 "Not Found"
+        stringToUTF8("Not Found", fetch + 44, 64);
+        onerror(fetch, 0, error);
+      };
+    } catch(e) {
+      onerror(fetch, 0, e);
+    }
+  }
+  
+  var wasmTableMirror = [];
+  
+  /** @type {WebAssembly.Table} */
+  var wasmTable;
+  var getWasmTableEntry = (funcPtr) => {
+      var func = wasmTableMirror[funcPtr];
+      if (!func) {
+        /** @suppress {checkTypes} */
+        wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
+      }
+      /** @suppress {checkTypes} */
+      assert(wasmTable.get(funcPtr) == func, 'JavaScript-side Wasm function table mirror is out of date!');
+      return func;
+    };
+  
+  function _emscripten_start_fetch(fetch, successcb, errorcb, progresscb, readystatechangecb) {
+    // Avoid shutting down the runtime since we want to wait for the async
+    // response.
+    
+  
+    var fetch_attr = fetch + 108;
+    var onsuccess = HEAPU32[(((fetch_attr)+(36))>>2)];
+    var onerror = HEAPU32[(((fetch_attr)+(40))>>2)];
+    var onprogress = HEAPU32[(((fetch_attr)+(44))>>2)];
+    var onreadystatechange = HEAPU32[(((fetch_attr)+(48))>>2)];
+    var fetchAttributes = HEAPU32[(((fetch_attr)+(52))>>2)];
+    var fetchAttrSynchronous = !!(fetchAttributes & 64);
+  
+    function doCallback(f) {
+      if (fetchAttrSynchronous) {
+        f();
+      } else {
+        callUserCallback(f);
+      }
+    }
+  
+    var reportSuccess = (fetch, xhr, e) => {
+      
+      doCallback(() => {
+        if (onsuccess) getWasmTableEntry(onsuccess)(fetch);
+        else successcb?.(fetch);
+      });
+    };
+  
+    var reportProgress = (fetch, xhr, e) => {
+      doCallback(() => {
+        if (onprogress) getWasmTableEntry(onprogress)(fetch);
+        else progresscb?.(fetch);
+      });
+    };
+  
+    var reportError = (fetch, xhr, e) => {
+      
+      doCallback(() => {
+        if (onerror) getWasmTableEntry(onerror)(fetch);
+        else errorcb?.(fetch);
+      });
+    };
+  
+    var reportReadyStateChange = (fetch, xhr, e) => {
+      doCallback(() => {
+        if (onreadystatechange) getWasmTableEntry(onreadystatechange)(fetch);
+        else readystatechangecb?.(fetch);
+      });
+    };
+  
+    var performUncachedXhr = (fetch, xhr, e) => {
+      fetchXHR(fetch, reportSuccess, reportError, reportProgress, reportReadyStateChange);
+    };
+  
+    var cacheResultAndReportSuccess = (fetch, xhr, e) => {
+      var storeSuccess = (fetch, xhr, e) => {
+        
+        doCallback(() => {
+          if (onsuccess) getWasmTableEntry(onsuccess)(fetch);
+          else successcb?.(fetch);
+        });
+      };
+      var storeError = (fetch, xhr, e) => {
+        
+        doCallback(() => {
+          if (onsuccess) getWasmTableEntry(onsuccess)(fetch);
+          else successcb?.(fetch);
+        });
+      };
+      fetchCacheData(Fetch.dbInstance, fetch, xhr.response, storeSuccess, storeError);
+    };
+  
+    var performCachedXhr = (fetch, xhr, e) => {
+      fetchXHR(fetch, cacheResultAndReportSuccess, reportError, reportProgress, reportReadyStateChange);
+    };
+  
+    var requestMethod = UTF8ToString(fetch_attr + 0);
+    var fetchAttrReplace = !!(fetchAttributes & 16);
+    var fetchAttrPersistFile = !!(fetchAttributes & 4);
+    var fetchAttrNoDownload = !!(fetchAttributes & 32);
+    if (requestMethod === 'EM_IDB_STORE') {
+      // TODO(?): Here we perform a clone of the data, because storing shared typed arrays to IndexedDB does not seem to be allowed.
+      var ptr = HEAPU32[(((fetch_attr)+(84))>>2)];
+      var size = HEAPU32[(((fetch_attr)+(88))>>2)];
+      fetchCacheData(Fetch.dbInstance, fetch, HEAPU8.slice(ptr, ptr + size), reportSuccess, reportError);
+    } else if (requestMethod === 'EM_IDB_DELETE') {
+      fetchDeleteCachedData(Fetch.dbInstance, fetch, reportSuccess, reportError);
+    } else if (!fetchAttrReplace) {
+      fetchLoadCachedData(Fetch.dbInstance, fetch, reportSuccess, fetchAttrNoDownload ? reportError : (fetchAttrPersistFile ? performCachedXhr : performUncachedXhr));
+    } else if (!fetchAttrNoDownload) {
+      fetchXHR(fetch, fetchAttrPersistFile ? cacheResultAndReportSuccess : reportSuccess, reportError, reportProgress, reportReadyStateChange);
+    } else {
+      return 0; // todo: free
+    }
+    return fetch;
+  }
 
   var ENV = {
   };
@@ -4091,10 +4699,6 @@ async function createWasm() {
   }
 
   
-  var INT53_MAX = 9007199254740992;
-  
-  var INT53_MIN = -9007199254740992;
-  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
   function _fd_seek(fd, offset, whence, newOffset) {
     offset = bigintToI53Checked(offset);
   
@@ -4150,66 +4754,8 @@ async function createWasm() {
 
   var _llvm_eh_typeid_for = (type) => type;
 
-  
-  var runtimeKeepaliveCounter = 0;
-  var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
-  var _proc_exit = (code) => {
-      EXITSTATUS = code;
-      if (!keepRuntimeAlive()) {
-        Module['onExit']?.(code);
-        ABORT = true;
-      }
-      quit_(code, new ExitStatus(code));
-    };
-  
-  
-  /** @param {boolean|number=} implicit */
-  var exitJS = (status, implicit) => {
-      EXITSTATUS = status;
-  
-      checkUnflushedContent();
-  
-      // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
-      if (keepRuntimeAlive() && !implicit) {
-        var msg = `program exited (with status: ${status}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
-        err(msg);
-      }
-  
-      _proc_exit(status);
-    };
 
-  var handleException = (e) => {
-      // Certain exception types we do not treat as errors since they are used for
-      // internal control flow.
-      // 1. ExitStatus, which is thrown by exit()
-      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
-      //    that wish to return to JS event loop.
-      if (e instanceof ExitStatus || e == 'unwind') {
-        return EXITSTATUS;
-      }
-      checkStackCookie();
-      if (e instanceof WebAssembly.RuntimeError) {
-        if (_emscripten_stack_get_current() <= 0) {
-          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)');
-        }
-      }
-      quit_(1, e);
-    };
 
-  var wasmTableMirror = [];
-  
-  /** @type {WebAssembly.Table} */
-  var wasmTable;
-  var getWasmTableEntry = (funcPtr) => {
-      var func = wasmTableMirror[funcPtr];
-      if (!func) {
-        /** @suppress {checkTypes} */
-        wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
-      }
-      /** @suppress {checkTypes} */
-      assert(wasmTable.get(funcPtr) == func, 'JavaScript-side Wasm function table mirror is out of date!');
-      return func;
-    };
 
   var getCFunc = (ident) => {
       var func = Module['_' + ident]; // closure exported function
@@ -4328,6 +4874,7 @@ async function createWasm() {
       return [type, message];
     };
   var getExceptionMessage = (ptr) => getExceptionMessageCommon(ptr);
+Fetch.init();;
 
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.staticInit();;
@@ -4373,13 +4920,10 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 // Begin runtime exports
   Module['cwrap'] = cwrap;
   var missingLibrarySymbols = [
-  'writeI53ToI64',
   'writeI53ToI64Clamped',
   'writeI53ToI64Signaling',
   'writeI53ToU64Clamped',
   'writeI53ToU64Signaling',
-  'readI53FromI64',
-  'readI53FromU64',
   'convertI32PairToI53',
   'convertI32PairToI53Checked',
   'convertU32PairToI53',
@@ -4402,11 +4946,8 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'dynCall',
   'runtimeKeepalivePush',
   'runtimeKeepalivePop',
-  'callUserCallback',
-  'maybeExit',
   'asmjsMangle',
   'alignMemory',
-  'HandleAllocator',
   'getNativeTypeSize',
   'addOnInit',
   'addOnPostCtor',
@@ -4439,7 +4980,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'UTF32ToString',
   'stringToUTF32',
   'lengthBytesUTF32',
-  'stringToNewUTF8',
   'registerKeyEventCallback',
   'maybeCStringToJsString',
   'findEventTarget',
@@ -4484,7 +5024,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'jsStackTrace',
   'getCallstack',
   'convertPCtoSourceLocation',
-  'checkWasiClock',
   'wasiRightsToMuslOFlags',
   'wasiOFlagsToMuslOFlags',
   'safeSetTimeout',
@@ -4560,6 +5099,9 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'HEAPU64',
   'writeStackCookie',
   'checkStackCookie',
+  'writeI53ToI64',
+  'readI53FromI64',
+  'readI53FromU64',
   'INT53_MAX',
   'INT53_MIN',
   'bigintToI53Checked',
@@ -4583,8 +5125,11 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'getExecutableName',
   'handleException',
   'keepRuntimeAlive',
+  'callUserCallback',
+  'maybeExit',
   'asyncLoad',
   'mmapAlloc',
+  'HandleAllocator',
   'wasmTable',
   'getUniqueRunDependency',
   'noExitRuntime',
@@ -4605,6 +5150,7 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'lengthBytesUTF8',
   'intArrayFromString',
   'UTF16Decoder',
+  'stringToNewUTF8',
   'stringToUTF8OnStack',
   'writeArrayToMemory',
   'JSEvents',
@@ -4615,6 +5161,7 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'UNWIND_CACHE',
   'ExitStatus',
   'getEnvStrings',
+  'checkWasiClock',
   'doReadv',
   'doWritev',
   'initRandomFill',
@@ -4785,6 +5332,11 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'print',
   'printErr',
   'jstoi_s',
+  'Fetch',
+  'fetchDeleteCachedData',
+  'fetchLoadCachedData',
+  'fetchCacheData',
+  'fetchXHR',
 ];
 unexportedSymbols.forEach(unexportedRuntimeSymbol);
 
@@ -4802,19 +5354,20 @@ function checkIncomingModuleAPI() {
 }
 
 // Imports from the Wasm binary.
+var ___cxa_free_exception = makeInvalidEarlyAccess('___cxa_free_exception');
 var __Z9calculatePKcb = Module['__Z9calculatePKcb'] = makeInvalidEarlyAccess('__Z9calculatePKcb');
 var __Z7triggerd = Module['__Z7triggerd'] = makeInvalidEarlyAccess('__Z7triggerd');
-var ___cxa_free_exception = makeInvalidEarlyAccess('___cxa_free_exception');
+var _free = makeInvalidEarlyAccess('_free');
 var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
+var _malloc = makeInvalidEarlyAccess('_malloc');
 var _fflush = makeInvalidEarlyAccess('_fflush');
 var _strerror = makeInvalidEarlyAccess('_strerror');
-var _free = makeInvalidEarlyAccess('_free');
+var _emscripten_stack_get_end = makeInvalidEarlyAccess('_emscripten_stack_get_end');
+var _emscripten_stack_get_base = makeInvalidEarlyAccess('_emscripten_stack_get_base');
 var _setThrew = makeInvalidEarlyAccess('_setThrew');
 var __emscripten_tempret_set = makeInvalidEarlyAccess('__emscripten_tempret_set');
 var _emscripten_stack_init = makeInvalidEarlyAccess('_emscripten_stack_init');
 var _emscripten_stack_get_free = makeInvalidEarlyAccess('_emscripten_stack_get_free');
-var _emscripten_stack_get_base = makeInvalidEarlyAccess('_emscripten_stack_get_base');
-var _emscripten_stack_get_end = makeInvalidEarlyAccess('_emscripten_stack_get_end');
 var __emscripten_stack_restore = makeInvalidEarlyAccess('__emscripten_stack_restore');
 var __emscripten_stack_alloc = makeInvalidEarlyAccess('__emscripten_stack_alloc');
 var _emscripten_stack_get_current = makeInvalidEarlyAccess('_emscripten_stack_get_current');
@@ -4826,19 +5379,20 @@ var ___cxa_get_exception_ptr = makeInvalidEarlyAccess('___cxa_get_exception_ptr'
 var ___set_stack_limits = Module['___set_stack_limits'] = makeInvalidEarlyAccess('___set_stack_limits');
 
 function assignWasmExports(wasmExports) {
+  ___cxa_free_exception = createExportWrapper('__cxa_free_exception', 1);
   Module['__Z9calculatePKcb'] = __Z9calculatePKcb = createExportWrapper('_Z9calculatePKcb', 2);
   Module['__Z7triggerd'] = __Z7triggerd = createExportWrapper('_Z7triggerd', 1);
-  ___cxa_free_exception = createExportWrapper('__cxa_free_exception', 1);
+  _free = createExportWrapper('free', 1);
   Module['_main'] = _main = createExportWrapper('main', 2);
+  _malloc = createExportWrapper('malloc', 1);
   _fflush = createExportWrapper('fflush', 1);
   _strerror = createExportWrapper('strerror', 1);
-  _free = createExportWrapper('free', 1);
+  _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
+  _emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'];
   _setThrew = createExportWrapper('setThrew', 2);
   __emscripten_tempret_set = createExportWrapper('_emscripten_tempret_set', 1);
   _emscripten_stack_init = wasmExports['emscripten_stack_init'];
   _emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'];
-  _emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'];
-  _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
   __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
   __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
   _emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'];
@@ -4877,7 +5431,15 @@ var wasmImports = {
   /** @export */
   _tzset_js: __tzset_js,
   /** @export */
+  clock_time_get: _clock_time_get,
+  /** @export */
+  emscripten_fetch_free: _emscripten_fetch_free,
+  /** @export */
+  emscripten_is_main_browser_thread: _emscripten_is_main_browser_thread,
+  /** @export */
   emscripten_resize_heap: _emscripten_resize_heap,
+  /** @export */
+  emscripten_start_fetch: _emscripten_start_fetch,
   /** @export */
   environ_get: _environ_get,
   /** @export */
@@ -5015,7 +5577,15 @@ var wasmImports = {
   /** @export */
   invoke_iiiiiiiiiiiii,
   /** @export */
+  invoke_iij,
+  /** @export */
+  invoke_j,
+  /** @export */
   invoke_jd,
+  /** @export */
+  invoke_ji,
+  /** @export */
+  invoke_jiii,
   /** @export */
   invoke_jiiii,
   /** @export */
@@ -5041,54 +5611,12 @@ var wasmImports = {
   /** @export */
   invoke_viiiiiiiiiiiiiii,
   /** @export */
+  invoke_vij,
+  /** @export */
   llvm_eh_typeid_for: _llvm_eh_typeid_for
 };
 var wasmExports;
 createWasm();
-
-function invoke_iii(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_ii(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_diii(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiii(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
 
 function invoke_vii(index,a1,a2) {
   var sp = stackSave();
@@ -5101,43 +5629,10 @@ function invoke_vii(index,a1,a2) {
   }
 }
 
-function invoke_iiii(index,a1,a2,a3) {
+function invoke_iii(index,a1,a2) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viii(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_di(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1);
+    return getWasmTableEntry(index)(a1,a2);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5156,6 +5651,28 @@ function invoke_viiii(index,a1,a2,a3,a4) {
   }
 }
 
+function invoke_viii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiiii(index,a1,a2,a3,a4) {
   var sp = stackSave();
   try {
@@ -5167,10 +5684,122 @@ function invoke_iiiii(index,a1,a2,a3,a4) {
   }
 }
 
+function invoke_ii(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiii(index,a1,a2,a3,a4,a5) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_di(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jiii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_diii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ji(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_vij(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_v(index) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5193,17 +5822,6 @@ function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_v(index) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5750,17 +6368,6 @@ function invoke_viiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11) {
   }
 }
 
-function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_id(index,a1) {
   var sp = stackSave();
   try {
@@ -5776,6 +6383,40 @@ function invoke_jd(index,a1) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_i(index) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)();
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iij(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_j(index) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5822,17 +6463,6 @@ function invoke_fiii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_i(index) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;

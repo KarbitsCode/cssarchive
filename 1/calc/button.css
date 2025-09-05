@@ -2,6 +2,10 @@ button {
   width: 100%;
 }
 
+button:active {
+  transform: scale(0.97);
+}
+
 .red {
   background-color: red;
   color: white;
@@ -20,4 +24,36 @@ button {
 .orange {
   background-color: orange;
   color: black;
+}
+
+.red:hover {
+  background-color: #ff4d4d;
+}
+
+.green:hover {
+  background-color: #4daa4d;
+}
+
+.blue:hover {
+  background-color: #4d4dff;
+}
+
+.orange:hover {
+  background-color: #ffb84d;
+}
+
+.red:active {
+  background-color: #cc0000;
+}
+
+.green:active {
+  background-color: #005000;
+}
+
+.blue:active {
+  background-color: #0000cc;
+}
+
+.orange:active {
+  background-color: #cc8400;
 }
