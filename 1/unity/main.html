@@ -84,7 +84,14 @@ function restorePage() {
   currentTarget = 'none';
 };
 function createPage(target) {
-  document.body.appendChild(Object.assign(document.createElement('iframe'), { src: target + '.html' }));
+  const instance = document.querySelectorAll('iframe[src^="' + target + '"]');
+  if (instance.length === 0) {
+    document.body.appendChild(Object.assign(document.createElement('iframe'), { src: target + '.html' }));
+  } else if (instance.length > 1) {
+    while (instance.length > 1) {
+      instance[instance.length - 1].remove();
+    };
+  };
   document.getElementById('main').setAttribute('hidden', '');
   currentTarget = target;
 };
