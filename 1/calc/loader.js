@@ -28,10 +28,10 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
 
-String.prototype.prepend = (prefix) => {
+String.prototype.prepend = function(prefix) {
   return prefix ? `${prefix}${this}` : `${this}`;
 };
-String.prototype.append = (suffix) => {
+String.prototype.append = function(suffix) {
   return suffix ? `${this}${suffix}` : `${this}`;
 };
 

@@ -116,6 +116,10 @@
         function append(value) {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
+            if (results_shown) {
+                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
+                results_shown = false;
+            }
             input_field.value += value;
             input_field.scrollLeft = input_field.scrollWidth;
         }
@@ -123,8 +127,18 @@
         function backspace() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
-            const input_field_start = input_field.selectionStart;
-            const input_field_end = input_field.selectionEnd;
+            if (results_shown) {
+                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
+                results_shown = false;
+            }
+            if (document.activeElement !== input_field) input_field.focus();
+            let input_field_start = input_field.selectionStart;
+            let input_field_end = input_field.selectionEnd;
+            if (input_field_start == null || input_field_end == null || (input_field_start === 0 && input_field_end === 0 && input_field.value.length > 0)) {
+                input_field_start = input_field.value.length;
+                input_field_end = input_field.value.length;
+                input_field.setSelectionRange(input_field_start, input_field_end);
+            }
             if (input_field_start === input_field_end && input_field_start !== 0 && input_field_start <= input_field.value.length) {
                 input_field.value = input_field.value.slice(0, input_field_start - 1) + input_field.value.slice(input_field_end);
                 input_field.setSelectionRange(input_field_start - 1, input_field_start - 1);
@@ -137,8 +151,18 @@
         function deletekey() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
-            const input_field_start = input_field.selectionStart;
-            const input_field_end = input_field.selectionEnd;
+            if (results_shown) {
+                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
+                results_shown = false;
+            }
+            if (document.activeElement !== input_field) input_field.focus();
+            let input_field_start = input_field.selectionStart;
+            let input_field_end = input_field.selectionEnd;
+            if (input_field_start == null || input_field_end == null || (input_field_start === 0 && input_field_end === 0 && input_field.value.length > 0)) {
+                input_field_start = input_field.value.length;
+                input_field_end = input_field.value.length;
+                input_field.setSelectionRange(input_field_start, input_field_end);
+            }
             if (input_field_start === input_field_end && input_field_start < input_field.value.length) {
                 input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_start + 1);
                 input_field.setSelectionRange(input_field_start, input_field_start);
@@ -151,8 +175,8 @@
         function calculate() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             try {
-                let input = input_field.value;
-                let result = calculate_send(input);
+                const input = input_field.value;
+                const result = calculate_send(input);
                 input_field.value = result;
                 results_shown = true;
                 if (input.trim() !== "") {
@@ -166,10 +190,6 @@
         }
         
         input_field.onkeydown = input_field.oninput = function(event) {
-            if (results_shown) {
-                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
-                results_shown = false;
-            }
             if (event.key === "Backspace") {
                 event.preventDefault();
                 backspace();
@@ -201,8 +221,8 @@
                     input_field.value = input_temp;
                 }
             } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\` ]$/.test(event.key)) { //`
-                if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) event.preventDefault();
-                if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
+                event.preventDefault();
+                append(event.key);
             }
         }
     </script>
