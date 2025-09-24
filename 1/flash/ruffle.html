@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="frame"></div><br>
-    <div id="status">Playing Quiz Parampaa <span id="state"></span></div>
+    <div id="status">Playing <span id="state"></span></div>
     <div id="choose">Choose a flash game to play</div>
     <div id="loaderr">Error loading flash game</div>
     <div id="load">Loading...</div>
@@ -38,9 +38,9 @@
         load.setAttribute("hidden", "")
         loaderr.setAttribute("hidden", "")
         const run = async (to) => {
+            const executable = to.length < 2 ? "./QP" + to + ".swf" : !to.endsWith(".swf") ? to + ".swf" : to
+            state.textContent = to.length === 1 ? "Quiz Parampaa " + (to !== "X" ? to : "Kita Semua") : to
             choose.setAttribute("hidden", "")
-            state.textContent = to !== "X" ? to : "Kita Semua"
-            let executable = to.length < 2 ? "./QP" + to + ".swf" : !to.endsWith(".swf") ? to + ".swf" : to
             const trials = [
               executable,
               executable.replace(/\.swf$/, '.bin'),
