@@ -3,26 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://pyscript.net/releases/2025.8.1/core.css">
-<script type="module" src="https://pyscript.net/releases/2025.8.1/core.js"></script>
+<link rel="stylesheet" href="https://pyscript.net/releases/2025.10.2/core.css">
+<script type="module" src="https://pyscript.net/releases/2025.10.2/core.js"></script>
 <link rel="icon" type="image/svg+xml" href="pys.svg">
 <title>PyScript</title>
 </head>
 <body bgcolor="#FFFFFF">
-<div></div>
 <noscript>Javascript is required to run PyScript</noscript>
 <script type="text/javascript">
+const div = document.createElement("div");
+document.body.insertBefore(div, document.body.firstChild);
 window.addEventListener("load", () => {
   setTimeout(() => {
-    document.querySelector("div").appendChild(document.createTextNode("Loading..."));
+    div.appendChild(document.createTextNode("Loading..."));
   }, 1000);
 });
 </script>
-<script type="py" config='{"packages": ["pyjokes"]}'>
-from js import document
+<script type="py">
+import pyodide_js
+await pyodide_js.loadPackage('micropip')
+import micropip
+await micropip.install('pyjokes')
 from pyscript import display
+from js import document, XPathResult
 from pyjokes.pyjokes import get_joke as joke
-document.querySelector('div').replaceChildren()
+document.evaluate("//div[contains(., 'Loading...')]", document, None, XPathResult.FIRST_ORDERED_NODE_TYPE, None).singleNodeValue.remove()
 display(format(str(joke(language='en', category='neutral'))))
 </script>
 </body>
