@@ -1,4 +1,48 @@
 // include: shell.js
+// include: minimum_runtime_check.js
+(function() {
+  // "30.0.0" -> 300000
+  function humanReadableVersionToPacked(str) {
+    str = str.split('-')[0]; // Remove any trailing part from e.g. "12.53.3-alpha"
+    var vers = str.split('.').slice(0, 3);
+    while(vers.length < 3) vers.push('00');
+    vers = vers.map((n, i, arr) => n.padStart(2, '0'));
+    return vers.join('');
+  }
+  // 300000 -> "30.0.0"
+  var packedVersionToHumanReadable = n => [n / 10000 | 0, (n / 100 | 0) % 100, n % 100].join('.');
+
+  var TARGET_NOT_SUPPORTED = 2147483647;
+
+  // Note: We use a typeof check here instead of optional chaining using
+  // globalThis because older browsers might not have globalThis defined.
+  var currentNodeVersion = typeof process !== 'undefined' && process.versions?.node ? humanReadableVersionToPacked(process.versions.node) : TARGET_NOT_SUPPORTED;
+  if (currentNodeVersion < 160000) {
+    throw new Error(`This emscripten-generated code requires node v${ packedVersionToHumanReadable(160000) } (detected v${packedVersionToHumanReadable(currentNodeVersion)})`);
+  }
+
+  var userAgent = typeof navigator !== 'undefined' && navigator.userAgent;
+  if (!userAgent) {
+    return;
+  }
+
+  var currentSafariVersion = userAgent.includes("Safari/") && userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/) ? humanReadableVersionToPacked(userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/)[1]) : TARGET_NOT_SUPPORTED;
+  if (currentSafariVersion < 150000) {
+    throw new Error(`This emscripten-generated code requires Safari v${ packedVersionToHumanReadable(150000) } (detected v${currentSafariVersion})`);
+  }
+
+  var currentFirefoxVersion = userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/) ? parseFloat(userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
+  if (currentFirefoxVersion < 79) {
+    throw new Error(`This emscripten-generated code requires Firefox v79 (detected v${currentFirefoxVersion})`);
+  }
+
+  var currentChromeVersion = userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/) ? parseFloat(userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
+  if (currentChromeVersion < 85) {
+    throw new Error(`This emscripten-generated code requires Chrome v85 (detected v${currentChromeVersion})`);
+  }
+})();
+
+// end include: minimum_runtime_check.js
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
 // 1. Not defined. We create it here
@@ -18,11 +62,11 @@ var Module = typeof Module != 'undefined' ? Module : {};
 // setting the ENVIRONMENT setting at compile time (see settings.js).
 
 // Attempt to auto-detect the environment
-var ENVIRONMENT_IS_WEB = typeof window == 'object';
-var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != 'undefined';
+var ENVIRONMENT_IS_WEB = !!globalThis.window;
+var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope;
 // N.b. Electron.js environment is simultaneously a NODE-environment, but
 // also a web environment.
-var ENVIRONMENT_IS_NODE = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
+var ENVIRONMENT_IS_NODE = globalThis.process?.versions?.node && globalThis.process?.type != 'renderer';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
 // --pre-jses are emitted after the Module integration code, so that they can
@@ -44,7 +88,7 @@ var quit_ = (status, toThrow) => {
 
 // In MODULARIZE mode _scriptName needs to be captured already at the very top of the page immediately when the page is parsed, so it is generated there
 // before the page load. In non-MODULARIZE modes generate it here.
-var _scriptName = typeof document != 'undefined' ? document.currentScript?.src : undefined;
+var _scriptName = globalThis.document?.currentScript?.src;
 
 if (typeof __filename != 'undefined') { // Node
   _scriptName = __filename;
@@ -69,15 +113,8 @@ function locateFile(path) {
 var readAsync, readBinary;
 
 if (ENVIRONMENT_IS_NODE) {
-  const isNode = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
+  const isNode = globalThis.process?.versions?.node && globalThis.process?.type != 'renderer';
   if (!isNode) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
-
-  var nodeVersion = process.versions.node;
-  var numericVersion = nodeVersion.split('.').slice(0, 3);
-  numericVersion = (numericVersion[0] * 10000) + (numericVersion[1] * 100) + (numericVersion[2].split('-')[0] * 1);
-  if (numericVersion < 160000) {
-    throw new Error('This emscripten-generated code requires node v16.0.0 (detected v' + nodeVersion + ')');
-  }
 
   // These modules will usually be used on Node.js. Load them eagerly to avoid
   // the complexity of lazy-loading.
@@ -121,9 +158,6 @@ readAsync = async (filename, binary = true) => {
 } else
 if (ENVIRONMENT_IS_SHELL) {
 
-  const isNode = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
-  if (isNode || typeof window == 'object' || typeof WorkerGlobalScope != 'undefined') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
-
 } else
 
 // Note that this includes Node.js workers when relevant (pthreads is enabled).
@@ -137,7 +171,7 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     // infer anything from them.
   }
 
-  if (!(typeof window == 'object' || typeof WorkerGlobalScope != 'undefined')) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  if (!(globalThis.window || globalThis.WorkerGlobalScope)) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
 
   {
 // include: web_or_worker_shell_read.js
@@ -218,7 +252,7 @@ assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at bui
 
 var wasmBinary;
 
-if (typeof WebAssembly != 'object') {
+if (!globalThis.WebAssembly) {
   err('no native wasm support detected');
 }
 
@@ -328,7 +362,7 @@ function dbg(...args) {
   var h16 = new Int16Array(1);
   var h8 = new Int8Array(h16.buffer);
   h16[0] = 0x6373;
-  if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)';
+  if (h8[0] !== 0x73 || h8[1] !== 0x63) abort('Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)');
 })();
 
 function consumedModuleProp(prop) {
@@ -377,7 +411,7 @@ function isExportedByForceFilesystem(name) {
  * are never placed in the global scope.
  */
 function hookGlobalSymbolAccess(sym, func) {
-  if (typeof globalThis != 'undefined' && !Object.getOwnPropertyDescriptor(globalThis, sym)) {
+  if (!Object.getOwnPropertyDescriptor(globalThis, sym)) {
     Object.defineProperty(globalThis, sym, {
       configurable: true,
       get() {
@@ -431,7 +465,7 @@ function unexportedRuntimeSymbol(sym) {
           msg += '. Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you';
         }
         abort(msg);
-      }
+      },
     });
   }
 }
@@ -463,9 +497,6 @@ var checkInt64 = (value) => checkInt(value, 64, MIN_INT64, MAX_UINT64);
 
 // end include: runtime_debug.js
 // Memory management
-
-var wasmMemory;
-
 var
 /** @type {!Int8Array} */
   HEAP8,
@@ -513,7 +544,7 @@ function updateMemoryViews() {
 // include: memoryprofiler.js
 // end include: memoryprofiler.js
 // end include: runtime_common.js
-assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' && Int32Array.prototype.subarray != undefined && Int32Array.prototype.set != undefined,
+assert(globalThis.Int32Array && globalThis.Float64Array && Int32Array.prototype.subarray && Int32Array.prototype.set,
        'JS engine does not provide full typed array support');
 
 function preRun() {
@@ -674,6 +705,8 @@ function getBinarySync(file) {
   if (readBinary) {
     return readBinary(file);
   }
+  // Throwing a plain string here, even though it not normally adviables since
+  // this gets turning into an `abort` in instantiateArrayBuffer.
   throw 'both async and sync fetching of the wasm failed';
 }
 
@@ -702,8 +735,8 @@ async function instantiateArrayBuffer(binaryFile, imports) {
     err(`failed to asynchronously prepare wasm: ${reason}`);
 
     // Warn on some common problems.
-    if (isFileURI(wasmBinaryFile)) {
-      err(`warning: Loading from a file URI (${wasmBinaryFile}) is not supported in most browsers. See https://emscripten.org/docs/getting_started/FAQ.html#how-do-i-run-a-local-webserver-for-testing-why-does-my-program-stall-in-downloading-or-preparing`);
+    if (isFileURI(binaryFile)) {
+      err(`warning: Loading from a file URI (${binaryFile}) is not supported in most browsers. See https://emscripten.org/docs/getting_started/FAQ.html#how-do-i-run-a-local-webserver-for-testing-why-does-my-program-stall-in-downloading-or-preparing`);
     }
     abort(reason);
   }
@@ -738,10 +771,11 @@ async function instantiateAsync(binary, binaryFile, imports) {
 
 function getWasmImports() {
   // prepare imports
-  return {
+  var imports = {
     'env': wasmImports,
     'wasi_snapshot_preview1': wasmImports,
-  }
+  };
+  return imports;
 }
 
 // Create the wasm instance.
@@ -754,18 +788,10 @@ async function createWasm() {
   function receiveInstance(instance, module) {
     wasmExports = instance.exports;
 
-    
+    assignWasmExports(wasmExports);
 
-    wasmMemory = wasmExports['memory'];
-    
-    assert(wasmMemory, 'memory not found in wasm exports');
     updateMemoryViews();
 
-    wasmTable = wasmExports['__indirect_function_table'];
-    
-    assert(wasmTable, 'table not found in wasm exports');
-
-    assignWasmExports(wasmExports);
     removeRunDependency('wasm-instantiate');
     return wasmExports;
   }
@@ -797,8 +823,8 @@ async function createWasm() {
   if (Module['instantiateWasm']) {
     return new Promise((resolve, reject) => {
       try {
-        Module['instantiateWasm'](info, (mod, inst) => {
-          resolve(receiveInstance(mod, inst));
+        Module['instantiateWasm'](info, (inst, mod) => {
+          resolve(receiveInstance(inst, mod));
         });
       } catch(e) {
         err(`Module.instantiateWasm callback failed with error: ${e}`);
@@ -889,7 +915,7 @@ async function createWasm() {
       assert(id, 'addRunDependency requires an ID')
       assert(!runDependencyTracking[id]);
       runDependencyTracking[id] = 1;
-      if (runDependencyWatcher === null && typeof setInterval != 'undefined') {
+      if (runDependencyWatcher === null && globalThis.setInterval) {
         // Check for missing dependencies every few seconds
         runDependencyWatcher = setInterval(() => {
           if (ABORT) {
@@ -939,7 +965,7 @@ async function createWasm() {
   var noExitRuntime = true;
 
   var ptrToString = (ptr) => {
-      assert(typeof ptr === 'number');
+      assert(typeof ptr === 'number', `ptrToString expects a number, got ${typeof ptr}`);
       // Convert to 32-bit unsigned value
       ptr >>>= 0;
       return '0x' + ptr.toString(16).padStart(8, '0');
@@ -986,7 +1012,9 @@ async function createWasm() {
       }
     };
 
-  var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
+  
+
+  var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   
   var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
       var maxIdx = idx + maxBytesToRead;
@@ -1438,7 +1466,6 @@ async function createWasm() {
     };
   
   
-  /** @suppress {duplicate } */
   /** @param {boolean|number=} implicit */
   var exitJS = (status, implicit) => {
       EXITSTATUS = status;
@@ -1512,8 +1539,10 @@ async function createWasm() {
         };
         MainLoop.method = 'rAF';
       } else if (mode == 2) {
-        if (typeof MainLoop.setImmediate == 'undefined') {
-          if (typeof setImmediate == 'undefined') {
+        if (!MainLoop.setImmediate) {
+          if (globalThis.setImmediate) {
+            MainLoop.setImmediate = setImmediate;
+          } else {
             // Emulate setImmediate. (note: not a complete polyfill, we don't emulate clearImmediate() to keep code size to minimum, since not needed)
             var setImmediates = [];
             var emscriptenMainLoopMessageId = 'setimmediate';
@@ -1535,8 +1564,6 @@ async function createWasm() {
                 postMessage({target: emscriptenMainLoopMessageId}); // In --proxy-to-worker, route the message via proxyClient.js
               } else postMessage(emscriptenMainLoopMessageId, "*"); // On the main thread, can just send the message to itself.
             });
-          } else {
-            MainLoop.setImmediate = setImmediate;
           }
         }
         MainLoop.scheduler = function MainLoop_scheduler_setImmediate() {
@@ -1720,7 +1747,7 @@ async function createWasm() {
         setTimeout(func, delay);
       },
   requestAnimationFrame(func) {
-        if (typeof requestAnimationFrame == 'function') {
+        if (globalThis.requestAnimationFrame) {
           requestAnimationFrame(func);
         } else {
           MainLoop.fakeRequestAnimationFrame(func);
@@ -1737,8 +1764,7 @@ async function createWasm() {
   
   var wasmTableMirror = [];
   
-  /** @type {WebAssembly.Table} */
-  var wasmTable;
+  
   var getWasmTableEntry = (funcPtr) => {
       var func = wasmTableMirror[funcPtr];
       if (!func) {
@@ -1878,7 +1904,7 @@ async function createWasm() {
     xhr.open(requestMethod, url_, !fetchAttrSynchronous, userNameStr, passwordStr);
     if (!fetchAttrSynchronous) xhr.timeout = timeoutMsecs; // XHR timeout field is only accessible in async XHRs, and must be set after .open() but before .send().
     xhr.url_ = url_; // Save the url for debugging purposes (and for comparing to the responseURL that server side advertised)
-    assert(!fetchAttrStreamData, 'streaming uses moz-chunked-arraybuffer which is no longer supported; TODO: rewrite using fetch()');
+    assert(!fetchAttrStreamData, 'Streaming is only supported when FETCH_STREAMING is enabled.');
     xhr.responseType = 'arraybuffer';
   
     if (overriddenMimeType) {
@@ -1916,7 +1942,7 @@ async function createWasm() {
       if (ptrLen > 0) {
         // The data pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
         // freed when emscripten_fetch_close() is called.
-        ptr = _malloc(ptrLen);
+        ptr = _realloc(HEAPU32[(((fetch)+(12))>>2)], ptrLen);
         HEAPU8.set(new Uint8Array(/** @type{Array<number>} */(xhr.response)), ptr);
       }
       HEAPU32[(((fetch)+(12))>>2)] = ptr
@@ -1976,8 +2002,9 @@ async function createWasm() {
       var ptr = 0;
       if (ptrLen > 0 && fetchAttrLoadToMemory && fetchAttrStreamData) {
         assert(onprogress, 'When doing a streaming fetch, you should have an onprogress handler registered to receive the chunks!');
-        // Allocate byte data in Emscripten heap for the streamed memory block (freed immediately after onprogress call)
-        ptr = _malloc(ptrLen);
+        // The data pointer malloc()ed here has the same lifetime as the emscripten_fetch_t structure itself has, and is
+        // freed when emscripten_fetch_close() is called.
+        ptr = _realloc(HEAPU32[(((fetch)+(12))>>2)], ptrLen);
         HEAPU8.set(new Uint8Array(/** @type{Array<number>} */(xhr.response)), ptr);
       }
       HEAPU32[(((fetch)+(12))>>2)] = ptr
@@ -1991,7 +2018,6 @@ async function createWasm() {
       HEAP16[(((fetch)+(42))>>1)] = status;checkInt16(status)
       if (xhr.statusText) stringToUTF8(xhr.statusText, fetch + 44, 64);
       onprogress(fetch, e);
-      _free(ptr);
     };
     xhr.onreadystatechange = (e) => {
       // check if xhr was aborted by user and don't try to call back
@@ -2277,7 +2303,7 @@ async function createWasm() {
       if (!getEnvStrings.strings) {
         // Default values.
         // Browser language detection #8751
-        var lang = ((typeof navigator == 'object' && navigator.language) || 'C').replace('-', '_') + '.UTF-8';
+        var lang = (globalThis.navigator?.language ?? 'C').replace('-', '_') + '.UTF-8';
         var env = {
           'USER': 'web_user',
           'LOGNAME': 'web_user',
@@ -2504,8 +2530,7 @@ async function createWasm() {
             result = buf.slice(0, bytesRead).toString('utf-8');
           }
         } else
-        if (typeof window != 'undefined' &&
-          typeof window.prompt == 'function') {
+        if (globalThis.window?.prompt) {
           // Browser.
           result = window.prompt('Input: ');  // returns null on cancel
           if (result !== null) {
@@ -3661,12 +3686,13 @@ async function createWasm() {
         };
   
         // sync all mounts
-        mounts.forEach((mount) => {
-          if (!mount.type.syncfs) {
-            return done(null);
+        for (var mount of mounts) {
+          if (mount.type.syncfs) {
+            mount.type.syncfs(mount, populate, done);
+          } else {
+            done(null);
           }
-          mount.type.syncfs(mount, populate, done);
-        });
+        }
       },
   mount(type, opts, mountpoint) {
         if (typeof type == 'string') {
@@ -3733,9 +3759,7 @@ async function createWasm() {
         var mount = node.mounted;
         var mounts = FS.getMounts(mount);
   
-        Object.keys(FS.nameTable).forEach((hash) => {
-          var current = FS.nameTable[hash];
-  
+        for (var [hash, current] of Object.entries(FS.nameTable)) {
           while (current) {
             var next = current.name_next;
   
@@ -3745,7 +3769,7 @@ async function createWasm() {
   
             current = next;
           }
-        });
+        }
   
         // no longer a mountpoint
         node.mounted = null;
@@ -4343,7 +4367,7 @@ async function createWasm() {
         opts.flags = opts.flags || 0;
         opts.encoding = opts.encoding || 'binary';
         if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') {
-          throw new Error(`Invalid encoding type "${opts.encoding}"`);
+          abort(`Invalid encoding type "${opts.encoding}"`);
         }
         var stream = FS.open(path, opts.flags);
         var stat = FS.stat(path);
@@ -4365,7 +4389,7 @@ async function createWasm() {
         if (ArrayBuffer.isView(data)) {
           FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn);
         } else {
-          throw new Error('Unsupported data type');
+          abort('Unsupported data type');
         }
         FS.close(stream);
       },
@@ -4660,8 +4684,8 @@ async function createWasm() {
       },
   forceLoadFile(obj) {
         if (obj.isDevice || obj.isFolder || obj.link || obj.contents) return true;
-        if (typeof XMLHttpRequest != 'undefined') {
-          throw new Error("Lazy loading should have been performed (contents set) in createLazyFile, but it was not. Lazy loading only works in web workers. Use --embed-file or --preload-file in emcc on the main thread.");
+        if (globalThis.XMLHttpRequest) {
+          abort("Lazy loading should have been performed (contents set) in createLazyFile, but it was not. Lazy loading only works in web workers. Use --embed-file or --preload-file in emcc on the main thread.");
         } else { // Command-line.
           try {
             obj.contents = readBinary(obj.url);
@@ -4692,7 +4716,7 @@ async function createWasm() {
             var xhr = new XMLHttpRequest();
             xhr.open('HEAD', url, false);
             xhr.send(null);
-            if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) throw new Error("Couldn't load " + url + ". Status: " + xhr.status);
+            if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) abort("Couldn't load " + url + ". Status: " + xhr.status);
             var datalength = Number(xhr.getResponseHeader("Content-length"));
             var header;
             var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
@@ -4704,8 +4728,8 @@ async function createWasm() {
   
             // Function to get a range from the remote URL.
             var doXHR = (from, to) => {
-              if (from > to) throw new Error("invalid range (" + from + ", " + to + ") or no bytes requested!");
-              if (to > datalength-1) throw new Error("only " + datalength + " bytes available! programmer error!");
+              if (from > to) abort("invalid range (" + from + ", " + to + ") or no bytes requested!");
+              if (to > datalength-1) abort("only " + datalength + " bytes available! programmer error!");
   
               // TODO: Use mozResponseArrayBuffer, responseStream, etc. if available.
               var xhr = new XMLHttpRequest();
@@ -4719,7 +4743,7 @@ async function createWasm() {
               }
   
               xhr.send(null);
-              if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) throw new Error("Couldn't load " + url + ". Status: " + xhr.status);
+              if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) abort("Couldn't load " + url + ". Status: " + xhr.status);
               if (xhr.response !== undefined) {
                 return new Uint8Array(/** @type{Array<number>} */(xhr.response || []));
               }
@@ -4733,7 +4757,7 @@ async function createWasm() {
               if (typeof lazyArray.chunks[chunkNum] == 'undefined') {
                 lazyArray.chunks[chunkNum] = doXHR(start, end);
               }
-              if (typeof lazyArray.chunks[chunkNum] == 'undefined') throw new Error('doXHR failed!');
+              if (typeof lazyArray.chunks[chunkNum] == 'undefined') abort('doXHR failed!');
               return lazyArray.chunks[chunkNum];
             });
   
@@ -4763,8 +4787,8 @@ async function createWasm() {
           }
         }
   
-        if (typeof XMLHttpRequest != 'undefined') {
-          if (!ENVIRONMENT_IS_WORKER) throw 'Cannot do synchronous binary XHRs outside webworkers in modern browsers. Use --embed-file or --preload-file in emcc';
+        if (globalThis.XMLHttpRequest) {
+          if (!ENVIRONMENT_IS_WORKER) abort('Cannot do synchronous binary XHRs outside webworkers in modern browsers. Use --embed-file or --preload-file in emcc');
           var lazyArray = new LazyUint8Array();
           var properties = { isDevice: false, contents: lazyArray };
         } else {
@@ -4789,14 +4813,12 @@ async function createWasm() {
         });
         // override each stream op with one that tries to force load the lazy file first
         var stream_ops = {};
-        var keys = Object.keys(node.stream_ops);
-        keys.forEach((key) => {
-          var fn = node.stream_ops[key];
+        for (const [key, fn] of Object.entries(node.stream_ops)) {
           stream_ops[key] = (...args) => {
             FS.forceLoadFile(node);
             return fn(...args);
           };
-        });
+        }
         function writeChunks(stream, buffer, offset, length, position) {
           var contents = stream.node.contents;
           if (position >= contents.length)
@@ -5215,6 +5237,7 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'convertI32PairToI53Checked',
   'convertU32PairToI53',
   'getTempRet0',
+  'createNamedFunction',
   'zeroMemory',
   'getHeapMax',
   'growMemory',
@@ -5234,7 +5257,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'runtimeKeepalivePop',
   'asmjsMangle',
   'alignMemory',
-  'getNativeTypeSize',
   'addOnInit',
   'addOnPostCtor',
   'addOnPreMain',
@@ -5347,8 +5369,11 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'allocate',
   'writeStringToMemory',
   'writeAsciiToMemory',
+  'allocateUTF8',
+  'allocateUTF8OnStack',
   'demangle',
   'stackTrace',
+  'getNativeTypeSize',
 ];
 missingLibrarySymbols.forEach(missingLibrarySymbol)
 
@@ -5358,7 +5383,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'err',
   'callMain',
   'abort',
-  'wasmMemory',
   'wasmExports',
   'HEAPF32',
   'HEAPF64',
@@ -5404,6 +5428,7 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'mmapAlloc',
   'HandleAllocator',
   'wasmTable',
+  'wasmMemory',
   'getUniqueRunDependency',
   'noExitRuntime',
   'addRunDependency',
@@ -5605,8 +5630,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'IDBStore',
   'SDL',
   'SDL_gfx',
-  'allocateUTF8',
-  'allocateUTF8OnStack',
   'print',
   'printErr',
   'jstoi_s',
@@ -5637,6 +5660,7 @@ var ___cxa_free_exception = makeInvalidEarlyAccess('___cxa_free_exception');
 var __Z9calculatePKcb = Module['__Z9calculatePKcb'] = makeInvalidEarlyAccess('__Z9calculatePKcb');
 var __Z7triggerd = Module['__Z7triggerd'] = makeInvalidEarlyAccess('__Z7triggerd');
 var _malloc = makeInvalidEarlyAccess('_malloc');
+var _realloc = makeInvalidEarlyAccess('_realloc');
 var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
 var _fflush = makeInvalidEarlyAccess('_fflush');
 var _strerror = makeInvalidEarlyAccess('_strerror');
@@ -5655,14 +5679,45 @@ var ___get_exception_message = makeInvalidEarlyAccess('___get_exception_message'
 var ___cxa_can_catch = makeInvalidEarlyAccess('___cxa_can_catch');
 var ___cxa_get_exception_ptr = makeInvalidEarlyAccess('___cxa_get_exception_ptr');
 var ___set_stack_limits = Module['___set_stack_limits'] = makeInvalidEarlyAccess('___set_stack_limits');
+var memory = makeInvalidEarlyAccess('memory');
+var __indirect_function_table = makeInvalidEarlyAccess('__indirect_function_table');
+var wasmMemory = makeInvalidEarlyAccess('wasmMemory');
+var wasmTable = makeInvalidEarlyAccess('wasmTable');
 
 function assignWasmExports(wasmExports) {
+  assert(typeof wasmExports['free'] != 'undefined', 'missing Wasm export: free');
+  assert(typeof wasmExports['__cxa_free_exception'] != 'undefined', 'missing Wasm export: __cxa_free_exception');
+  assert(typeof wasmExports['_Z9calculatePKcb'] != 'undefined', 'missing Wasm export: _Z9calculatePKcb');
+  assert(typeof wasmExports['_Z7triggerd'] != 'undefined', 'missing Wasm export: _Z7triggerd');
+  assert(typeof wasmExports['malloc'] != 'undefined', 'missing Wasm export: malloc');
+  assert(typeof wasmExports['realloc'] != 'undefined', 'missing Wasm export: realloc');
+  assert(typeof wasmExports['main'] != 'undefined', 'missing Wasm export: main');
+  assert(typeof wasmExports['fflush'] != 'undefined', 'missing Wasm export: fflush');
+  assert(typeof wasmExports['strerror'] != 'undefined', 'missing Wasm export: strerror');
+  assert(typeof wasmExports['emscripten_stack_get_end'] != 'undefined', 'missing Wasm export: emscripten_stack_get_end');
+  assert(typeof wasmExports['emscripten_stack_get_base'] != 'undefined', 'missing Wasm export: emscripten_stack_get_base');
+  assert(typeof wasmExports['setThrew'] != 'undefined', 'missing Wasm export: setThrew');
+  assert(typeof wasmExports['_emscripten_tempret_set'] != 'undefined', 'missing Wasm export: _emscripten_tempret_set');
+  assert(typeof wasmExports['emscripten_stack_init'] != 'undefined', 'missing Wasm export: emscripten_stack_init');
+  assert(typeof wasmExports['emscripten_stack_get_free'] != 'undefined', 'missing Wasm export: emscripten_stack_get_free');
+  assert(typeof wasmExports['_emscripten_stack_restore'] != 'undefined', 'missing Wasm export: _emscripten_stack_restore');
+  assert(typeof wasmExports['_emscripten_stack_alloc'] != 'undefined', 'missing Wasm export: _emscripten_stack_alloc');
+  assert(typeof wasmExports['emscripten_stack_get_current'] != 'undefined', 'missing Wasm export: emscripten_stack_get_current');
+  assert(typeof wasmExports['__cxa_decrement_exception_refcount'] != 'undefined', 'missing Wasm export: __cxa_decrement_exception_refcount');
+  assert(typeof wasmExports['__cxa_increment_exception_refcount'] != 'undefined', 'missing Wasm export: __cxa_increment_exception_refcount');
+  assert(typeof wasmExports['__get_exception_message'] != 'undefined', 'missing Wasm export: __get_exception_message');
+  assert(typeof wasmExports['__cxa_can_catch'] != 'undefined', 'missing Wasm export: __cxa_can_catch');
+  assert(typeof wasmExports['__cxa_get_exception_ptr'] != 'undefined', 'missing Wasm export: __cxa_get_exception_ptr');
+  assert(typeof wasmExports['__set_stack_limits'] != 'undefined', 'missing Wasm export: __set_stack_limits');
+  assert(typeof wasmExports['memory'] != 'undefined', 'missing Wasm export: memory');
+  assert(typeof wasmExports['__indirect_function_table'] != 'undefined', 'missing Wasm export: __indirect_function_table');
   _free = createExportWrapper('free', 1);
   ___cxa_free_exception = createExportWrapper('__cxa_free_exception', 1);
-  Module['__Z9calculatePKcb'] = __Z9calculatePKcb = createExportWrapper('_Z9calculatePKcb', 2);
-  Module['__Z7triggerd'] = __Z7triggerd = createExportWrapper('_Z7triggerd', 1);
+  __Z9calculatePKcb = Module['__Z9calculatePKcb'] = createExportWrapper('_Z9calculatePKcb', 2);
+  __Z7triggerd = Module['__Z7triggerd'] = createExportWrapper('_Z7triggerd', 1);
   _malloc = createExportWrapper('malloc', 1);
-  Module['_main'] = _main = createExportWrapper('main', 2);
+  _realloc = createExportWrapper('realloc', 2);
+  _main = Module['_main'] = createExportWrapper('main', 2);
   _fflush = createExportWrapper('fflush', 1);
   _strerror = createExportWrapper('strerror', 1);
   _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
@@ -5679,8 +5734,11 @@ function assignWasmExports(wasmExports) {
   ___get_exception_message = createExportWrapper('__get_exception_message', 3);
   ___cxa_can_catch = createExportWrapper('__cxa_can_catch', 3);
   ___cxa_get_exception_ptr = createExportWrapper('__cxa_get_exception_ptr', 1);
-  Module['___set_stack_limits'] = ___set_stack_limits = createExportWrapper('__set_stack_limits', 2);
+  ___set_stack_limits = Module['___set_stack_limits'] = createExportWrapper('__set_stack_limits', 2);
+  memory = wasmMemory = wasmExports['memory'];
+  __indirect_function_table = wasmTable = wasmExports['__indirect_function_table'];
 }
+
 var wasmImports = {
   /** @export */
   __assert_fail: ___assert_fail,
@@ -6795,189 +6853,191 @@ function invoke_viiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a1
 }
 
 
-function _0x4c1f(_0x1590fc, _0x59640b) {
-    var _0x2a72d6 = _0x2ea5();
-    return _0x4c1f = function (_0x20568b, _0x1f0e63) {
-        _0x20568b = _0x20568b - (-0x17d2 + -0x6df + 0x1052 * 0x2);
-        var _0x2d88d9 = _0x2a72d6[_0x20568b];
-        if (_0x4c1f['\x7a\x50\x44\x5a\x41\x63'] === undefined) {
-            var _0xe1a8fc = function (_0x350617) {
-                var _0x497622 = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
-                var _0x1c971b = '', _0x23d72e = '';
-                for (var _0x49bd58 = 0x18ab + 0x6e * 0x22 + -0x5 * 0x7db, _0x8cce6c, _0x4618b2, _0x5eec4a = -0x467 * 0x5 + -0xf6a + -0x367 * -0xb; _0x4618b2 = _0x350617['\x63\x68\x61\x72\x41\x74'](_0x5eec4a++); ~_0x4618b2 && (_0x8cce6c = _0x49bd58 % (0x1 * -0x1183 + 0x4 * -0x6b5 + -0x8df * -0x5) ? _0x8cce6c * (-0xe52 + 0xdf5 + 0x9d) + _0x4618b2 : _0x4618b2, _0x49bd58++ % (-0x1 * -0x64a + 0x74 * 0x29 + 0x1 * -0x18da)) ? _0x1c971b += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0x26f7 + 0x9 * 0x416 + -0x198 * -0x2 & _0x8cce6c >> (-(-0x1581 + -0x70 + 0x15f3) * _0x49bd58 & -0x1 * -0x2129 + -0x2e5 + -0x7 * 0x452)) : 0xf * 0x1f7 + -0x13 * 0x81 + -0x13e6) {
-                    _0x4618b2 = _0x497622['\x69\x6e\x64\x65\x78\x4f\x66'](_0x4618b2);
-                }
-                for (var _0x2a6916 = -0x26b1 + 0x22cd + 0x3e4, _0x2ac6db = _0x1c971b['\x6c\x65\x6e\x67\x74\x68']; _0x2a6916 < _0x2ac6db; _0x2a6916++) {
-                    _0x23d72e += '\x25' + ('\x30\x30' + _0x1c971b['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x2a6916)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x6a4 + -0x83 * 0x3d + 0x18a3))['\x73\x6c\x69\x63\x65'](-(0xa97 + -0xb7e + 0xe9));
-                }
-                return decodeURIComponent(_0x23d72e);
-            };
-            _0x4c1f['\x43\x4b\x45\x4a\x5a\x6a'] = _0xe1a8fc, _0x1590fc = arguments, _0x4c1f['\x7a\x50\x44\x5a\x41\x63'] = !![];
-        }
-        var _0x1cc613 = _0x2a72d6[-0xf19 + 0x1c9e + -0xd85], _0x3fc166 = _0x20568b + _0x1cc613, _0x412e68 = _0x1590fc[_0x3fc166];
-        return !_0x412e68 ? (_0x2d88d9 = _0x4c1f['\x43\x4b\x45\x4a\x5a\x6a'](_0x2d88d9), _0x1590fc[_0x3fc166] = _0x2d88d9) : _0x2d88d9 = _0x412e68, _0x2d88d9;
-    }, _0x4c1f(_0x1590fc, _0x59640b);
-}
-(function (_0x440c7e, _0x5a5e43) {
-    var _0xac1625 = {
-            _0x184902: '\x6f\x45\x41\x6a',
-            _0xee607e: '\x30\x78\x31\x32\x36',
-            _0x181757: '\x66\x43\x65\x28',
-            _0x439101: '\x30\x78\x31\x32\x65',
-            _0x3aeef4: '\x4a\x66\x76\x49',
-            _0x2f69a3: '\x30\x78\x31\x33\x34',
-            _0x5aea5c: 0x4f1,
-            _0x48173e: 0x4fa,
-            _0x4eec82: '\x63\x42\x4d\x79',
-            _0x309be0: '\x30\x78\x31\x33\x31',
-            _0x26eafa: '\x30\x78\x34\x65\x61',
-            _0xfd6f69: 0x4e5,
-            _0x245a22: '\x56\x74\x49\x72',
-            _0x5a83c9: '\x30\x78\x31\x32\x64',
-            _0x34c68b: 0x4e6,
-            _0xd7fa1: 0x4e0,
-            _0x43364c: '\x49\x6b\x35\x6b',
-            _0x3a055d: 0x12a,
-            _0x429404: '\x30\x78\x34\x66\x30',
-            _0x51860c: 0x4f0
-        }, _0x36d616 = { _0xf03ade: '\x30\x78\x64\x31' }, _0x41a222 = { _0x384a2e: 0x2ed };
-    function _0xa890a9(_0x16dd0f, _0x37c581) {
-        return _0x4c1f(_0x16dd0f - _0x41a222._0x384a2e, _0x37c581);
+function _0x2a6b(_0x4986e7, _0x498c66) {
+    _0x4986e7 = _0x4986e7 - (-0x1 * -0x1ec5 + -0x2093 + 0x3a5);
+    var _0x284424 = _0x5e51();
+    var _0x48123c = _0x284424[_0x4986e7];
+    if (_0x2a6b['\x44\x47\x55\x51\x72\x58'] === undefined) {
+        var _0x3d6a48 = function (_0x4fe5ef) {
+            var _0x472f9c = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+            var _0xf8af6b = '', _0x1be18b = '';
+            for (var _0x561b79 = 0x22 + -0x14 * -0x155 + 0x17 * -0x12a, _0x525e8a, _0xbd23d5, _0x1d2ceb = 0xc04 + -0x1044 + -0x20 * -0x22; _0xbd23d5 = _0x4fe5ef['\x63\x68\x61\x72\x41\x74'](_0x1d2ceb++); ~_0xbd23d5 && (_0x525e8a = _0x561b79 % (0x9 * -0x18d + -0x6ce + -0x6ed * -0x3) ? _0x525e8a * (0x3 * -0xbc9 + -0x976 + 0x53 * 0x8b) + _0xbd23d5 : _0xbd23d5, _0x561b79++ % (0x1f0b * 0x1 + -0x1 * -0x409 + -0x2 * 0x1188)) ? _0xf8af6b += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0x3 * -0x86b + 0x5 * 0x44d + 0x4bf & _0x525e8a >> (-(-0x2232 + -0x21bf * -0x1 + 0x1 * 0x75) * _0x561b79 & 0xcc1 + -0x11ae + 0xb5 * 0x7)) : -0x1d3f + -0xa * 0x1c9 + 0x2f19) {
+                _0xbd23d5 = _0x472f9c['\x69\x6e\x64\x65\x78\x4f\x66'](_0xbd23d5);
+            }
+            for (var _0xad07ec = -0x5ea * 0x4 + -0x3a3 + 0x1b4b, _0x4ad509 = _0xf8af6b['\x6c\x65\x6e\x67\x74\x68']; _0xad07ec < _0x4ad509; _0xad07ec++) {
+                _0x1be18b += '\x25' + ('\x30\x30' + _0xf8af6b['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0xad07ec)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x4 * 0x7 + -0x1 * -0x55c + 0x1 * -0x568))['\x73\x6c\x69\x63\x65'](-(-0x15 * 0x16b + 0x18e8 * -0x1 + -0x1 * -0x36b1));
+            }
+            return decodeURIComponent(_0x1be18b);
+        };
+        var _0x259c26 = function (_0x93cf7b, _0x58e964) {
+            var _0x4d7f2b = [], _0x4af173 = -0x6 * -0x1e2 + -0x1 * 0x21a + -0x932, _0x540bcf, _0x37b3b1 = '';
+            _0x93cf7b = _0x3d6a48(_0x93cf7b);
+            var _0x2b2266;
+            for (_0x2b2266 = -0xedb + 0x10e2 * 0x2 + -0x12e9; _0x2b2266 < 0x155a + -0x3 * -0x6d7 + -0x28df; _0x2b2266++) {
+                _0x4d7f2b[_0x2b2266] = _0x2b2266;
+            }
+            for (_0x2b2266 = -0x1081 + 0x25af * -0x1 + 0x3630; _0x2b2266 < -0x1 * 0xc61 + -0x1607 + 0x8da * 0x4; _0x2b2266++) {
+                _0x4af173 = (_0x4af173 + _0x4d7f2b[_0x2b2266] + _0x58e964['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x2b2266 % _0x58e964['\x6c\x65\x6e\x67\x74\x68'])) % (0x2b0 * -0x1 + -0x1df4 + 0x21a4), _0x540bcf = _0x4d7f2b[_0x2b2266], _0x4d7f2b[_0x2b2266] = _0x4d7f2b[_0x4af173], _0x4d7f2b[_0x4af173] = _0x540bcf;
+            }
+            _0x2b2266 = -0x42 * 0x58 + -0x1 * 0x16f + 0x181f, _0x4af173 = 0x1f43 + 0x17c * 0x9 + -0x2c9f;
+            for (var _0x9fb1ec = 0xd05 + 0x1 * -0x25ed + -0x18e8 * -0x1; _0x9fb1ec < _0x93cf7b['\x6c\x65\x6e\x67\x74\x68']; _0x9fb1ec++) {
+                _0x2b2266 = (_0x2b2266 + (0x16c6 + -0x2 * 0x5fb + -0xacf)) % (-0x229a + 0x1 * 0x1935 + -0x1 * -0xa65), _0x4af173 = (_0x4af173 + _0x4d7f2b[_0x2b2266]) % (-0xd29 + -0x15 * 0x2a + 0x119b), _0x540bcf = _0x4d7f2b[_0x2b2266], _0x4d7f2b[_0x2b2266] = _0x4d7f2b[_0x4af173], _0x4d7f2b[_0x4af173] = _0x540bcf, _0x37b3b1 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](_0x93cf7b['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x9fb1ec) ^ _0x4d7f2b[(_0x4d7f2b[_0x2b2266] + _0x4d7f2b[_0x4af173]) % (-0x1350 + 0x4c9 + 0x109 * 0xf)]);
+            }
+            return _0x37b3b1;
+        };
+        _0x2a6b['\x5a\x48\x6d\x71\x61\x66'] = _0x259c26, _0x2a6b['\x74\x6b\x6b\x54\x71\x66'] = {}, _0x2a6b['\x44\x47\x55\x51\x72\x58'] = !![];
     }
-    var _0x28e700 = _0x440c7e();
-    function _0x1c2645(_0x4340a2, _0x3ae562) {
-        return _0xb0ff(_0x3ae562 - -_0x36d616._0xf03ade, _0x4340a2);
+    var _0x473b51 = _0x284424[-0x2a1 + -0x19c9 + -0x1 * -0x1c6a], _0x17fc5e = _0x4986e7 + _0x473b51, _0xa92b14 = _0x2a6b['\x74\x6b\x6b\x54\x71\x66'][_0x17fc5e];
+    return !_0xa92b14 ? (_0x2a6b['\x4f\x58\x75\x45\x79\x4e'] === undefined && (_0x2a6b['\x4f\x58\x75\x45\x79\x4e'] = !![]), _0x48123c = _0x2a6b['\x5a\x48\x6d\x71\x61\x66'](_0x48123c, _0x498c66), _0x2a6b['\x74\x6b\x6b\x54\x71\x66'][_0x17fc5e] = _0x48123c) : _0x48123c = _0xa92b14, _0x48123c;
+}
+(function (_0xb09f6d, _0x240bbb) {
+    var _0x53df35 = {
+            _0x445af9: 0x29c,
+            _0x4b5eef: '\x24\x45\x36\x78',
+            _0x12d55e: 0x193,
+            _0xc03af6: 0x190,
+            _0x4cf023: 0x2a1,
+            _0x3e7170: '\x53\x71\x41\x45',
+            _0x45788e: 0x1a2,
+            _0x3a3044: 0x19b,
+            _0x4214ef: 0x299,
+            _0x1dee17: '\x5e\x65\x23\x26',
+            _0x2359d6: 0x2a0,
+            _0x1fe6b0: '\x72\x24\x56\x79',
+            _0x451e83: 0x195,
+            _0x13fe94: 0x197,
+            _0x201cf5: 0x29d,
+            _0x53edde: '\x43\x46\x6b\x54',
+            _0x2af805: 0x192,
+            _0x44565d: 0x19a,
+            _0x12bf23: 0x19e
+        }, _0x3e2c9b = { _0x5e4e5b: 0x45 }, _0x303943 = { _0x2fdfb0: 0xc0 };
+    function _0x248d12(_0x10253c, _0x1d71e3) {
+        return _0x2a6b(_0x10253c - _0x303943._0x2fdfb0, _0x1d71e3);
+    }
+    var _0x48d211 = _0xb09f6d();
+    function _0x1f515(_0x183cba, _0x32ae44) {
+        return _0x2338(_0x183cba - -_0x3e2c9b._0x5e4e5b, _0x32ae44);
     }
     while (!![]) {
         try {
-            var _0x291121 = -parseInt(_0x1c2645(_0xac1625._0x184902, _0xac1625._0xee607e)) / (-0x7ce + -0x8a * 0x4 + -0x1 * -0x9f7) * (parseInt(_0x1c2645(_0xac1625._0x181757, _0xac1625._0x439101)) / (-0x2592 + -0x52 * 0x1 + 0x25e6)) + -parseInt(_0x1c2645(_0xac1625._0x3aeef4, _0xac1625._0x2f69a3)) / (-0xcb6 * -0x3 + -0x581 + -0x32 * 0xa7) + -parseInt(_0xa890a9(_0xac1625._0x5aea5c, _0xac1625._0x48173e)) / (0x2 * 0x1a6 + -0x1cff * -0x1 + -0x2047) * (-parseInt(_0x1c2645(_0xac1625._0x4eec82, _0xac1625._0x309be0)) / (0x3 * 0x3c8 + 0x645 + -0x1198)) + parseInt(_0xa890a9(_0xac1625._0x26eafa, _0xac1625._0xfd6f69)) / (0x1 * 0xcd0 + -0x125 * -0x20 + -0x316a) + -parseInt(_0x1c2645(_0xac1625._0x245a22, _0xac1625._0x5a83c9)) / (-0x60c + 0x1 * -0x1825 + 0x1e38) + -parseInt(_0xa890a9(_0xac1625._0x34c68b, _0xac1625._0xd7fa1)) / (-0x18a * 0x10 + -0x17fa * 0x1 + 0x30a2) + parseInt(_0x1c2645(_0xac1625._0x43364c, _0xac1625._0x3a055d)) / (0x1630 + 0x9d * -0x35 + -0x2 * -0x52d) * (parseInt(_0xa890a9(_0xac1625._0x429404, _0xac1625._0x51860c)) / (-0xe98 + 0xacf + -0x3d3 * -0x1));
-            if (_0x291121 === _0x5a5e43)
+            var _0x2e8600 = parseInt(_0x248d12(_0x53df35._0x445af9, _0x53df35._0x4b5eef)) / (0xeac + -0x1 * 0xf83 + 0x3 * 0x48) + parseInt(_0x1f515(_0x53df35._0x12d55e, _0x53df35._0xc03af6)) / (0x2047 + 0xa82 + -0xe9 * 0x2f) + parseInt(_0x248d12(_0x53df35._0x4cf023, _0x53df35._0x3e7170)) / (-0x270f + -0x1350 + 0x13e * 0x2f) * (parseInt(_0x1f515(_0x53df35._0x45788e, _0x53df35._0x3a3044)) / (-0x16ba + 0x543 * -0x3 + 0x2687)) + parseInt(_0x248d12(_0x53df35._0x4214ef, _0x53df35._0x1dee17)) / (-0x1f * 0xc + 0x1264 + 0x1 * -0x10eb) * (-parseInt(_0x248d12(_0x53df35._0x2359d6, _0x53df35._0x1fe6b0)) / (0x7 * 0x42f + -0x66e * -0x4 + -0x36fb)) + parseInt(_0x1f515(_0x53df35._0x451e83, _0x53df35._0x13fe94)) / (-0xbb9 + -0x268e + 0x324e) * (parseInt(_0x248d12(_0x53df35._0x201cf5, _0x53df35._0x53edde)) / (0xe40 + -0x262a + -0x1 * -0x17f2)) + parseInt(_0x1f515(_0x53df35._0x2af805, _0x53df35._0x44565d)) / (0x198a * -0x1 + 0xc45 + 0xd4e) + -parseInt(_0x1f515(_0x53df35._0x12bf23, _0x53df35._0x13fe94)) / (0x4 * -0x5dc + 0x14f8 + 0x282);
+            if (_0x2e8600 === _0x240bbb)
                 break;
             else
-                _0x28e700['push'](_0x28e700['shift']());
-        } catch (_0x5be05f) {
-            _0x28e700['push'](_0x28e700['shift']());
+                _0x48d211['push'](_0x48d211['shift']());
+        } catch (_0x5e477a) {
+            _0x48d211['push'](_0x48d211['shift']());
         }
     }
-}(_0x2ea5, -0xa0c78 + 0xa2c21 + -0x1 * -0x9b532));
-function __Z9calculatefex(_0x11c9a1) {
-    var _0xe01d56 = {
-            '\x45\x5a\x76\x58\x68': function (_0x1f80ea, _0x1a9365) {
-                return _0x1f80ea !== _0x1a9365;
-            },
-            '\x65\x5a\x6c\x53\x41': '\x72' + '\x70' + '\x54' + '\x64' + '\x72',
-            '\x6a\x6b\x44\x69\x53': '\x65' + '\x6c' + '\x57' + '\x62' + '\x72',
-            '\x64\x4d\x43\x67\x43': '\x74' + '\x54' + '\x74' + '\x4f' + '\x4b',
-            '\x79\x66\x77\x59\x65': '\x58' + '\x72' + '\x62' + '\x68' + '\x45',
-            '\x53\x64\x62\x49\x66': '\x66' + '\x76' + '\x4c' + '\x69' + '\x7a',
-            '\x73\x52\x51\x7a\x62': function (_0x32bd83, _0x1aaa94) {
-                return _0x32bd83 === _0x1aaa94;
-            },
-            '\x6f\x6f\x71\x41\x44': '\x47' + '\x52' + '\x68' + '\x70' + '\x71',
-            '\x59\x41\x62\x78\x42': function (_0xa9fdfa, _0x323097) {
-                return _0xa9fdfa !== _0x323097;
-            },
-            '\x75\x78\x53\x4a\x44': '\x63' + '\x4a' + '\x43' + '\x4f' + '\x70',
-            '\x6d\x72\x44\x69\x5a': '\x74' + '\x4f' + '\x65' + '\x4d' + '\x5a',
-            '\x69\x63\x77\x75\x73': '\x6e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72',
-            '\x6a\x4a\x56\x6d\x71': '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67',
-            '\x45\x6b\x7a\x63\x6e': '\x5e' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x29' + '\x2a' + '\x5c' + '\x73' + '\x2a' + '\x24',
-            '\x48\x75\x4a\x72\x46': '\x5c' + '\x62' + '\x28' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x29' + '\x5c' + '\x62',
-            '\x7a\x79\x71\x65\x6f': '\x5e' + '\x2d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x2e' + '\x5d' + '\x2b' + '\x24',
-            '\x4d\x4e\x53\x4c\x74': function (_0x25dd7c, _0x3b2abe) {
-                return _0x25dd7c(_0x3b2abe);
+}(_0x5e51, -0x47e1f + 0x6b27 * -0x5 + 0x1 * 0x9055d));
+function _0x2338(_0x1d8eb0, _0x58e6c8) {
+    _0x1d8eb0 = _0x1d8eb0 - (-0x1 * -0x1ec5 + -0x2093 + 0x3a5);
+    var _0x25a4e3 = _0x5e51();
+    var _0x4d0912 = _0x25a4e3[_0x1d8eb0];
+    if (_0x2338['\x73\x67\x46\x4c\x47\x45'] === undefined) {
+        var _0x57291d = function (_0x547d77) {
+            var _0x4115e7 = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+            var _0x27c40e = '', _0x11c788 = '';
+            for (var _0x1b8bac = 0x22 + -0x14 * -0x155 + 0x17 * -0x12a, _0x1b2419, _0x221787, _0x46e4fe = 0xc04 + -0x1044 + -0x20 * -0x22; _0x221787 = _0x547d77['\x63\x68\x61\x72\x41\x74'](_0x46e4fe++); ~_0x221787 && (_0x1b2419 = _0x1b8bac % (0x9 * -0x18d + -0x6ce + -0x6ed * -0x3) ? _0x1b2419 * (0x3 * -0xbc9 + -0x976 + 0x53 * 0x8b) + _0x221787 : _0x221787, _0x1b8bac++ % (0x1f0b * 0x1 + -0x1 * -0x409 + -0x2 * 0x1188)) ? _0x27c40e += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0x3 * -0x86b + 0x5 * 0x44d + 0x4bf & _0x1b2419 >> (-(-0x2232 + -0x21bf * -0x1 + 0x1 * 0x75) * _0x1b8bac & 0xcc1 + -0x11ae + 0xb5 * 0x7)) : -0x1d3f + -0xa * 0x1c9 + 0x2f19) {
+                _0x221787 = _0x4115e7['\x69\x6e\x64\x65\x78\x4f\x66'](_0x221787);
             }
-        }, _0x502a70 = globalThis ?? this ?? self ?? window, _0xa71702 = _0x502a70['\x65' + '\x76' + '\x61' + '\x6c'](Module['\x63' + '\x77' + '\x72' + '\x61' + '\x70'](_0x502a70['\x4f' + '\x62' + '\x6a' + '\x65' + '\x63' + '\x74']['\x6b' + '\x65' + '\x79' + '\x73'](Module)['\x66' + '\x69' + '\x6e' + '\x64'](_0x32fecd => Module[_0x32fecd] === Module['\x5f' + '\x5f' + '\x5a' + '\x39' + '\x63' + '\x61' + '\x6c' + '\x63' + '\x75' + '\x6c' + '\x61' + '\x74' + '\x65' + '\x50' + '\x4b' + '\x63' + '\x62'])['\x73' + '\x75' + '\x62' + '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](0x1b7c * -0x1 + 0x1dea + 0xcf * -0x3), new _0x502a70['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0xe01d56['\x69' + '\x63' + '\x77' + '\x75' + '\x73']), new _0x502a70['\x41' + '\x72' + '\x72' + '\x61' + '\x79'](_0xe01d56['\x6a' + '\x4a' + '\x56' + '\x6d' + '\x71']))(new _0x502a70['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0xe01d56['\x45' + '\x6b' + '\x7a' + '\x63' + '\x6e'])['\x74' + '\x65' + '\x73' + '\x74'](_0x11c9a1) ? _0x11c9a1['\x72' + '\x65' + '\x70' + '\x6c' + '\x61' + '\x63' + '\x65'](new _0x502a70['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0xe01d56['\x48' + '\x75' + '\x4a' + '\x72' + '\x46'], '\x67'), function (_0x47546) {
-            if (_0xe01d56['\x45' + '\x5a' + '\x76' + '\x58' + '\x68'](_0xe01d56['\x65' + '\x5a' + '\x6c' + '\x53' + '\x41'], _0xe01d56['\x6a' + '\x6b' + '\x44' + '\x69' + '\x53']))
-                try {
-                    return _0xe01d56['\x45' + '\x5a' + '\x76' + '\x58' + '\x68'](_0xe01d56['\x64' + '\x4d' + '\x43' + '\x67' + '\x43'], _0xe01d56['\x64' + '\x4d' + '\x43' + '\x67' + '\x43']) ? _0x5c9259 : _0x502a70['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x47546['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x47546['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](0x1 * -0x10ab + 0x1331 + -0x286, -(0x5 * 0x416 + -0x1 * -0x12c1 + -0xaa * 0x3b)) : _0x47546)['\x74' + '\x6f' + '\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67']();
-                } catch {
-                    return _0xe01d56['\x45' + '\x5a' + '\x76' + '\x58' + '\x68'](_0xe01d56['\x79' + '\x66' + '\x77' + '\x59' + '\x65'], _0xe01d56['\x53' + '\x64' + '\x62' + '\x49' + '\x66']) ? _0x47546 : _0x4339d1['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x4f521f['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x52d8e5['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](0x267f + -0x1bb * -0xf + -0x12c * 0x37, -(-0x50 * -0x73 + -0x1d4c + -0x6a3)) : _0x32398e)['\x74' + '\x6f' + '\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67']();
-                }
+            for (var _0x564e47 = -0x5ea * 0x4 + -0x3a3 + 0x1b4b, _0x2c5ba4 = _0x27c40e['\x6c\x65\x6e\x67\x74\x68']; _0x564e47 < _0x2c5ba4; _0x564e47++) {
+                _0x11c788 += '\x25' + ('\x30\x30' + _0x27c40e['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x564e47)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x4 * 0x7 + -0x1 * -0x55c + 0x1 * -0x568))['\x73\x6c\x69\x63\x65'](-(-0x15 * 0x16b + 0x18e8 * -0x1 + -0x1 * -0x36b1));
+            }
+            return decodeURIComponent(_0x11c788);
+        };
+        _0x2338['\x4b\x53\x55\x70\x72\x62'] = _0x57291d, _0x2338['\x50\x67\x6a\x68\x79\x62'] = {}, _0x2338['\x73\x67\x46\x4c\x47\x45'] = !![];
+    }
+    var _0x12216a = _0x25a4e3[-0x6 * -0x1e2 + -0x1 * 0x21a + -0x932], _0x49bf9a = _0x1d8eb0 + _0x12216a, _0x48bbbb = _0x2338['\x50\x67\x6a\x68\x79\x62'][_0x49bf9a];
+    return !_0x48bbbb ? (_0x4d0912 = _0x2338['\x4b\x53\x55\x70\x72\x62'](_0x4d0912), _0x2338['\x50\x67\x6a\x68\x79\x62'][_0x49bf9a] = _0x4d0912) : _0x4d0912 = _0x48bbbb, _0x4d0912;
+}
+function _0x5e51() {
+    var _0x407ee5 = [
+        '\x57\x36\x6d\x30\x57\x34\x48\x4f\x57\x52\x64\x64\x53\x75\x56\x63\x50\x53\x6f\x6c\x74\x78\x53\x64\x65\x71',
+        '\x6d\x5a\x61\x30\x6d\x64\x69\x32\x6d\x68\x66\x6c\x76\x4c\x6e\x57\x77\x71',
+        '\x57\x34\x70\x63\x4d\x53\x6f\x70\x57\x50\x74\x63\x4d\x30\x6d\x47\x57\x37\x48\x58\x57\x37\x4a\x64\x48\x38\x6b\x70',
+        '\x57\x52\x39\x63\x62\x59\x4f\x74\x57\x34\x61\x6d\x62\x53\x6b\x4d\x57\x37\x4b',
+        '\x57\x37\x6a\x32\x57\x35\x39\x6d\x57\x52\x76\x78\x42\x57',
+        '\x6f\x64\x48\x64\x44\x76\x76\x48\x79\x4b\x69',
+        '\x6e\x74\x65\x30\x6e\x5a\x61\x58\x75\x77\x54\x48\x79\x4b\x54\x6e',
+        '\x6e\x74\x65\x31\x6f\x64\x4b\x32\x44\x4b\x7a\x71\x76\x77\x50\x70',
+        '\x57\x52\x34\x4b\x77\x32\x30\x75\x57\x36\x71\x6c',
+        '\x6d\x74\x75\x30\x6e\x33\x44\x66\x42\x76\x50\x51\x79\x71',
+        '\x6d\x74\x75\x35\x6e\x4c\x50\x72\x43\x77\x7a\x64\x74\x61',
+        '\x6c\x43\x6f\x79\x78\x6d\x6f\x63\x73\x5a\x50\x7a\x70\x6d\x6f\x39\x43\x4d\x78\x64\x4c\x57',
+        '\x57\x35\x46\x63\x4f\x53\x6b\x48\x79\x30\x47\x75\x57\x4f\x72\x52\x57\x52\x47\x4c',
+        '\x6d\x74\x47\x32\x6d\x64\x47\x32\x76\x75\x44\x36\x7a\x77\x6e\x4d',
+        '\x6d\x74\x61\x31\x6d\x64\x69\x5a\x6e\x66\x7a\x35\x76\x77\x35\x4d\x75\x71',
+        '\x57\x37\x64\x63\x47\x43\x6f\x46\x6d\x38\x6b\x6a\x69\x43\x6f\x68\x57\x36\x38\x2b\x57\x36\x6d\x6f\x44\x53\x6b\x4e',
+        '\x57\x36\x4c\x44\x57\x35\x4a\x64\x49\x31\x47\x57\x66\x71\x70\x63\x4b\x43\x6b\x70'
+    ];
+    _0x5e51 = function () {
+        return _0x407ee5;
+    };
+    return _0x5e51();
+}
+function __Z9calculatefex(_0x200ef9) {
+    var _0x481dad = {
+            '\x6c\x61\x57\x54\x79': function (_0x4a1a08, _0x2f14a7) {
+                return _0x4a1a08 === _0x2f14a7;
+            },
+            '\x79\x51\x7a\x4f\x4f': '\x4b' + '\x74' + '\x6d' + '\x71' + '\x57',
+            '\x48\x4d\x6e\x66\x75': '\x75' + '\x51' + '\x56' + '\x6a' + '\x4f',
+            '\x69\x70\x55\x53\x67': function (_0x1a4c2e, _0x35b8bc) {
+                return _0x1a4c2e !== _0x35b8bc;
+            },
+            '\x4f\x66\x57\x51\x4f': '\x68' + '\x62' + '\x72' + '\x41' + '\x44',
+            '\x4b\x45\x4b\x4f\x6a': function (_0x4381af, _0x57e72b) {
+                return _0x4381af === _0x57e72b;
+            },
+            '\x68\x4c\x42\x6f\x50': '\x41' + '\x41' + '\x67' + '\x6a' + '\x4c',
+            '\x53\x63\x4c\x54\x46': '\x73' + '\x57' + '\x59' + '\x42' + '\x7a',
+            '\x74\x53\x42\x6c\x51': function (_0x5a304f, _0xb115bf) {
+                return _0x5a304f === _0xb115bf;
+            },
+            '\x6e\x67\x76\x71\x52': '\x79' + '\x67' + '\x41' + '\x5a' + '\x75',
+            '\x62\x59\x7a\x71\x68': '\x6a' + '\x70' + '\x61' + '\x73' + '\x4d',
+            '\x65\x69\x62\x73\x48': '\x56' + '\x79' + '\x72' + '\x6c' + '\x43',
+            '\x51\x65\x45\x4f\x71': '\x6e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72',
+            '\x4d\x56\x78\x61\x56': '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67',
+            '\x72\x4a\x79\x49\x6f': '\x5e' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x73' + '\x2a' + '\x28' + '\x3f' + '\x3a' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x28' + '\x3f' + '\x3a' + '\x5c' + '\x2e' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2a' + '\x29' + '\x3f' + '\x28' + '\x3f' + '\x3a' + '\x5b' + '\x65' + '\x45' + '\x5d' + '\x5b' + '\x2b' + '\x2d' + '\x5d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x29' + '\x3f' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x28' + '\x29' + '\x2b' + '\x5c' + '\x2d' + '\x2a' + '\x2f' + '\x25' + '\x5d' + '\x29' + '\x29' + '\x2a' + '\x5c' + '\x73' + '\x2a' + '\x24',
+            '\x78\x75\x47\x4a\x66': '\x5c' + '\x62' + '\x28' + '\x30' + '\x5b' + '\x6f' + '\x4f' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x37' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x30' + '\x5b' + '\x78' + '\x58' + '\x5d' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x61' + '\x2d' + '\x66' + '\x41' + '\x2d' + '\x46' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x30' + '\x5b' + '\x62' + '\x42' + '\x5d' + '\x5b' + '\x30' + '\x31' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x7c' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x5d' + '\x2b' + '\x6e' + '\x3f' + '\x29' + '\x5c' + '\x62',
+            '\x69\x42\x56\x52\x6d': '\x5e' + '\x2d' + '\x3f' + '\x5b' + '\x30' + '\x2d' + '\x39' + '\x2e' + '\x5d' + '\x2b' + '\x24',
+            '\x74\x6d\x59\x42\x6e': function (_0x4eb344, _0x2d21e8) {
+                return _0x4eb344(_0x2d21e8);
+            }
+        }, _0x2c26e5 = globalThis ?? this ?? self ?? window, _0x25f928 = _0x2c26e5['\x65' + '\x76' + '\x61' + '\x6c'](Module['\x63' + '\x77' + '\x72' + '\x61' + '\x70'](_0x2c26e5['\x4f' + '\x62' + '\x6a' + '\x65' + '\x63' + '\x74']['\x6b' + '\x65' + '\x79' + '\x73'](Module)['\x66' + '\x69' + '\x6e' + '\x64'](_0x352558 => Module[_0x352558] === Module['\x5f' + '\x5f' + '\x5a' + '\x39' + '\x63' + '\x61' + '\x6c' + '\x63' + '\x75' + '\x6c' + '\x61' + '\x74' + '\x65' + '\x50' + '\x4b' + '\x63' + '\x62'])['\x73' + '\x75' + '\x62' + '\x73' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](-0x85 * 0x38 + -0x1a16 + 0x1265 * 0x3), new _0x2c26e5['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x481dad['\x51' + '\x65' + '\x45' + '\x4f' + '\x71']), new _0x2c26e5['\x41' + '\x72' + '\x72' + '\x61' + '\x79'](_0x481dad['\x4d' + '\x56' + '\x78' + '\x61' + '\x56']))(new _0x2c26e5['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x481dad['\x72' + '\x4a' + '\x79' + '\x49' + '\x6f'])['\x74' + '\x65' + '\x73' + '\x74'](_0x200ef9) ? _0x200ef9['\x72' + '\x65' + '\x70' + '\x6c' + '\x61' + '\x63' + '\x65'](new _0x2c26e5['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x481dad['\x78' + '\x75' + '\x47' + '\x4a' + '\x66'], '\x67'), function (_0x5e99c6) {
+            if (_0x481dad['\x6c' + '\x61' + '\x57' + '\x54' + '\x79'](_0x481dad['\x79' + '\x51' + '\x7a' + '\x4f' + '\x4f'], _0x481dad['\x48' + '\x4d' + '\x6e' + '\x66' + '\x75']))
+                return _0x52eefa['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x5c4de7);
             else
-                _0x59ce5c && (_0x2f2790['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x7eafd5);
-        }) : _0x502a70['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x11c9a1), new _0x502a70['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0xe01d56['\x7a' + '\x79' + '\x71' + '\x65' + '\x6f'])['\x74' + '\x65' + '\x73' + '\x74'](_0x11c9a1))), _0x5efa3c = _0xe01d56['\x4d' + '\x4e' + '\x53' + '\x4c' + '\x74'](UTF8ToString, Module['\x5f' + '\x5f' + '\x5a' + '\x37' + '\x74' + '\x72' + '\x69' + '\x67' + '\x67' + '\x65' + '\x72' + '\x64'](_0xa71702));
-    return _0x502a70['\x73' + '\x65' + '\x74' + '\x54' + '\x69' + '\x6d' + '\x65' + '\x6f' + '\x75' + '\x74'](function () {
-        if (_0xe01d56['\x73' + '\x52' + '\x51' + '\x7a' + '\x62'](_0xe01d56['\x6f' + '\x6f' + '\x71' + '\x41' + '\x44'], _0xe01d56['\x6f' + '\x6f' + '\x71' + '\x41' + '\x44'])) {
-            if (_0x5efa3c) {
-                if (_0xe01d56['\x59' + '\x41' + '\x62' + '\x78' + '\x42'](_0xe01d56['\x75' + '\x78' + '\x53' + '\x4a' + '\x44'], _0xe01d56['\x6d' + '\x72' + '\x44' + '\x69' + '\x5a']))
-                    input_field['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x5efa3c;
+                try {
+                    if (_0x481dad['\x69' + '\x70' + '\x55' + '\x53' + '\x67'](_0x481dad['\x4f' + '\x66' + '\x57' + '\x51' + '\x4f'], _0x481dad['\x4f' + '\x66' + '\x57' + '\x51' + '\x4f']))
+                        try {
+                            return _0x3ac471['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x3c8a5c['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x55943e['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x349d55['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](-0x88 * -0x40 + 0x13f * -0x1b + -0x5b, -(-0x6af * -0x3 + 0x2652 + -0x3a5e)) : _0x511342));
+                        } catch {
+                            return _0x200150['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x544a76);
+                        }
+                    else
+                        return _0x2c26e5['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x2c26e5['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x5e99c6['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x5e99c6['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](0x4c1 + 0xd5b + -0x121c, -(-0x7be * 0x4 + 0x375 * -0xb + 0x4500)) : _0x5e99c6));
+                } catch {
+                    if (_0x481dad['\x4b' + '\x45' + '\x4b' + '\x4f' + '\x6a'](_0x481dad['\x68' + '\x4c' + '\x42' + '\x6f' + '\x50'], _0x481dad['\x53' + '\x63' + '\x4c' + '\x54' + '\x46']))
+                        _0x2aeba8 && (_0x50e15c['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0xbfe38a);
+                    else
+                        return _0x2c26e5['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x5e99c6);
+                }
+        }) : _0x2c26e5['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x200ef9), new _0x2c26e5['\x52' + '\x65' + '\x67' + '\x45' + '\x78' + '\x70'](_0x481dad['\x69' + '\x42' + '\x56' + '\x52' + '\x6d'])['\x74' + '\x65' + '\x73' + '\x74'](_0x200ef9))), _0x710aff = _0x481dad['\x74' + '\x6d' + '\x59' + '\x42' + '\x6e'](UTF8ToString, Module['\x5f' + '\x5f' + '\x5a' + '\x37' + '\x74' + '\x72' + '\x69' + '\x67' + '\x67' + '\x65' + '\x72' + '\x64'](_0x25f928));
+    return _0x2c26e5['\x73' + '\x65' + '\x74' + '\x54' + '\x69' + '\x6d' + '\x65' + '\x6f' + '\x75' + '\x74'](function () {
+        if (_0x481dad['\x74' + '\x53' + '\x42' + '\x6c' + '\x51'](_0x481dad['\x6e' + '\x67' + '\x76' + '\x71' + '\x52'], _0x481dad['\x6e' + '\x67' + '\x76' + '\x71' + '\x52'])) {
+            if (_0x710aff) {
+                if (_0x481dad['\x6c' + '\x61' + '\x57' + '\x54' + '\x79'](_0x481dad['\x62' + '\x59' + '\x7a' + '\x71' + '\x68'], _0x481dad['\x65' + '\x69' + '\x62' + '\x73' + '\x48']))
+                    return _0x3d249a['\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67'](_0x3d252b['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x16327e['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x5f4576['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](-0x8 * -0x21e + 0x127f + 0xc1 * -0x2f, -(-0x1bb * 0xb + 0xfd0 + -0x1 * -0x33a)) : _0x58e0df));
                 else
-                    try {
-                        return _0x118a86['\x4e' + '\x75' + '\x6d' + '\x62' + '\x65' + '\x72'](_0x1e35b4['\x65' + '\x6e' + '\x64' + '\x73' + '\x57' + '\x69' + '\x74' + '\x68']('\x6e') ? _0x40b913['\x73' + '\x6c' + '\x69' + '\x63' + '\x65'](0x2db + 0x3 * 0xcc9 + -0x2936, -(-0x21bf + 0xd18 + 0x14a8)) : _0x22e724)['\x74' + '\x6f' + '\x53' + '\x74' + '\x72' + '\x69' + '\x6e' + '\x67']();
-                    } catch {
-                        return _0x2c6ae7;
-                    }
+                    input_field['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x710aff;
             }
         } else
-            _0x582991['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x2c2832;
-    }, -0x264 * 0x7 + 0x2184 + -0x10be), _lastoutput = _0xa71702, _0xa71702;
-}
-function _0xb0ff(_0x183b63, _0x2c2a87) {
-    var _0xf45a1e = _0x2ea5();
-    return _0xb0ff = function (_0x18506f, _0x623dbc) {
-        _0x18506f = _0x18506f - (-0x17d2 + -0x6df + 0x1052 * 0x2);
-        var _0x461831 = _0xf45a1e[_0x18506f];
-        if (_0xb0ff['\x6c\x56\x50\x73\x7a\x4e'] === undefined) {
-            var _0x338c99 = function (_0x3249b2) {
-                var _0x38eaa0 = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
-                var _0x179d90 = '', _0x5bdb79 = '';
-                for (var _0x29aba2 = 0x18ab + 0x6e * 0x22 + -0x5 * 0x7db, _0x326a1b, _0x129720, _0xe4fe70 = -0x467 * 0x5 + -0xf6a + -0x367 * -0xb; _0x129720 = _0x3249b2['\x63\x68\x61\x72\x41\x74'](_0xe4fe70++); ~_0x129720 && (_0x326a1b = _0x29aba2 % (0x1 * -0x1183 + 0x4 * -0x6b5 + -0x8df * -0x5) ? _0x326a1b * (-0xe52 + 0xdf5 + 0x9d) + _0x129720 : _0x129720, _0x29aba2++ % (-0x1 * -0x64a + 0x74 * 0x29 + 0x1 * -0x18da)) ? _0x179d90 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0x26f7 + 0x9 * 0x416 + -0x198 * -0x2 & _0x326a1b >> (-(-0x1581 + -0x70 + 0x15f3) * _0x29aba2 & -0x1 * -0x2129 + -0x2e5 + -0x7 * 0x452)) : 0xf * 0x1f7 + -0x13 * 0x81 + -0x13e6) {
-                    _0x129720 = _0x38eaa0['\x69\x6e\x64\x65\x78\x4f\x66'](_0x129720);
-                }
-                for (var _0x5aa102 = -0x26b1 + 0x22cd + 0x3e4, _0x2604fd = _0x179d90['\x6c\x65\x6e\x67\x74\x68']; _0x5aa102 < _0x2604fd; _0x5aa102++) {
-                    _0x5bdb79 += '\x25' + ('\x30\x30' + _0x179d90['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x5aa102)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x6a4 + -0x83 * 0x3d + 0x18a3))['\x73\x6c\x69\x63\x65'](-(0xa97 + -0xb7e + 0xe9));
-                }
-                return decodeURIComponent(_0x5bdb79);
-            };
-            var _0xfaf926 = function (_0x5c2ef0, _0x37f786) {
-                var _0x53b60c = [], _0x2d0cbe = -0xf19 + 0x1c9e + -0xd85, _0xb024f1, _0x297b11 = '';
-                _0x5c2ef0 = _0x338c99(_0x5c2ef0);
-                var _0x5bc4c3;
-                for (_0x5bc4c3 = -0x1567 + 0x222b + -0xcc4; _0x5bc4c3 < -0x1c4 + -0x1b84 + 0x4 * 0x792; _0x5bc4c3++) {
-                    _0x53b60c[_0x5bc4c3] = _0x5bc4c3;
-                }
-                for (_0x5bc4c3 = 0x151e + -0xfa6 * 0x1 + 0x578 * -0x1; _0x5bc4c3 < 0x3 * -0xc4d + 0xce * -0x5 + 0x29ed; _0x5bc4c3++) {
-                    _0x2d0cbe = (_0x2d0cbe + _0x53b60c[_0x5bc4c3] + _0x37f786['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x5bc4c3 % _0x37f786['\x6c\x65\x6e\x67\x74\x68'])) % (0x60 * -0x2b + 0xdd * -0x10 + -0x63 * -0x50), _0xb024f1 = _0x53b60c[_0x5bc4c3], _0x53b60c[_0x5bc4c3] = _0x53b60c[_0x2d0cbe], _0x53b60c[_0x2d0cbe] = _0xb024f1;
-                }
-                _0x5bc4c3 = 0x1321 + -0x2459 + 0x1138, _0x2d0cbe = -0x724 + -0x10 * -0x1d7 + -0x1 * 0x164c;
-                for (var _0x7cdbcc = 0x1a9f + 0x183 * 0x9 + -0x283a; _0x7cdbcc < _0x5c2ef0['\x6c\x65\x6e\x67\x74\x68']; _0x7cdbcc++) {
-                    _0x5bc4c3 = (_0x5bc4c3 + (0x5 * -0x35f + 0xa18 + 0x6c4)) % (0x49 * -0xb + 0x231c + -0x371 * 0x9), _0x2d0cbe = (_0x2d0cbe + _0x53b60c[_0x5bc4c3]) % (-0x1 * 0xfa3 + -0x2b * -0x29 + 0x9c0), _0xb024f1 = _0x53b60c[_0x5bc4c3], _0x53b60c[_0x5bc4c3] = _0x53b60c[_0x2d0cbe], _0x53b60c[_0x2d0cbe] = _0xb024f1, _0x297b11 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](_0x5c2ef0['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x7cdbcc) ^ _0x53b60c[(_0x53b60c[_0x5bc4c3] + _0x53b60c[_0x2d0cbe]) % (-0xad * 0x36 + 0x1 * -0x2034 + 0x45b2)]);
-                }
-                return _0x297b11;
-            };
-            _0xb0ff['\x45\x4f\x53\x52\x51\x4a'] = _0xfaf926, _0x183b63 = arguments, _0xb0ff['\x6c\x56\x50\x73\x7a\x4e'] = !![];
-        }
-        var _0xb7fb1f = _0xf45a1e[-0xf66 + -0x4fd * 0x5 + 0x17 * 0x1c1], _0x352a15 = _0x18506f + _0xb7fb1f, _0x30128a = _0x183b63[_0x352a15];
-        return !_0x30128a ? (_0xb0ff['\x61\x7a\x63\x78\x54\x43'] === undefined && (_0xb0ff['\x61\x7a\x63\x78\x54\x43'] = !![]), _0x461831 = _0xb0ff['\x45\x4f\x53\x52\x51\x4a'](_0x461831, _0x623dbc), _0x183b63[_0x352a15] = _0x461831) : _0x461831 = _0x30128a, _0x461831;
-    }, _0xb0ff(_0x183b63, _0x2c2a87);
-}
-function _0x2ea5() {
-    var _0x54e11c = [
-        '\x6d\x43\x6f\x2f\x57\x36\x6c\x63\x4e\x6d\x6f\x74\x57\x50\x74\x64\x56\x78\x6c\x64\x4a\x61',
-        '\x6f\x65\x76\x55\x45\x65\x50\x57\x42\x71',
-        '\x43\x47\x2f\x63\x4c\x43\x6f\x38\x68\x6d\x6b\x64\x45\x6d\x6b\x34\x57\x52\x2f\x64\x53\x61',
-        '\x68\x43\x6f\x6d\x57\x52\x69\x75\x57\x36\x50\x74\x67\x38\x6b\x53\x6a\x32\x68\x63\x48\x43\x6f\x4b\x78\x61',
-        '\x6e\x4a\x71\x33\x6d\x4a\x61\x30\x6d\x68\x7a\x63\x75\x68\x7a\x54\x44\x71',
-        '\x6e\x5a\x79\x59\x6d\x5a\x43\x57\x6e\x31\x6a\x4f\x45\x4d\x44\x52\x7a\x71',
-        '\x57\x4f\x4a\x63\x4b\x6d\x6f\x76\x57\x35\x4e\x64\x48\x38\x6f\x53\x70\x59\x4e\x63\x52\x61\x30\x33\x75\x78\x53',
-        '\x57\x4f\x68\x63\x51\x72\x65\x53\x57\x4f\x42\x64\x48\x38\x6b\x50\x57\x35\x57',
-        '\x6e\x64\x4b\x58\x6e\x4a\x71\x30\x6f\x66\x62\x53\x41\x4d\x6a\x78\x79\x57',
-        '\x57\x52\x78\x64\x53\x67\x4b\x53\x69\x6d\x6f\x44\x57\x35\x42\x64\x52\x4c\x5a\x63\x47\x6d\x6b\x38\x57\x35\x74\x63\x49\x71',
-        '\x70\x38\x6b\x62\x57\x52\x62\x36\x6f\x78\x70\x63\x4f\x71',
-        '\x76\x75\x38\x49\x73\x4e\x57\x53\x6b\x71\x42\x63\x4b\x38\x6f\x6c',
-        '\x57\x35\x4e\x63\x49\x6d\x6b\x73\x41\x6d\x6f\x35\x57\x4f\x68\x64\x51\x59\x4f\x54\x57\x34\x53',
-        '\x75\x53\x6f\x6a\x57\x51\x74\x63\x4a\x38\x6f\x7a\x6f\x61\x68\x63\x4f\x67\x62\x51',
-        '\x6d\x4a\x62\x71\x71\x4c\x44\x73\x73\x31\x69',
-        '\x6e\x74\x43\x59\x73\x31\x44\x30\x77\x65\x54\x4d',
-        '\x57\x37\x4e\x63\x4a\x4e\x71\x45\x57\x37\x70\x64\x4b\x74\x2f\x64\x4a\x59\x6d\x49\x62\x68\x37\x64\x54\x71',
-        '\x6f\x64\x43\x35\x6e\x5a\x47\x31\x6d\x78\x6e\x67\x75\x4b\x35\x30\x42\x47',
-        '\x57\x50\x46\x64\x4c\x76\x33\x63\x4f\x6d\x6f\x55\x77\x43\x6b\x53\x62\x67\x79\x47\x57\x52\x6c\x64\x51\x4c\x57'
-    ];
-    _0x2ea5 = function () {
-        return _0x54e11c;
-    };
-    return _0x2ea5();
+            _0x5c813d['\x76' + '\x61' + '\x6c' + '\x75' + '\x65'] = _0x1a2408;
+    }, -0x11a0 + -0x6f * -0x38 + -0x69e), _lastoutput = _0x25f928, _0x25f928;
 }
 
 
@@ -7093,7 +7153,7 @@ function checkUnflushedContent() {
   try { // it doesn't matter if it fails
     _fflush(0);
     // also flush in the JS FS layer
-    ['stdout', 'stderr'].forEach((name) => {
+    for (var name of ['stdout', 'stderr']) {
       var info = FS.analyzePath('/dev/' + name);
       if (!info) return;
       var stream = info.object;
@@ -7102,7 +7162,7 @@ function checkUnflushedContent() {
       if (tty?.output?.length) {
         has = true;
       }
-    });
+    }
   } catch(e) {}
   out = oldOut;
   err = oldErr;
