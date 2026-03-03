@@ -120,7 +120,15 @@
                 if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
                 results_shown = false;
             }
-            input_field.value += value;
+            if (document.activeElement !== input_field) input_field.focus();
+            let input_field_start = input_field.selectionStart;
+            let input_field_end = input_field.selectionEnd;
+            if (input_field_start == null || input_field_end == null) {
+                input_field_start = input_field.value.length;
+                input_field_end = input_field.value.length;
+            }
+            input_field.value = input_field.value.slice(0, input_field_start) + value + input_field.value.slice(input_field_end);
+            input_field.setSelectionRange(input_field_start + value.length, input_field_start + value.length);
             input_field.scrollLeft = input_field.scrollWidth;
         }
         
@@ -158,10 +166,9 @@
             if (document.activeElement !== input_field) input_field.focus();
             let input_field_start = input_field.selectionStart;
             let input_field_end = input_field.selectionEnd;
-            if (input_field_start == null || input_field_end == null || (input_field_start === 0 && input_field_end === 0 && input_field.value.length > 0)) {
+            if (input_field_start == null || input_field_end == null) {
                 input_field_start = input_field.value.length;
                 input_field_end = input_field.value.length;
-                input_field.setSelectionRange(input_field_start, input_field_end);
             }
             if (input_field_start === input_field_end && input_field_start < input_field.value.length) {
                 input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_start + 1);
@@ -223,6 +230,14 @@
             } else if (/^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/~\\` ]$/.test(event.key)) { //`
                 event.preventDefault();
                 append(event.key);
+            }
+        }
+        
+        window.onkeydown = function(event) {
+            if (document.activeElement !== input_field) {
+                event.preventDefault();
+                input_field.focus();
+                input_field.dispatchEvent(new KeyboardEvent(event.type, event));
             }
         }
     </script>
