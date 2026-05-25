@@ -117,7 +117,11 @@
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
             if (/^(Ready?|Error?|NaN?|-?Infinity?)$/.test(input_field.value)) clearfield();
             if (results_shown) {
-                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) clearfield();
+                if (!(/^-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/.test(input_field.value))) {
+                    clearfield();
+                } else {
+                    input_field.selectionStart = input_field.selectionEnd = input_field.value.length;
+                }
                 results_shown = false;
             }
             if (document.activeElement !== input_field) input_field.focus();
