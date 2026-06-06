@@ -1,3 +1,4 @@
+const script_dir = document.currentScript.src;
 function autoRefresh(r,d) {
   let redirect_url = getRoot() + r;
   let delay = d;
@@ -123,6 +124,7 @@ function setUrlHash(text) {
 };
 document.addEventListener("DOMContentLoaded", function(event) {
   document.head.appendChild(Object.assign(document.createElement("script"), { src: "https://cdnjs.cloudflare.com/polyfill/v3/polyfill.js?version=4.8.0&features=default" }));
+  document.head.appendChild(Object.assign(document.createElement("link"), { href: new URL("common.css", new URL(".", script_dir).href).href, rel: "stylesheet" }));
   document.querySelectorAll("a[title]").forEach(function(element) {
     if (!element.hasAttribute("onclick") && element.getAttribute("href") !== "javascript:void(0)") {
       element.addEventListener("click", function(event) {
