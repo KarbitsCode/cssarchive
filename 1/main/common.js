@@ -56,7 +56,7 @@ function adBlocker() {
     setTimeout(function() {
       setUrlHash(null);
       setTimeout(function() {
-        document.getElementById("displaymiddle").textContent = "Adblocker detected";
+        document.getElementById("displaymiddle").textContent += "Adblocker detected\n";
       }, 1000);
     }, 100);
   }, 1000);
@@ -68,7 +68,7 @@ function detectIE() {
     if (url.some((_, i) => (url[i] === "1" && url[i + 1] === "main")) && url.slice(-1)[0] !== "main-min") {
       location.replace("main-min.html?on=ie");
     } else {
-      document.getElementById("displaymiddle").textContent = "IE detected";
+      document.getElementById("displaymiddle").textContent += "IE detected\n";
     };
     return true;
   };
@@ -165,4 +165,11 @@ setTimeout(function() {
   if (location.pathname.includes("main")) {
     setUrlHash("main");
   };
+  navigator.storage.estimate().then(function(s) {
+    const details = Reflect.get(s, "usageDetails");
+    if (!Object.entries(details).length || details.caches < 91136) {
+      console.log("Private browsing detected");
+      document.getElementById("displaymiddle").textContent += "Private browsing detected\n";
+    };
+  });
 }, 2000);

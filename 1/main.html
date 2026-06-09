@@ -108,6 +108,7 @@ window.addEventListener("load", function() {
     console.warn(e);
     console.warn("Eruda is unavailable, skipping widget");
     document.getElementsByTagName("a")[3].style.display = "none";
+    window.eruda = {init: (()=>{})}
   };
   const darkmode = (function() {
     try {
@@ -126,11 +127,11 @@ window.addEventListener("load", function() {
       });
     } catch(e) {
       console.warn(e);
-      return {
+      return new Object({
         showWidget: function() {return console.warn("Darkmode is unavailable, skipping widget")},
         toggle: function() {return console.warn("Darkmode is unavailable, skipping toggle")},
         isActivated: function() {return false},
-      };
+      });
     };
   })();
   document.getElementById("main").classList.add("darkmode-ignore");
