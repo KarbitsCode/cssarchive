@@ -86,6 +86,8 @@
     <script>
         const input_field = document.getElementById("field");
         const input_history = new Array();
+        const undo_history = new Array();
+        const redo_history = new Array();
         let history_viewstate = -1;
         let results_shown = false;
         let input_temp = "";
@@ -98,6 +100,16 @@
         function inputerror() {
             input_field.value = "Error";
             input_field.setAttribute("disabled", "");
+        }
+        
+        function saveundo(action) {
+            undo_history.push({
+                value: input_field.value,
+                start: input_field.selectionStart,
+                end: input_field.selectionEnd
+            });
+            redo_history.length = 0;
+            action();
         }
         
         function clearfield() {
@@ -131,9 +143,11 @@
                 input_field_start = input_field.value.length;
                 input_field_end = input_field.value.length;
             }
-            input_field.value = input_field.value.slice(0, input_field_start) + value + input_field.value.slice(input_field_end);
-            input_field.setSelectionRange(input_field_start + value.length, input_field_start + value.length);
-            input_field.scrollLeft = input_field.scrollWidth;
+            saveundo(function() {
+                input_field.value = input_field.value.slice(0, input_field_start) + value + input_field.value.slice(input_field_end);
+                input_field.setSelectionRange(input_field_start + value.length, input_field_start + value.length);
+                input_field.scrollLeft = input_field.scrollWidth;
+            });
         }
         
         function backspace() {
@@ -151,13 +165,15 @@
                 input_field_end = input_field.value.length;
                 input_field.setSelectionRange(input_field_start, input_field_end);
             }
-            if (input_field_start === input_field_end && input_field_start !== 0 && input_field_start <= input_field.value.length) {
-                input_field.value = input_field.value.slice(0, input_field_start - 1) + input_field.value.slice(input_field_end);
-                input_field.setSelectionRange(input_field_start - 1, input_field_start - 1);
-            } else if (input_field_start !== input_field_end) {
-                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
-                input_field.setSelectionRange(input_field_start, input_field_start);
-            }
+            saveundo(function() {
+                if (input_field_start === input_field_end && input_field_start !== 0 && input_field_start <= input_field.value.length) {
+                    input_field.value = input_field.value.slice(0, input_field_start - 1) + input_field.value.slice(input_field_end);
+                    input_field.setSelectionRange(input_field_start - 1, input_field_start - 1);
+                } else if (input_field_start !== input_field_end) {
+                    input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
+                    input_field.setSelectionRange(input_field_start, input_field_start);
+                }
+            });
         }
         
         function deletekey() {
@@ -174,33 +190,37 @@
                 input_field_start = input_field.value.length;
                 input_field_end = input_field.value.length;
             }
-            if (input_field_start === input_field_end && input_field_start < input_field.value.length) {
-                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_start + 1);
-                input_field.setSelectionRange(input_field_start, input_field_start);
-            } else if (input_field_start !== input_field_end) {
-                input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
-                input_field.setSelectionRange(input_field_start, input_field_start);
-            }
+            saveundo(function() {
+                if (input_field_start === input_field_end && input_field_start < input_field.value.length) {
+                    input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_start + 1);
+                    input_field.setSelectionRange(input_field_start, input_field_start);
+                } else if (input_field_start !== input_field_end) {
+                    input_field.value = input_field.value.slice(0, input_field_start) + input_field.value.slice(input_field_end);
+                    input_field.setSelectionRange(input_field_start, input_field_start);
+                }
+            });
         }
         
         function calculate() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
-            try {
-                const input = input_field.value;
-                const result = calculate_send(input);
-                input_field.value = result;
-                results_shown = true;
-                if (input.trim() !== "") {
-                    input_history.push(input);
-                    history_viewstate = input_history.length;
+            saveundo(function() {
+                try {
+                    const input = input_field.value;
+                    const result = calculate_send(input);
+                    input_field.value = result;
+                    results_shown = true;
+                    if (input.trim() !== "") {
+                        input_history.push(input);
+                        history_viewstate = input_history.length;
+                    }
+                } catch(e) {
+                    console.error(e);
+                    input_field.value = "Error";
                 }
-            } catch(e) {
-                console.error(e);
-                input_field.value = "Error";
-            }
+            });
         }
         
-        input_field.onkeydown = input_field.oninput = function(event) {
+        input_field.onkeydown = input_field.oninput = async function(event) {
             if (event.key === "Backspace") {
                 event.preventDefault();
                 backspace();
@@ -210,9 +230,47 @@
             } else if (event.key === "Enter") {
                 event.preventDefault();
                 calculate();
-            } else if (event.ctrlKey && /^[a|A]$/.test(event.key)) {
+            } else if (event.ctrlKey && /^a$/i.test(event.key)) {
                 event.preventDefault();
                 input_field.select();
+            } else if (event.ctrlKey && /^c$/i.test(event.key)) {
+                event.preventDefault();
+                const text = input_field.value.slice(input_field.selectionStart, input_field.selectionEnd);
+                await navigator.clipboard.writeText(text);
+            } else if (event.ctrlKey && /^x$/i.test(event.key)) {
+                event.preventDefault();
+                const start = input_field.selectionStart;
+                const end = input_field.selectionEnd;
+                await navigator.clipboard.writeText(input_field.value.slice(start, end));
+                saveundo(function() {input_field.setRangeText("", start, end, "start")});
+            } else if (event.ctrlKey && /^v$/i.test(event.key)) {
+                event.preventDefault();
+                const text = await navigator.clipboard.readText();
+                saveundo(function() {input_field.setRangeText(text, input_field.selectionStart, input_field.selectionEnd, "end")});
+            } else if (event.ctrlKey && /^z$/i.test(event.key)) {
+                event.preventDefault();
+                if (undo_history.length > 0) {
+                    redo_history.push({
+                        value: input_field.value,
+                        start: input_field.selectionStart,
+                        end: input_field.selectionEnd
+                    });
+                    const state = undo_history.pop();
+                    input_field.value = state.value;
+                    input_field.setSelectionRange(state.start, state.end);
+                }
+            } else if (event.ctrlKey && /^y$/i.test(event.key)) {
+                event.preventDefault();
+                if (redo_history.length > 0) {
+                    undo_history.push({
+                        value: input_field.value,
+                        start: input_field.selectionStart,
+                        end: input_field.selectionEnd
+                    });
+                    const state = redo_history.pop();
+                    input_field.value = state.value;
+                    input_field.setSelectionRange(state.start, state.end);
+                }
             } else if (event.key === "ArrowUp") {
                 event.preventDefault();
                 if (input_history.length === 0) return;
