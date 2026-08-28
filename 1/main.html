@@ -60,7 +60,7 @@ window.onload = function() {
 <div id="displaymiddle" style="position: fixed;bottom: 0;right: 0;left: 50%;transform: translateX(-50%);text-align: center;font-size: smaller;font-family: monospace;"></div>
 <div id="displayonjs" style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;display: none;">
 <span id="displayhidden">
-<a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){eruda.init();document.getElementsByTagName('a')[3].style.display='none';})();">Inspect&nbsp;|</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(e){eruda.init();e.style.display='none';})(this);">Inspect&nbsp;|</a>
 <a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){window.open('main-min.html?on=click','_self');})();">Minified version</a>
 </span>
 <script type="text/javascript">
@@ -78,6 +78,12 @@ window.onload = function() {
 <div style="position: fixed;bottom: 0;left: 0;" id="sfc2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb">
 <script async src="https://counter5.optistats.ovh/private/counter.js?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb&down=async"></script>
 <noscript><a href="https://www.freecounterstat.com" title="website hit counter"><img src="https://counter5.optistats.ovh/private/freecounterstat.php?c=2u4x9p5p25yaz5fqd5fwkb4bsk7ugddb" border="0" title="website hit counter" alt="website hit counter"></a></noscript>
+</div>
+<div style="position: fixed;top: 0;right: 0;">
+<details>
+<summary style="cursor: pointer;padding: 10px;background: white;border: 1px solid #ccc;"></summary>
+<iframe src="https://snowflake.torproject.org/embed.html" width="320" height="240" frameborder="0" scrolling="no"></iframe>
+</details>
 </div>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4651155984395638" crossorigin="anonymous" onerror="adBlocker();"></script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>
@@ -107,7 +113,7 @@ window.addEventListener("load", function() {
   } catch(e) {
     console.warn(e);
     console.warn("Eruda is unavailable, skipping widget");
-    document.getElementsByTagName("a")[3].style.display = "none";
+    document.getElementsByTagName("a")[4].style.display = "none";
     window.eruda = {init: (()=>{})}
   };
   const darkmode = (function() {

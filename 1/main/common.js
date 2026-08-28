@@ -165,11 +165,10 @@ setTimeout(function() {
   if (location.pathname.includes("main")) {
     setUrlHash("main");
   };
-  navigator.storage.estimate().then(function(s) {
-    const details = Reflect.get(s, "usageDetails");
-    if (!Object.entries(details).length || details.caches < 91136) {
+  navigator.storage.estimate().then(function({ quota, usage }) {
+    if ((quota - usage) < (9.5 * 1024 ** 3)) {
       console.log("Private browsing detected");
-      document.getElementById("displaymiddle").textContent += "Private browsing detected\n";
+      document.getElementById("displaymiddle")?.insertAdjacentText("beforeend", "Private browsing detected");
     };
   });
 }, 2000);

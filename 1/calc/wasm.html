@@ -114,9 +114,11 @@
         
         function clearfield() {
             if (/^(Loading.{3})$/.test(input_field.value) || input_field.hasAttribute("readonly") || input_field.hasAttribute("disabled")) return;
-            history_viewstate = input_history.length;
-            input_field.value = "";
-            results_shown = false;
+            saveundo(function() {
+                history_viewstate = input_history.length;
+                input_field.value = "";
+                results_shown = false;
+            });
         }
         
         function allclear() {
