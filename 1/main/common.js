@@ -28,7 +28,7 @@ function gotoPage(l) {
   if (detectIE()) {
     location.assign(l);
   } else {
-    location.assign(getRoot() + "redir.html?go=" + l);
+    location.assign(getRoot() + "redir.html?go=" + encodeURIComponent(l));
   };
 };
 function keyEvent(k) {
@@ -109,16 +109,11 @@ function getMirrors() {
 };
 function getRoot() {
   let url = location.pathname.split("/");
-  return url.reverse().slice(url.indexOf("1") + 1).reverse().join("/") + "/";
+  return url.slice(0, url.indexOf("1")).join("/") + "/";
 };
 function setUrlHash(text) {
-  let target = location.pathname;
-  if (text && text !== "") {
-    if (!text.startsWith("#")) {
-      text = "#" + text;
-    };
-    target += text;
-  };
+  const target = new URL(location.href);
+  target.hash = text || "";
   history.replaceState(null, document.title, target);
   window.dispatchEvent(new HashChangeEvent('hashchange'));
 };
