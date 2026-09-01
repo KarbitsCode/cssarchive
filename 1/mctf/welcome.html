@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="referrer" content="unsafe-url">
+	<link rel="stylesheet" href="styling.css">
+	<script type="text/javascript" src="../main/common.js"></script>
+	<title>Simple Form</title>
+</head>
+<body>
+	<main>
+		<h1>Simple Form</h1>
+		<form method="POST" enctype="multipart/form-data">
+			<input type="hidden" name="_csrf" value="0" required>
+			<input type="hidden" name="id" value="0" required>
+			<input type="hidden" name="count" value="0" required>
+			<input type="text" name="form" placeholder="Enter your answer" autocomplete="off" required disabled>
+			<button type="submit" disabled>Submit</button>
+			<!-- Example: KCTF{definitely_not_the_flag} -->
+		</form>
+		<span></span>
+		<span></span>
+	</main>
+	<script type="module" src="scripting.js"></script>
+</body>
+</html>
