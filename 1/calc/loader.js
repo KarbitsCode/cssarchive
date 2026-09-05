@@ -1219,6 +1219,27 @@ async function createWasm() {
   var __abort_js = () =>
       abort('native code called abort()');
 
+  var lengthBytesUTF8 = (str) => {
+      var len = 0;
+      for (var i = 0; i < str.length; ++i) {
+        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
+        // unit, not a Unicode code point of the character! So decode
+        // UTF16->UTF32->UTF8.
+        // See http://unicode.org/faq/utf_bom.html#utf16-3
+        var c = str.charCodeAt(i); // possibly a lead surrogate
+        if (c <= 0x7F) {
+          len++;
+        } else if (c <= 0x7FF) {
+          len += 2;
+        } else if (c >= 0xD800 && c <= 0xDFFF) {
+          len += 4; ++i;
+        } else {
+          len += 3;
+        }
+      }
+      return len;
+    };
+  
   var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
       assert(typeof str === 'string', `stringToUTF8Array expects a string (got ${typeof str})`);
       // Parameter maxBytesToWrite is not optional. Negative values, 0, null,
@@ -1266,27 +1287,16 @@ async function createWasm() {
       assert(typeof maxBytesToWrite == 'number', 'stringToUTF8 requires a third parameter that specifies the length of the output buffer');
       return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
     };
+  function __emscripten_fetch_get_response_headers(id, dst, dstSizeBytes) {
+    var responseHeaders = Fetch.xhrs.get(id).getAllResponseHeaders();
+    return stringToUTF8(responseHeaders, dst, dstSizeBytes) + 1;
+  }
+
+  function __emscripten_fetch_get_response_headers_length(id) {
+    return lengthBytesUTF8(Fetch.xhrs.get(id).getAllResponseHeaders());
+  }
+
   
-  var lengthBytesUTF8 = (str) => {
-      var len = 0;
-      for (var i = 0; i < str.length; ++i) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
-        // unit, not a Unicode code point of the character! So decode
-        // UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
-        var c = str.charCodeAt(i); // possibly a lead surrogate
-        if (c <= 0x7F) {
-          len++;
-        } else if (c <= 0x7FF) {
-          len += 2;
-        } else if (c >= 0xD800 && c <= 0xDFFF) {
-          len += 4; ++i;
-        } else {
-          len += 3;
-        }
-      }
-      return len;
-    };
   
   
   var __tzset_js = (timezone, daylight, std_name, dst_name) => {
@@ -5749,6 +5759,7 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('wasmMemory');
   ignoredModuleProp('wasmBinary');
 }
+function get_document_cookie() { const s = document.cookie || ""; const len = lengthBytesUTF8(s) + 1; const ptr = _malloc(len); stringToUTF8(s, ptr, len); return ptr; }
 
 // Imports from the Wasm binary.
 var _free = makeInvalidEarlyAccess('_free');
@@ -5858,6 +5869,10 @@ var wasmImports = {
   /** @export */
   _abort_js: __abort_js,
   /** @export */
+  _emscripten_fetch_get_response_headers: __emscripten_fetch_get_response_headers,
+  /** @export */
+  _emscripten_fetch_get_response_headers_length: __emscripten_fetch_get_response_headers_length,
+  /** @export */
   _tzset_js: __tzset_js,
   /** @export */
   clock_time_get: _clock_time_get,
@@ -5883,6 +5898,8 @@ var wasmImports = {
   fd_seek: _fd_seek,
   /** @export */
   fd_write: _fd_write,
+  /** @export */
+  get_document_cookie,
   /** @export */
   invoke_di,
   /** @export */
@@ -6153,6 +6170,17 @@ function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
   }
 }
 
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_viiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
@@ -6247,17 +6275,6 @@ function invoke_diii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
