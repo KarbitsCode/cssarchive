@@ -2657,6 +2657,9 @@ var FS_stdin_getChar_buffer = [];
             if (result === null || result === undefined) break;
             bytesRead++;
             buffer[offset+i] = result;
+            // We currently only support canonical mode (ICANON), where
+            // read(2) returns as soon as a line delimiter is read.
+            if (result === 10) break;
           }
           if (bytesRead) {
             stream.node.atime = Date.now();
@@ -5759,7 +5762,6 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('wasmMemory');
   ignoredModuleProp('wasmBinary');
 }
-function get_document_cookie() { const s = document.cookie || ""; const len = lengthBytesUTF8(s) + 1; const ptr = _malloc(len); stringToUTF8(s, ptr, len); return ptr; }
 
 // Imports from the Wasm binary.
 var _free = makeInvalidEarlyAccess('_free');
@@ -5898,8 +5900,6 @@ var wasmImports = {
   fd_seek: _fd_seek,
   /** @export */
   fd_write: _fd_write,
-  /** @export */
-  get_document_cookie,
   /** @export */
   invoke_di,
   /** @export */
