@@ -41,8 +41,6 @@ function keyEvent(k) {
           window.open("https://o3t.vercel.app/m9VR0n");
         } else if (isNaN(Math.PI)) {
           window.open("https://o3t.vercel.app/FLiNVh");
-        } else {
-          window.open("https://o3t.vercel.app/dx9w4P");
         };
         setUrlHash("main");
       }, 100);
