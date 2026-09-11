@@ -6,12 +6,19 @@ window.addEventListener("load", async () => {
 			e.disabled = !e.disabled;
 		});
 	};
-	if (!params.get("state")) {
+	const refreshData = () => {
 		location.replace(`${center}/asnc.cnt?return=${btoa(location.href.split("?", 1)[0])}`);
+	};
+	if (!params.get("state")) {
+		refreshData();
 	} else {
 		await import (`${center}/shuf.js`);
 		const csrf = await fetch(`${center}/scfr.cnt`, { credentials: "include" });
 		const data = JSON.parse(decodeFromThat(params.get("state")));
+		if (Date.now() - data.last > 30_000) {
+			refreshData();
+			return;
+		};
 		const form = document.querySelector('form');
 		form.action = `${center}/asnc.cnt`;
 		form.elements._csrf.value = await csrf.text();
@@ -19,6 +26,7 @@ window.addEventListener("load", async () => {
 		form.elements.count.value = data.cnt;
 		if (data.cnt > 0) {
 			form.nextElementSibling.nextElementSibling.textContent = `${data.cnt}/${data.total || '??'} flags!`;
+			form.querySelector('span.example').remove();
 		};
 		if (data.more) {
 			form.nextElementSibling.textContent = (typeof data.more === 'boolean') ? 'Wrong!' : data.more;
