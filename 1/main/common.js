@@ -1,23 +1,26 @@
 const script_dir = document.currentScript.src;
-function autoRefresh(r,d) {
-  let redirect_url = getRoot() + r;
-  let delay = d;
-  let input_time = document.getElementById("url_time");
-  let time = input_time.value = delay;
-  let min_time;
-  if (time >= 60) {
-    min_time = Math.round(time / 60) + " minute" + (Math.abs(Math.round(time / 60)) === 1 ? "" : "s");
-  } else {
-    min_time = time + " second" + (Math.abs(time) === 1 ? "" : "s");
+function autoRefresh(r,d=1000) {
+  if (!window.humanizeDuration) {
+    loadScript("humanized.js");
   };
+  const input_time = Object.assign(document.createElement('input'), {
+    type: "text",
+    size: 1,
+    hidden: true,
+    readOnly: true
+  });
+  let time = input_time.value = d;
+  const min_time = humanizeDuration(Math.ceil(time * 1000));
+  const redirect_url = getRoot() + r;
   console.log("Auto refresh page in " + min_time);
   console.log("Target redirect: " + redirect_url);
+  document.body.appendChild(input_time);
   function pageTimer() {
     if (time >= 1) {
-      time = time - 1;
-      input_time.value = time;
+      input_time.value = time = --time;
       setTimeout(pageTimer, 1000);
     } else {
+      input_time.remove();
       gotoPage(redirect_url);
     };
   };
@@ -62,7 +65,7 @@ function adBlocker() {
 function detectIE() {
   if (document.documentMode) {
     console.log("IE detected");
-    let url = location.pathname.replace(/\.html$/, "").split("/");
+    const url = location.pathname.replace(/\.html$/, "").split("/");
     if (url.some((_, i) => (url[i] === "1" && url[i + 1] === "main")) && url.slice(-1)[0] !== "main-min") {
       location.replace("main-min.html?on=ie");
     } else {
@@ -72,48 +75,60 @@ function detectIE() {
   };
   return false;
 };
-function updateData() {
+function networkRequest(s) {
   const xhr = new XMLHttpRequest();
   let data = null;
-  let src = getRoot() + "update.txt";
-  xhr.open("HEAD", src, false);
+  xhr.open("HEAD", s, false);
   xhr.send(data);
   if (xhr.status >= 200 && xhr.status < 600) {
-    xhr.open("GET", src, false);
+    xhr.open("GET", s, false);
     xhr.send(data);
     if (xhr.status >= 200 && xhr.status < 300) {
-      data = xhr.responseText.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
-      if (data !== null) {
-        data = data[data.length - 1];
-      };
+      data = xhr.responseText;
     };
+  };
+  return data;
+};
+function loadScript(s) {
+  const result = networkRequest(new URL(".", script_dir).href + s);
+  if (result !== null) {
+    eval(result);
+  };
+};
+function updateData() {
+  const result = networkRequest(getRoot() + "update.txt");
+  let data = result.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
+  if (data !== null) {
+    data = data[data.length - 1];
   };
   return data;
 };
 function getMirrors() {
-  const xhr = new XMLHttpRequest();
-  let data = null;
-  let src = getRoot() + "mirror.txt";
-  xhr.open("HEAD", src, false);
-  xhr.send(data);
-  if (xhr.status >= 200 && xhr.status < 600) {
-    xhr.open("GET", src, false);
-    xhr.send(data);
-    if (xhr.status >= 200 && xhr.status < 300) {
-      data = xhr.responseText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-    };
-  };
+  const result = networkRequest(getRoot() + "mirror.txt");
+  let data = result.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
   return data;
 };
 function getRoot() {
-  let url = location.pathname.split("/");
+  const url = location.pathname.split("/");
   return url.slice(0, url.indexOf("1")).join("/") + "/";
 };
-function setUrlHash(text) {
+function setUrlHash(t) {
   const target = new URL(location.href);
-  target.hash = text || "";
+  target.hash = t || "";
   history.replaceState(null, document.title, target);
   window.dispatchEvent(new HashChangeEvent('hashchange'));
+};
+function setUrlQuery(t) {
+  const target = new URL(location.href);
+  const [k, v] = t.split("=", 2);
+  if (k) {
+    if (v === "") {
+      target.searchParams.delete(k);
+    } else {
+      target.searchParams.set(k, v);
+    };
+    history.replaceState(null, document.title, target);
+  };
 };
 document.addEventListener("DOMContentLoaded", function(event) {
   document.head.appendChild(Object.assign(document.createElement("script"), { src: "https://cdnjs.cloudflare.com/polyfill/v3/polyfill.js?version=4.8.0&features=default" }));
@@ -152,6 +167,7 @@ setInterval(function() {
 }, 100);
 setTimeout(function() {
   setUrlHash(null);
+  setUrlQuery("on=");
   document.dispatchEvent(new Event("visibilitychange"));
 }, 500);
 setTimeout(function() {

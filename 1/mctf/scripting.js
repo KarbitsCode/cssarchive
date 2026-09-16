@@ -8,7 +8,7 @@ window.addEventListener('load', async () => {
 	} else {
 		await import (`${center}/shuf.js`);
 		const data = JSON.parse(decodeFromThat(params.get('state')));
-		if (Date.now() - data.last > 30_000) {
+		if (Date.now() - data.last > 60_000) {
 			refreshData();
 			return;
 		};
@@ -35,6 +35,7 @@ window.addEventListener('load', async () => {
 							const icon = document.createElement('img');
 							icon.setAttribute('src', 'https://cdn-icons-png.flaticon.com/512/82/82004.png');
 							icon.style.setProperty('width', '10px');
+							icon.setAttribute('alt', 'Reset');
 							button.appendChild(icon);
 							form.appendChild(button);
 						}
