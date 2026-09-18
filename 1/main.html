@@ -59,7 +59,7 @@ window.onload = function() {
 <div id="displaymiddle" style="position: fixed;bottom: 0;right: 0;left: 50%;transform: translateX(-50%);text-align: center;font-size: smaller;font-family: monospace;white-space: pre-line;"></div>
 <div id="displayonjs" style="position: fixed;bottom: 0;right: 5;font-size: smaller;font-family: monospace;display: none;">
 <span id="displayhidden">
-<a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(e){eruda.init();e.style.display='none';})(this);">Inspect&nbsp;|</a>
+<a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(e){eruda.init();e.remove();})(this);" hidden>Inspect&nbsp;|</a>
 <a style="color: white;text-decoration: none;cursor: default;" onclick="javascript:(function(){window.open('main-min.html?on=click','_self');})();">Minified version</a>
 </span>
 <script type="text/javascript">
@@ -101,12 +101,11 @@ gtag("config", "G-1YYQXL8T57");
 })(window, document, "clarity", "script", "s2tws2xj3h");
 </script>
 <script type="text/javascript" src="main/main.js?h=96C9"></script>
-<script type="text/javascript" src="main/eruda.js"></script>
-<script type="text/javascript" src="main/darkmode.js"></script>
 <script type="text/javascript">
 setTimeout(main.PlaceAuto, 1000);
 window.addEventListener("load", function() {
   try {
+    loadScript("eruda.js");
     eruda.init();
     setTimeout(eruda.destroy.bind(eruda), 50);
   } catch(e) {
@@ -115,8 +114,12 @@ window.addEventListener("load", function() {
     document.getElementsByTagName("a")[4].style.display = "none";
     window.eruda = {init: (()=>{})}
   };
+  Array.from(document.getElementsByTagName('a')).find(function(e) {
+    return e.textContent.includes("Inspect");
+  }).removeAttribute("hidden");
   const darkmode = (function() {
     try {
+      loadScript("darkmode.js");
       return new Darkmode({
         bottom: "64px",
         right: "unset",

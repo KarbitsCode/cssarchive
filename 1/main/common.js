@@ -75,7 +75,7 @@ function detectIE() {
   };
   return false;
 };
-function networkRequest(s) {
+function getRequest(s) {
   const xhr = new XMLHttpRequest();
   let data = null;
   xhr.open("HEAD", s, false);
@@ -90,13 +90,13 @@ function networkRequest(s) {
   return data;
 };
 function loadScript(s) {
-  const result = networkRequest(new URL(".", script_dir).href + s);
+  const result = getRequest(new URL(".", script_dir).href + s);
   if (result !== null) {
     eval(result);
   };
 };
 function updateData() {
-  const result = networkRequest(getRoot() + "update.txt");
+  const result = getRequest(getRoot() + "update.txt");
   let data = result.replace(/\.LOG\s*|\r?\n/g, "").match(/(?:\d{1,2}:\d{2}\s(?:AM|PM)\s\d{1,2}\/\d{1,2}\/\d{4})/g);
   if (data !== null) {
     data = data[data.length - 1];
@@ -104,7 +104,7 @@ function updateData() {
   return data;
 };
 function getMirrors() {
-  const result = networkRequest(getRoot() + "mirror.txt");
+  const result = getRequest(getRoot() + "mirror.txt");
   let data = result.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
   return data;
 };
