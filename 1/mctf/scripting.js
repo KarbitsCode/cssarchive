@@ -12,10 +12,11 @@ window.addEventListener('load', async () => {
 			refreshData();
 			return;
 		};
-		const csrf = await fetch(`${center}/scfr.cnt`, { credentials: 'include' });
+		const csrf = await (await fetch(`${center}/scfr.cnt`, { credentials: 'include' })).text();
+		const csrf_test = (await fetch(`${center}/scfr.cnt`, { method: "POST", credentials: "include", headers: { "X-CSRFToken": csrf }})).ok;
 		const form = document.querySelector('form');
 		form.action = `${center}/asnc.cnt`;
-		form.elements._csrf.value = await csrf.text();
+		form.elements._csrf.value = csrf;
 		form.elements.id.value = data.id;
 		form.elements.count.value = data.cnt;
 		let holdTimer;
@@ -38,14 +39,18 @@ window.addEventListener('load', async () => {
 							icon.setAttribute('alt', 'Reset');
 							button.appendChild(icon);
 							form.appendChild(button);
-						}
+						};
 					}, 1000);
 				});
 				['pointerup', 'pointercancel'].forEach(event => document.addEventListener(event, () => clearTimeout(holdTimer)));
-			}
+			};
 		};
 		if (data.more) {
 			form.nextElementSibling.textContent = (typeof data.more === 'boolean') ? 'Wrong!' : data.more;
+			form.nextElementSibling.style.setProperty('color', 'red');
+		};
+		if (!csrf_test) {
+			form.nextElementSibling.textContent += (form.nextElementSibling.textContent ? "\n" : "") + "Cookies are being disabled, the form might not work correctly."
 			form.nextElementSibling.style.setProperty('color', 'red');
 		};
 		toggleDisabled(form);
