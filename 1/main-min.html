@@ -62,8 +62,9 @@ window.onload = function() {
 <script type="text/javascript">
 (function() {
   document.getElementById("displayonjs").style.display = "block";
-  if (updateData() !== null) {
-    document.write("Last updated on " + updateData());
+  const lastUpdate = updateData();
+  if (lastUpdate !== null) {
+    document.write("Last updated on " + lastUpdate);
   };
 }).call(this);
 </script>
